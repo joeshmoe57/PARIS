@@ -1,0 +1,167 @@
+K 25
+svn:wc:ra_dav:version-url
+V 32
+/svn/gcdfinder/!svn/ver/82/trunk
+END
+libcrypto.a
+K 25
+svn:wc:ra_dav:version-url
+V 44
+/svn/gcdfinder/!svn/ver/65/trunk/libcrypto.a
+END
+seqGCD.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/svn/gcdfinder/!svn/ver/81/trunk/seqGCD.cpp
+END
+lrsa.h
+K 25
+svn:wc:ra_dav:version-url
+V 39
+/svn/gcdfinder/!svn/ver/64/trunk/lrsa.h
+END
+keyMath.h
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/svn/gcdfinder/!svn/ver/30/trunk/keyMath.h
+END
+cfmemopen.c
+K 25
+svn:wc:ra_dav:version-url
+V 44
+/svn/gcdfinder/!svn/ver/64/trunk/cfmemopen.c
+END
+getKeys.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 44
+/svn/gcdfinder/!svn/ver/80/trunk/getKeys.cpp
+END
+pyPrint.py
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/svn/gcdfinder/!svn/ver/31/trunk/pyPrint.py
+END
+seqGCD.h
+K 25
+svn:wc:ra_dav:version-url
+V 41
+/svn/gcdfinder/!svn/ver/66/trunk/seqGCD.h
+END
+README
+K 25
+svn:wc:ra_dav:version-url
+V 39
+/svn/gcdfinder/!svn/ver/83/trunk/README
+END
+cfmemopen.h
+K 25
+svn:wc:ra_dav:version-url
+V 44
+/svn/gcdfinder/!svn/ver/64/trunk/cfmemopen.h
+END
+cudaGCD.cu
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/svn/gcdfinder/!svn/ver/82/trunk/cudaGCD.cu
+END
+lbn.h
+K 25
+svn:wc:ra_dav:version-url
+V 38
+/svn/gcdfinder/!svn/ver/64/trunk/lbn.h
+END
+getKeys.h
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/svn/gcdfinder/!svn/ver/80/trunk/getKeys.h
+END
+sqlite3.c
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/svn/gcdfinder/!svn/ver/64/trunk/sqlite3.c
+END
+Makefile-example
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/gcdfinder/!svn/ver/27/trunk/Makefile-example
+END
+libssl.a
+K 25
+svn:wc:ra_dav:version-url
+V 41
+/svn/gcdfinder/!svn/ver/65/trunk/libssl.a
+END
+globals.h
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/svn/gcdfinder/!svn/ver/81/trunk/globals.h
+END
+validate.c
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/svn/gcdfinder/!svn/ver/30/trunk/validate.c
+END
+sqlite3.h
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/svn/gcdfinder/!svn/ver/64/trunk/sqlite3.h
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 41
+/svn/gcdfinder/!svn/ver/83/trunk/Makefile
+END
+hrt.c
+K 25
+svn:wc:ra_dav:version-url
+V 38
+/svn/gcdfinder/!svn/ver/59/trunk/hrt.c
+END
+validate.h
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/svn/gcdfinder/!svn/ver/25/trunk/validate.h
+END
+cudaGCD.h
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/svn/gcdfinder/!svn/ver/82/trunk/cudaGCD.h
+END
+lcrypto.h
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/svn/gcdfinder/!svn/ver/64/trunk/lcrypto.h
+END
+lpem.h
+K 25
+svn:wc:ra_dav:version-url
+V 39
+/svn/gcdfinder/!svn/ver/64/trunk/lpem.h
+END
+hrt.h
+K 25
+svn:wc:ra_dav:version-url
+V 38
+/svn/gcdfinder/!svn/ver/59/trunk/hrt.h
+END
+keyMath.c
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/svn/gcdfinder/!svn/ver/35/trunk/keyMath.c
+END

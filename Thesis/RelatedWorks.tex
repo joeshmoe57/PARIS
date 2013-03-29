@@ -1,0 +1,322 @@
+% Cal Poly Thesis
+% 
+% based on UC Thesis format
+%
+% modified by Mark Barry 2/07.
+%
+
+\documentclass[12pt]{ucthesis}
+\usepackage{ifpdf}
+
+\let\ifpdf\relax
+
+\newif\ifpdf
+\ifx\pdfoutput\undefined
+    \pdffalse % we are not running PDFLaTeX
+\else
+\pdfoutput=1 % we are running PDFLaTeX
+\pdftrue \fi
+
+\usepackage{url}
+\ifpdf
+
+    \usepackage[pdftex]{graphicx}
+    % Update title and author below...
+    \usepackage[pdftex,plainpages=false,breaklinks=true,colorlinks=true,urlcolor=blue,citecolor=blue,%
+                                       linkcolor=blue,bookmarks=true,bookmarksopen=true,%
+                                       bookmarksopenlevel=3,pdfstartview=FitV,
+                                       pdfauthor={!!Author goes here!!},
+                                       pdftitle={!!Title goes here!!},
+                                       pdfkeywords={thesis, masters, cal poly}
+                                       ]{hyperref}
+    %Options with pdfstartview are FitV, FitB and FitH
+    \pdfcompresslevel=1
+
+\else
+    \usepackage{graphicx}
+\fi
+
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage[letterpaper]{geometry}
+\usepackage[overload]{textcase}
+
+\setlength{\parindent}{0.25in} \setlength{\parskip}{6pt}
+
+\geometry{verbose,nohead,tmargin=1.25in,bmargin=1in,lmargin=1.5in,rmargin=1.3in}
+
+
+% Different font in captions (single-spaced, bold) ------------
+\newcommand{\captionfonts}{\small\bf\ssp}
+% ---------------------------------------
+
+\begin{document}
+
+\pagestyle{plain}
+
+\renewcommand{\baselinestretch}{1.66}
+
+\title{Breaking weak 1024-bit RSA keys with CUDA}
+\author{Joseph White}
+\degreemonth{June} \degreeyear{2012} \degree{Master of Science}
+\defensemonth{May} \defenseyear{2012}
+\numberofmembers{3} \chair{Chris Lupo, Ph.D.}
+\field{Computer Science} \campus{San Luis Obispo}
+\maketitle
+
+% ------------- Main chapters here --------------------
+
+\chapter{Related Works}
+\label{related}
+
+\section{The Vulnerability}
+An RSA vulnerability was discovered and detailed in \cite{lenstra2012ron} in
+early 2012 that forms the basis of the exploit the work presented here builds
+upon. Namely, that poor random number generation in RSA keys results in
+insecure encryption using these keys. Specifically, a key's private components
+(the decryption portion of the RSA key) can be generated using publicly
+available information by taking advantage of the work presented in
+\cite{lenstra2012ron}.
+
+The exploit explored in \cite{lenstra2012ron} makes use of the two prime
+values that play a fundamental role in an RSA key. These values must be
+sufficiently prime such that repeated values are infeasible and mathematically
+extremely improbable to encounter due to the scope of the set (this work
+focuses on 1024-bit keys). However, on some systems and due to some
+less-than-adequate code, this may not always be the case. When these values are
+repeated between keys, the greatest-common-divisor algorithm can be applied to
+find the shared value between keys. With this new information about each key,
+they private components are straight-forward to generate since the RSA
+key-generation process is public and not difficult to implement.
+
+A large sample set was obtained via the OpenSSL Observatory and by crawling the
+internet for SSL certificates (which use RSA as an encryption scheme). Since it
+was thought this would provide an adequate sample set, all these keys were
+analyzed. The set contained 1024-bit keys, as well as 2048-bit keys. The
+findings were that 0.2\% of these keys were vulnerable to this exploit, and
+thus offered no security. This included 2048-bit keys as well, despite the
+conception 2048-bit keys are more secure (this would be true if this
+vulnerability were avoided).
+
+\section{The Process}
+As mentioned, the vulnerability is exploited by performing greatest common
+divisor (GCD) calculations with pairs of keys. The research presented in this
+paper looks at how to most quickly and efficiently analyze a large database of
+RSA keys and detect if this vulnerability is present within the set.
+Traditionally, this would be a tedious process that would likely be infeasible
+due to time constraints. Since the calculations are independent of one another
+(between pairs of keys) they can be done in parallel, given the proper system.
+One such system, and the focus of this work, is NVIDIA's CUDA. This will be
+detailed later, however, it relates to work done in \cite{fujimoto2009high}. 
+
+This work optimized a specific version of the GCD (binary GCD). This method
+reduces the algorithm to three repeated operations. This algorithm was then
+implemented in CUDA for 1024-bit numbers (something CUDA does not offer native
+support for). This allows much of each operation to be performed in a parallel
+fashion, further optimizing the process.
+
+\section{Completed Areas}
+As a groundwork for the research presented here, the work done in
+\cite{scharfglass2012CUDA} will be used extensively. Here, the ideas present in
+both \cite{lenstra2012ron} and \cite{fujimoto2009high} are combined with
+further optimization and parallelization of the data to achieve a significant
+speedup of the overall process (when compared to the sequential runtimes). This
+work makes use of CUDA to parallelize the binary GCD algorithm as presented in
+\cite{fujimoto2009high}, but additionally parallelizes each GCD calculation as
+independently (that is, runs many complete GCD comparisons in parallel). This
+same approach will be used in the work that follows.
+
+This work, however, does not offer a complete solution and suffers from several
+limitations. The work in \cite{scharfglass2012CUDA} does not actually produce
+the private components of the RSA keys found to be vulnerable by the algorithm.
+Furthermore, the set of keys that can be used in the algorithm as presented, is
+limited by the memory present on the GPU. To offer a complete solution, this
+must be overcome to allow RSA key-sets of arbitrary size to be used for the
+validation. The usefulness of such work is severely impacted due to these two
+limitations.
+
+\section{Multiple GPUs}
+As an extension to the work in \cite{scharfglass2012CUDA}, multiple GPU support
+will be explored. This concept is discussed at length in
+\cite{schaa2009exploring}. Here, several GPU configurations are investigated to
+analyze how a distributed system may benefit over a single-GPU design.
+Explored are both distributed GPU systems, which are comprised of several
+systems, each containing a single GPU. Work is divided intelligently among the
+systems in the distributed system to gain more performance increase than would
+be possible with a single system.
+
+At the time this paper was written, single-system, multiple-GPU configurations
+were not possible using CUDA over SLI (Scalable Link Interface, NVIDIA's brand
+for the interface between multiple GPUs). However, this is possible now, and
+will be explored at length in our work. This configuration offers benefits
+including transfer speeds over alternative configurations.
+
+The work done in \cite{thibault2009cuda} helps to make a case for the
+additional speedup that making use of multiple GPUs can offer. This work was
+done after CUDA had added adequate support for using multiple GPUs
+simultaneously, and configurations with two-GPU and four-GPU systems were used.
+
+Significant additional speedups were gained, ranging up to three times speedup
+using four GPUs over the single-GPU system (which translates to 100 times
+speedup compared to the original, non-GPU benchmark being used). This kind of
+speedup offers great optimism in how multiple GPUs may offer significant
+increases to performance of the GCD key algorithm.
+
+Another interesting aspect of the work done in \cite{thibault2009cuda} is the
+varied domain sizes that were used. The data sets were broken down into several
+different configurations which was each tested on the single, dual, or quad-GPU
+configuration. This was done to achieve a more accurate answer to how much
+faster the multi-GPU system could be. The largest domain set
+($1024\times32\times1024$), interestingly, offered the greatest additional
+speedup between configurations---the quad-GPU configuration was 3 times faster
+than the single-GPU, compared to 2 times for the $256\times32\times256$
+domain. This is significant, and implies that exploring different ways to
+organize our own data may offer increased advantages when moving to a multi-GPU
+system.
+
+\section{Large Data}
+Since one of our primary goals is to remove the limitation present in
+\cite{scharfglass2012CUDA} that prevents larger sets of keys from being
+analyzed, work investigating how to manage large data sets is relevant.
+Specifically, large data sets that must be managed by the GPU.
+
+One such work is \cite{wu2009clustering}. In this work, like our own, the data
+is too large to fit within the extremely-limited memory of the GPU. Thus, the
+data must be partitioned. In this work, the data was first prepared by
+organizing it so that it could be effectively partitioned. There was a
+straightforward way of doing so for this applications (K-means).
+
+Additionally, some features of the GPU were considered and used, namely
+asynchronous memory transfer, a type of multi-tasked streaming. This feature
+allows memory transfers to be done between the GPU and CPU while the GPU is
+processing data it already has. This can increase performance significantly
+when compared to having the GPU move from processing to data transfer (i.e.
+having a single tasked thread). Optimization of threads was looked into in this
+work as well, as the authors attempted to find how many of these threads would
+add the positively impact speedup the most. They found that only 2 threads
+(i.e. one processing, one transferring) were needed to gain the greatest
+performance benefit. Adding additional streams after this point did not offer
+additional benefit.
+
+Decomposition of data is the primary problem when attempting to perform work
+with a GPU due to the limitations of current hardware. Therefore, much work and
+thought has been given to optimizing the structure of large data sets. Although
+a different type of parallelism is looked at in \cite{charles2012chunking}, the
+strategies to data decomposition are relevant to most parallel problem in
+general, including CUDA. The focus in this survey is matrix multiplication,
+a standard parallel problem. The most effective way to chunk the data in this
+work appears to be entire rows/columns of the element matrices. This is logical,
+and the approach is mimicked (as much as it can be since matrix multiplication
+is not perfectly synonymous) in \cite{scharfglass2012CUDA}. However, a slight
+modification was found to make this strategy most effective: hold the results
+in memory until an entire set of iterations completes (all that will fit in
+memory) and only then transfer the results back to the CPU. Although this does
+not decrease the amount of memory sent from the GPU to the CPU, it reduces the
+number of total memory transfers which is often more important. Such fine
+details must be found and applied to our work here to further increase our
+performance.
+
+\section{Optimization}
+As mentioned, data decomposition and organization around the architecture are
+some of the most important (if not \emph{the} most important) aspects of
+creating a parallel solution for use with a GPGPU. The work done in
+\cite{ryoo2008optimization} gives a detailed overview of how one might optimize
+work done with CUDA. It discusses the memory model, and how certain techniques
+such as tiling are used to optimize the performance gains. Although some of
+these techniques are used in the original implementation found in
+\cite{scharfglass2012CUDA}, it does not appear that they were used extensively.
+It seems that the research and surveying done in \cite{ryoo2008optimization}
+can be applied to our work here and our speedup will benefit from their results.
+
+Unfortunately, this work was done before multi-GPU systems were fully available
+and accessible using CUDA. The optimization strategies presented in this work
+will no doubt be useful; however, other strategies also must be employed that
+considered systems with more than a single GPU (such as those mentioned here
+from \cite{thibault2009cuda}). Leveraging techniques in both realms will offer
+the greatest amount of performance gain.
+
+\section{Similar Algorithms}
+A similar algorithm that suffers from the same problems that pairwise
+comparisons does (each element much be traversed and compared), is search. The
+work done in \cite{peters2011fast} explores how search can be optimized for the
+CUDA framework. Two approaches are given to the bitonic search algorithm that
+is used: the initial, most straight-forward implementation, and another
+implementation optimized around the CUDA memory model. The latter offered
+significant performance increases over the original. 
+
+A similar approach will be applied to the work that is used from
+\cite{scharfglass2012CUDA}. Namely, shared memory will be used as efficiently
+as possible to allow CUDA to perform at its greatest capacity. This is a vital
+concept in general when optimizing for CUDA; however, the work and challenges
+from \cite{peters2011fast} are similar to our own, so the implementation
+overlaps more than arbitrary examples.
+
+Another important contribution to the field and concepts of distributed systems
+is the work presented in \cite{dean2008mapreduce}. MapReduce has become an
+extremely useful tool for companies like Google with massive data centers that
+must distribute the work to perform as reasonable (real-time) levels. MapReduce
+explores how work might be delegated to multiple workers that exist in a
+particular distributed system. These concepts apply to the problem of
+performing the necessary GCD comparisons using multiple GPUs in a single
+system.
+
+\chapter{Validation}
+Accuracy and speedup will both be validated to gain a measure of success.
+
+To validate accuracy, a sequential implementation will be compared against.
+Much as the work found in \cite{scharfglass2012CUDA} performed accuracy
+validation, a separate, sequential implementation will be created and ran
+alongside the parallel implementation. Since this work will function as an
+extension to \cite{scharfglass2012CUDA}, the validation process will likely be
+identical or even reused. The results each implementation produces must match
+for a given set of keys (i.e. both implementations must find the same set of
+vulnerable keys given identical sets to start with).
+
+An additional limitation realized in \cite{scharfglass2012CUDA} was the runtime
+of the sequential version becoming too long for large sets of keys. Since this
+is known to be an extremely time-consuming process, it will not always be
+performed with larger sets of keys. If correct operation of the parallel
+implementation for small (i.e. sets that can be run sequential in a reasonable
+amount of time) can be validated using many varying sets of keys of increasing
+number, it can be assumed the same level of accuracy will continue for larger
+sets that will not be run sequentially. Thus, accuracy will be validated for
+sets no larger than 200,000 keys (as in \cite{scharfglass2012CUDA}), and
+assumed to be accurate (given success of the aforementioned validation) for
+sets larger than this.
+
+Speedup validation also involves comparing with a sequential implementation;
+however, this time the runtimes will be compared so an overall speedup may be
+calculated. Again, much as in \cite{scharfglass2012CUDA}, speedup will be
+calculated by taking the ratio of the sequential and parallel runtimes.
+
+As seen in \cite{scharfglass2012CUDA}, the speedup reached an upper threshold,
+namely, 27.5. Since this work will expand upon on that, it seems natural to use
+27.5 as a baseline. However, there are some differences to consider. First,
+in \cite{scharfglass2012CUDA}, sets of keys that could fit entirely in the
+GPU's memory were tested and presented. This ensures that the number of memory
+transfers to the memory card is 1: this significantly reduces memory transfer
+time, and would help increase the speedup. Since one goal of this work is to
+allow an arbitrary number of keys to be used in a set, this will likely affect
+the overall speedup since memory transfers will become smaller and more
+frequent.
+
+On the other hand, another goal is to add multi-card support which would
+further increase the total speedup of the final, parallel implementation. Since
+we will be looking at how fast additional cards make the process (compared to
+the single-card implementation), the sequential runtime will become less
+important. It will continue to serve as a baseline to the entire algorithm
+though. 
+
+Considering the modifications done, speedup near 25 seems like a reasonable
+expectation. Functionality that is expected to decrease the original 27.5, as
+well as additions that are expected to increase it will both be researched and
+added. Therefore, a speedup in the same area appears to be a fair expectation
+of success.
+
+% ------------- End main chapters ----------------------
+
+\clearpage
+\bibliographystyle{abbrv}
+\bibliography{references}
+
+\end{document}

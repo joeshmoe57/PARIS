@@ -1,0 +1,5 @@
+5800000 total keys
+5790000 good keys
+10000 bad keys
+Indicies of bad keys follow:
+0

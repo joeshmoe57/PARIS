@@ -1,0 +1,89 @@
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/gcdfinder/!svn/ver/64/trunk/keyGenerator/cInterface
+END
+getLibs.sh
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/gcdfinder/!svn/ver/56/trunk/keyGenerator/cInterface/getLibs.sh
+END
+lcrypto.h
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/gcdfinder/!svn/ver/48/trunk/keyGenerator/cInterface/lcrypto.h
+END
+lpem.h
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/gcdfinder/!svn/ver/48/trunk/keyGenerator/cInterface/lpem.h
+END
+openssl-1.0.1c.tar.gz
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/svn/gcdfinder/!svn/ver/55/trunk/keyGenerator/cInterface/openssl-1.0.1c.tar.gz
+END
+sqlite3.c
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/gcdfinder/!svn/ver/47/trunk/keyGenerator/cInterface/sqlite3.c
+END
+lrsa.h
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/gcdfinder/!svn/ver/48/trunk/keyGenerator/cInterface/lrsa.h
+END
+cfmemopen.c
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/gcdfinder/!svn/ver/48/trunk/keyGenerator/cInterface/cfmemopen.c
+END
+sqlite3.h
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/gcdfinder/!svn/ver/47/trunk/keyGenerator/cInterface/sqlite3.h
+END
+getKeys.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/gcdfinder/!svn/ver/62/trunk/keyGenerator/cInterface/getKeys.cpp
+END
+getKeysTest.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/gcdfinder/!svn/ver/62/trunk/keyGenerator/cInterface/getKeysTest.cpp
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/gcdfinder/!svn/ver/83/trunk/keyGenerator/cInterface/Makefile
+END
+cfmemopen.h
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/gcdfinder/!svn/ver/64/trunk/keyGenerator/cInterface/cfmemopen.h
+END
+getKeys.h
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/gcdfinder/!svn/ver/83/trunk/keyGenerator/cInterface/getKeys.h
+END
+lbn.h
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/gcdfinder/!svn/ver/48/trunk/keyGenerator/cInterface/lbn.h
+END

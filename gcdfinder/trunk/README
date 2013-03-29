@@ -1,0 +1,5 @@
+Things in keyGenerator/cInterface need to be recompiled for each machine, then moved to the trunk.
+
+The compute and sm should both be 30.
+
+The compile line for cudaGCD needed the link flags.

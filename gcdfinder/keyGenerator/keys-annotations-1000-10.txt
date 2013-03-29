@@ -1,0 +1,14 @@
+1000 total keys
+990 good keys
+10 bad keys
+Indicies of bad keys follow:
+0
+100
+200
+300
+400
+500
+600
+700
+800
+900

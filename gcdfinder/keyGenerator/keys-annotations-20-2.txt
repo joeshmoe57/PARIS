@@ -1,0 +1,6 @@
+20 total keys
+18 good keys
+2 bad keys
+Indicies of bad keys follow:
+0
+10

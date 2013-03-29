@@ -1,0 +1,343 @@
+#include "cudaGCD.h"
+#include "globals.h"
+
+//#define DEBUG
+extern "C" {
+#include "lpem.h"
+#include "keyMath.h"
+}
+
+//Kernel Function
+/*Figure out if de_coords could be moved into shared memory */
+__global__ void GCD_Compare_All(unsigned *x_dev, uint16_t *gcd_dev, xyCoord * dev_coord, int numBlocks) {
+   //Load up shared memory
+   __shared__ volatile unsigned int x[BLKDIM][BLKDIM][NUM_INTS];
+   __shared__ volatile unsigned int y[BLKDIM][BLKDIM][NUM_INTS];
+   int tidx = threadIdx.x;
+   int tidy = threadIdx.y;
+   // remove and see if reg count decreases
+   int tidz = threadIdx.z;
+   int blkIdx = blockIdx.x + blockIdx.y * gridDim.x;
+
+   if (blkIdx < numBlocks) {
+      xyCoord coord = dev_coord[blkIdx];
+      int keyX = tidx + NUM_INTS * (tidy + coord.x * BLKDIM);
+      int keyY = tidx + NUM_INTS * (tidz + coord.y * BLKDIM);
+
+      if (coord.x != coord.y || tidy > tidz) {
+         //Check this!! - FIX THIS
+         //if(/*tidy == 0 && tidz == 0 && */tidx < NUM_INTS && tidy < BLKDIM && tidz < BLKDIM) {
+         //    printf("tidx = %d; tidy = %d; idx = %d\n", tidx, tidy, idx);
+         x[tidy][tidz][tidx] = x_dev[keyX];
+         y[tidy][tidz][tidx] = x_dev[keyY];
+
+         gcd(x[tidy][tidz], y[tidy][tidz]);
+         //gcd_dev[keyX * BLKDIM + keyY * BLKDIM * NUM_INTS] = y[tidy][tidz][tidx];
+         if (tidx == 31)
+            y[tidy][tidz][tidx] -= 1;
+//         __syncthreads();
+         if (__any(y[tidy][tidz][tidx])) {
+            gcd_dev[blkIdx] |= 1<<(tidy + BLKDIM * tidz);
+         }
+
+
+
+         //gcd_dev[tidx + NUM_INTS * (tidy + tidz * BLKDIM) + THREADS_PER_BLOCK * blkIdx] 
+         //   = y[tidy][tidz][tidx];
+         
+/*      } else {
+        gcd_dev[tidx + NUM_INTS * (tidy + tidz * BLKDIM) + THREADS_PER_BLOCK * blkIdx] = 0;
+         //y[tidy][tidz][tidx] = 0;
+ */     }
+   }
+}
+
+__device__ void gcd(volatile unsigned *x, volatile unsigned *y) {
+   int c;
+   c = 0;
+   int tid = threadIdx.x;
+
+   //printf("start -> %d: x = %u; y = %u\n", threadIdx.x, x[tid], y[tid]);
+   while(((x[NUM_INTS - 1] | y[NUM_INTS - 1]) & 1) == 0) {
+      shiftR1(x);
+      shiftR1(y);
+      c++;
+   }
+
+   //parallelNonzero(x)
+   while(__any(x[tid])) {
+      /* x[0] ? */
+      while((x[NUM_INTS - 1] & 1) == 0)
+         shiftR1(x);
+
+      /* y[0] ? */
+      while((y[NUM_INTS - 1] & 1) == 0)
+         shiftR1(y);
+
+      if(geq(x, y)) {
+         cusubtract(x, y, x);
+         shiftR1(x);
+      } else {
+         cusubtract(y, x, y);
+         shiftR1(y);
+      }
+   }
+
+   //printf("c = %d\n", c);
+   for(int i = 0; i < c; i++)
+      shiftL1(y);
+}
+
+__device__ void shiftR1(volatile unsigned *x) {
+   unsigned x1 = 0;
+   //printf("right shifting %d\n", threadIdx.z);
+   int tid = threadIdx.x;
+
+   if(tid)
+      x1 = x[tid - 1];
+
+   x[tid] = (x[tid] >> 1) | (x1 << 31);
+}
+
+__device__ void shiftL1(volatile unsigned *x) {
+   //printf("left shifting %d\n", threadIdx.z);
+   unsigned x1 = 0;
+   int tid = threadIdx.x;
+
+   if(tid != NUM_INTS - 1)
+      x1 = x[tid + 1];
+
+   /* unsigned x1 = threadIdx.x ? 0 : x[threadIdx.x - 1];*/
+   x[tid] = (x[tid] << 1) | (x1 >> 31);
+}
+
+__device__ int geq(volatile unsigned *x, volatile unsigned *y) {
+   //printf("greater than %d\n", threadIdx.z);
+   // pos is the maximum index (which int in the key) where the values are not the same
+   __shared__ unsigned int pos[BLKDIM][BLKDIM];
+   int tid = threadIdx.x;
+
+   if(tid== 0)
+      pos[threadIdx.y][threadIdx.z] = NUM_INTS - 1;
+
+   if(x[tid] != y[tid])
+      atomicMin(&pos[threadIdx.y][threadIdx.z], tid);
+
+   //printf("pos = %d, x = %u; y = %u\n", pos[threadIdx.y], x[0], y[0]);
+   return x[pos[threadIdx.y][threadIdx.z]] >= y[pos[threadIdx.y][threadIdx.z]];
+}
+
+__device__ void cusubtract(volatile unsigned *x, volatile unsigned *y, volatile unsigned *z) {
+   //printf("subtracting %d\n", threadIdx.z);
+   __shared__ unsigned char s_borrow[BLKDIM][BLKDIM][NUM_INTS];
+   // borrow points to j
+   unsigned char *borrow = s_borrow[threadIdx.y][threadIdx.z];
+   int tid = threadIdx.x;
+   //printf("%u subtracting %u from %u\n", threadIdx.x, y[threadIdx.x], x[threadIdx.x]);
+
+   if(tid == 0)
+      borrow[NUM_INTS - 1] = 0;
+
+   unsigned int t;
+   t = x[tid] - y[tid];
+
+   if(tid)
+      borrow[tid - 1] = (t > x[tid]);
+
+   while(__any(borrow[tid]))
+   {
+      //printf("t = %u; borrow[%u] = %u\n", t, threadIdx.x, borrow[threadIdx.x]);
+      if(borrow[tid]) {
+         t--;
+      }
+
+      if(tid)
+         borrow[tid - 1] = (t == 0xffffffffU && borrow[tid]);
+   }
+
+   //printf("t = %d\n" , t);
+   z[tid] = t;
+}
+void dimConversion(int numBlocks, int width, xyCoord * coords) {
+   int x = 0, y = 0;
+   for (int i = 0; i < numBlocks; ++i) {
+      if (x == width) {
+         ++y;
+         x = y;
+      }
+      coords[i].x = x++;
+      coords[i].y = y;
+   }
+}
+int main(int argc, char**argv) {
+   int totalNumKeys;
+   std::vector<RSA*> privKeys;
+   uint32_t *num_x;
+
+   if(argc != 2)
+   {
+       printf("Wrong number of args (Only number of keys)");
+       exit(1);
+   }
+
+   //get number of keys to process
+   sscanf(argv[1], "%d", &totalNumKeys);
+
+   if((num_x = (uint32_t *) malloc(totalNumKeys * NUM_INTS * sizeof(uint32_t))) == 0)
+   {
+       perror("Cannot Malloc Key Vector");
+       exit(1);
+   }
+
+  totalNumKeys = getAllKeys(KEYS_DB, totalNumKeys, &privKeys, num_x);
+
+#ifdef DEBUG
+   fprintf(stderr, "getKeys returns %d\n", totalNumKeys);
+#endif
+
+#ifdef DEBUG
+   for (int i = 0; i < totalNumKeys; ++i) 
+      printNumHex(num_x + i * NUM_INTS);
+   fflush(stdout);
+#endif
+
+   /* TODO Assumes totalNumberOfKeys is less than sqrt(INT_MAX) */ 
+   /* This is a modified version of the geometic expansion of the sum from 1 to totalNumKeys/BLKDIM*/
+   /* This is also a generic solution that allows for multiple versions of BLKDIM. Since for our implementation, this value is fixed, one could also just use:
+    * int numBlocks = (totalNumKeys * totalNumKeys + 4 * totalNumKeys) >> 5;
+    */
+   int sq = BLKDIM * BLKDIM * 2;
+   int shift = 0;
+   while (!(sq & 1)) {
+      sq >>= 1;
+      ++shift;
+   }
+
+#ifdef DEBUG
+   printf("totalNumKeys = %d; shift = %d\n", totalNumKeys, shift);
+   fflush(stdout);
+#endif
+
+   int numBlocks = (totalNumKeys * totalNumKeys + BLKDIM * totalNumKeys) >> (shift);
+   printf("numBlocks = %d\n", numBlocks);
+#ifdef DEBUG
+   printf("numBlocks = %d\n", numBlocks);
+   fflush(stdout);
+#endif
+
+   //unsigned int *gcd_res = (unsigned int * ) malloc(numBlocks * BLKDIM * BLKDIM * NUM_INTS * sizeof(int));
+   uint16_t * gcd_res = (uint16_t * ) malloc(numBlocks * sizeof(uint16_t));
+   if (gcd_res == NULL) {
+      fprintf(stderr, "Error with malloc\n");
+      exit(-1);
+   }
+
+   xyCoord * coords = (xyCoord * ) malloc(numBlocks * sizeof(xyCoord));
+
+#ifdef DEBUG
+   printf("calling dimConversion with %d, %d\n", numBlocks, totalNumKeys / BLKDIM);
+#endif
+   dimConversion(numBlocks, totalNumKeys / BLKDIM, coords);
+
+#ifdef DEBUG
+   for (int i = 0; i < numBlocks; ++i) 
+      printf("(%d, %d)\n", coords[i].x, coords[i].y);
+   fflush(stdout);
+#endif
+
+   unsigned int * dev_x;
+   uint16_t * dev_gcd;
+   xyCoord * dev_coords;
+
+   int ret = 0;
+   /* Sizes added since they are used many times. Trying to keep consistency 
+    * so changes don't break things.*/
+   int dev_xSize = totalNumKeys * NUM_INTS * sizeof(int);
+   //int dev_gcdSize = numBlocks * BLKDIM * BLKDIM * NUM_INTS * sizeof(int);
+   int dev_gcdSize = numBlocks * sizeof(uint16_t);
+   memset(gcd_res, 0, dev_gcdSize);
+
+   ret = cudaMalloc((void **)&dev_x, dev_xSize);
+
+#ifdef DEBUG
+   printf("%d bytes for dev_x\n", dev_xSize);
+   printf("malloc: %d\n", ret);
+   printf("%d bytes for dev_gcd\n", dev_gcdSize);
+#endif
+
+   ret = cudaMalloc((void **)&dev_gcd, dev_gcdSize);
+   cudaMemcpy(dev_gcd, gcd_res, dev_gcdSize, cudaMemcpyHostToDevice);
+
+#ifdef DEBUG
+   printf("malloc: %d\n", ret);
+#endif
+
+   ret = cudaMalloc((void **)&dev_coords, numBlocks * sizeof(xyCoord));
+#ifdef DEBUG
+   printf("malloc: %d\n", ret);
+#endif
+   
+   ret = cudaMemcpy(dev_coords, coords, numBlocks * sizeof(xyCoord), cudaMemcpyHostToDevice);
+#ifdef DEBUG
+   printf("memcopy: %d\n", ret);
+#endif
+
+   ret = cudaMemcpy(dev_x, num_x, dev_xSize, cudaMemcpyHostToDevice);
+#ifdef DEBUG
+   printf("memcopy: %d\n", ret);
+#endif
+
+   int dimGridx = numBlocks > MAX_BLOCK_DIM ? MAX_BLOCK_DIM : numBlocks;
+   int dimy = 1 + numBlocks / MAX_BLOCK_DIM;
+   int dimGridy = 1 < dimy ? dimy : 1;
+   dim3 dimGrid(dimGridx, dimGridy); 
+   dim3 dimBlock(NUM_INTS, BLKDIM, BLKDIM);
+
+
+   fprintf(stderr, "dimGrid = %d %d %d; dimBlock = %d %d %d\n", dimGrid.x, dimGrid.y, dimGrid.z, dimBlock.x, dimBlock.y, dimBlock.z);
+#ifdef DEBUG
+   printf("dimGrid = %d %d %d; dimBlock = %d %d %d\n", dimGrid.x, dimGrid.y, dimGrid.z, dimBlock.x, dimBlock.y, dimBlock.z);
+   fflush(stdout);
+#endif
+
+   hrt_start();
+   GCD_Compare_All<<<dimGrid, dimBlock>>>(dev_x, dev_gcd, dev_coords, numBlocks);
+   fprintf(stderr, "%s\n", cudaGetErrorString(cudaGetLastError()));
+   cudaThreadSynchronize();
+   fprintf(stderr, "%s\n", cudaGetErrorString(cudaGetLastError()));
+
+   hrt_stop();
+   fprintf(stderr, "Kernel took %s.\n", hrt_string());
+
+   ret = cudaMemcpy(gcd_res, dev_gcd, dev_gcdSize, cudaMemcpyDeviceToHost);
+#ifdef DEBUG
+   printf("memcopy: %d\n", ret);
+#endif
+
+   for (int k = 0; k < numBlocks; ++k) {
+//      printf("k = %d\n", k);
+      printf("k = %d %x\n", k, gcd_res[k]);
+      /*
+      for (int i = 0; i < BLKDIM; ++i)
+         for (int j = 0; j < BLKDIM; ++j) {
+               int x = i + BLKDIM * coords[k].x;
+               int y = j + BLKDIM * coords[k].y;
+
+               if(x > y )
+               {
+                  printf("x\n");
+                  printNumHex(num_x[x]);
+                  printf("y\n");
+                  printNumHex(num_x[y]);
+
+                  printf("k = %d i = %d j = %d\n", k, x, y);
+                  printNumHex(gcd_res + NUM_INTS * (BLKDIM * (k * BLKDIM + j)+ i));
+               }
+         }
+         */
+   }
+
+   free(gcd_res);
+   return 0;
+}
+
