@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.4-1.40.13 (TeX Live 2012/Arch Linux) (format=latex 2013.2.23)  26 MAR 2013 18:39
+This is pdfTeX, Version 3.1415926-2.4-1.40.13 (TeX Live 2012/Arch Linux) (format=latex 2013.3.28)  2 APR 2013 01:08
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -280,36 +280,101 @@ Package: array 2008/09/09 v2.4c Tabular extension package (FMi)
 \NC@list=\toks22
 \extratabsurround=\skip47
 \backup@length=\skip48
+)
+(/usr/share/texmf-dist/tex/latex/algorithm2e/algorithm2e.sty
+Package: algorithm2e 2008/00/00 v3.10 algorithms environments
+\c@AlgoLine=\count114
+
+(/usr/share/texmf-dist/tex/latex/base/ifthen.sty
+Package: ifthen 2001/05/26 v1.1c Standard LaTeX ifthen package (DPC)
+)
+(/usr/share/texmf-dist/tex/latex/tools/xspace.sty
+Package: xspace 2009/10/20 v1.13 Space after command names (DPC,MH)
+)
+(/usr/share/texmf-dist/tex/latex/relsize/relsize.sty
+Package: relsize 2011/09/21 ver 4.0
+
+Examine \normalsize starts \fontsize size may be 14.5. 
+Examine \small starts \fontsize size may be 13.6. 
+Examine \footnotesize starts \fontsize size may be 12. 
+Examine \large starts \fontsize size may be 18pt. 
+Examine \Large starts \fontsize size may be 22pt. 
+Examine \LARGE starts \fontsize size may be 25pt. 
+Examine \scriptsize starts \fontsize size may be 9.5pt. 
+Examine \tiny starts \fontsize size may be 7pt. 
+Examine \huge starts \fontsize size may be 30pt. 
+Examine \Huge starts \fontsize size may be 30pt. 
+
+Package relsize Warning: Failed to get list of defined font sizes.
+(relsize)                Size scaling will attempt arbitrary sizes..
+
+)
+********************************************************
+Package `algorithm2e' Release 4.01 -- december 14 2009 --
+- algorithm2e-announce@lirmm.fr mailing list for announcement about releases
+- algorithm2e-discussion@lirmm.fr mailing list for discussion about package
+subscribe by emailing sympa@lirmm.fr with 'subscribe <list> <firstname name>'
+- Author: Christophe Fiorio (fiorio@lirmm.fr)
+********************************************************
+\skiptotal=\skip49
+\skiplinenumber=\skip50
+\skiprule=\skip51
+\skiphlne=\skip52
+\skiptext=\skip53
+\skiplength=\skip54
+\algomargin=\skip55
+\skipalgocfslide=\skip56
+\algowidth=\dimen128
+\inoutsize=\dimen129
+\inoutline=\dimen130
+\interspacetitleruled=\dimen131
+\interspacealgoruled=\dimen132
+\interspacetitleboxruled=\dimen133
+\algocf@inoutbox=\box28
+\algocf@inputbox=\box29
+\AlCapSkip=\skip57
+\AlCapHSkip=\skip58
+\algocf@nlbox=\box30
+\algocf@hangingbox=\box31
+\algocf@capbox=\box32
+\algoheightruledefault=\skip59
+\algoheightrule=\skip60
+\algotitleheightruledefault=\skip61
+\algotitleheightrule=\skip62
+\c@algocfline=\count115
+\c@algocfproc=\count116
+\c@algocf=\count117
+\algocf@algoframe=\box33
+\algocf@algobox=\box34
 ) (./Paris.aux)
 \openout1 = `Paris.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 56.
-LaTeX Font Info:    ... okay on input line 56.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 56.
-LaTeX Font Info:    ... okay on input line 56.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 56.
-LaTeX Font Info:    ... okay on input line 56.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 56.
-LaTeX Font Info:    ... okay on input line 56.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 56.
-LaTeX Font Info:    ... okay on input line 56.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 56.
-LaTeX Font Info:    ... okay on input line 56.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 56.
-LaTeX Font Info:    ... okay on input line 56.
-
-(/usr/share/texmf-dist/tex/context/base/supp-pdf.mkii
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 58.
+LaTeX Font Info:    ... okay on input line 58.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 58.
+LaTeX Font Info:    ... okay on input line 58.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 58.
+LaTeX Font Info:    ... okay on input line 58.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 58.
+LaTeX Font Info:    ... okay on input line 58.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 58.
+LaTeX Font Info:    ... okay on input line 58.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 58.
+LaTeX Font Info:    ... okay on input line 58.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 58.
+LaTeX Font Info:    ... okay on input line 58.
+ (/usr/share/texmf-dist/tex/context/base/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
-\scratchcounter=\count114
-\scratchdimen=\dimen128
-\scratchbox=\box28
-\nofMPsegments=\count115
-\nofMParguments=\count116
+\scratchcounter=\count118
+\scratchdimen=\dimen134
+\scratchbox=\box35
+\nofMPsegments=\count119
+\nofMParguments=\count120
 \everyMPshowfont=\toks23
-\MPscratchCnt=\count117
-\MPscratchDim=\dimen129
-\MPnumerator=\count118
-\makeMPintoPDFobject=\count119
+\MPscratchCnt=\count121
+\MPscratchDim=\dimen135
+\MPnumerator=\count122
+\makeMPintoPDFobject=\count123
 \everyMPtoPDFconversion=\toks24
 ) (/usr/share/texmf-dist/tex/latex/oberdiek/epstopdf-base.sty
 Package: epstopdf-base 2010/02/09 v2.5 Base part for package epstopdf
@@ -326,7 +391,7 @@ G,.JBIG2,.JB2,.eps]
 File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Liv
 e
 ))
-\AtBeginShipoutBox=\box29
+\AtBeginShipoutBox=\box36
 
 (/usr/share/texmf-dist/tex/latex/graphics/color.sty
 Package: color 2005/11/14 v1.0j Standard LaTeX Color (DPC)
@@ -336,7 +401,7 @@ File: color.cfg 2007/01/18 v1.5 color configuration of teTeX/TeXLive
 )
 Package color Info: Driver file: pdftex.def on input line 130.
 )
-Package hyperref Info: Link coloring ON on input line 56.
+Package hyperref Info: Link coloring ON on input line 58.
 
 (/usr/share/texmf-dist/tex/latex/hyperref/nameref.sty
 Package: nameref 2012/10/27 v2.43 Cross-referencing by name of section
@@ -344,11 +409,11 @@ Package: nameref 2012/10/27 v2.43 Cross-referencing by name of section
 (/usr/share/texmf-dist/tex/generic/oberdiek/gettitlestring.sty
 Package: gettitlestring 2010/12/03 v1.4 Cleanup title references (HO)
 )
-\c@section@level=\count120
+\c@section@level=\count124
 )
-LaTeX Info: Redefining \ref on input line 56.
-LaTeX Info: Redefining \pageref on input line 56.
-LaTeX Info: Redefining \nameref on input line 56.
+LaTeX Info: Redefining \ref on input line 58.
+LaTeX Info: Redefining \pageref on input line 58.
+LaTeX Info: Redefining \nameref on input line 58.
  (./Paris.out)
 (./Paris.out)
 \@outlinefile=\write3
@@ -392,102 +457,160 @@ LaTeX Info: Redefining \nameref on input line 56.
 [1
 
 {/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}]
-LaTeX Font Info:    Try loading font information for OMS+cmr on input line 68.
+LaTeX Font Info:    Try loading font information for OMS+cmr on input line 70.
 
 (/usr/share/texmf-dist/tex/latex/base/omscmr.fd
 File: omscmr.fd 1999/05/25 v2.5h Standard LaTeX font definitions
 )
 LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <12> not available
-(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 68.
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 70.
  [2]
-LaTeX Font Info:    Try loading font information for U+msa on input line 70.
+LaTeX Font Info:    Try loading font information for U+msa on input line 72.
 
 (/usr/share/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2009/06/22 v3.00 AMS symbols A
 )
-LaTeX Font Info:    Try loading font information for U+msb on input line 70.
+LaTeX Font Info:    Try loading font information for U+msb on input line 72.
 
 (/usr/share/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2009/06/22 v3.00 AMS symbols B
-) [3] [4] (./Paris.toc)
+) [3] [4] (./Paris.toc
+[5
+
+])
 \tf@toc=\write4
 \openout4 = `Paris.toc'.
 
-
-[5
-
-] (./Paris.lot)
+ [6] (./Paris.lot)
 \tf@lot=\write5
 \openout5 = `Paris.lot'.
 
- [6
+ [7
 
 ] (./Paris.lof)
 \tf@lof=\write6
 \openout6 = `Paris.lof'.
 
- [7
+ [8
 
 ]
 Chapter 1.
+
+LaTeX Warning: Citation `rsa' on page 1 undefined on input line 128.
+
 pdfTeX warning (ext4): destination with the same identifier (name{page.1}) has 
 been already used, duplicate ignored
 <to be read again> 
                    \relax 
-l.120 \chapter
-              {Background} [1
+l.141 
+       [1
 
 ]
-Chapter 2.
-[2
 
-] <vulnerability.png, id=172, 1498.59875pt x 848.16875pt>
+LaTeX Warning: Citation `lenstra:ron' on page 2 undefined on input line 142.
+
+
+LaTeX Warning: Citation `lenstra:ron' on page 2 undefined on input line 154.
+
+[2]
+
+LaTeX Warning: Citation `henrysolving' on page 3 undefined on input line 169.
+
+
+LaTeX Warning: Citation `nvidia2012programming' on page 3 undefined on input li
+ne 187.
+
+[3] [4] [5] [6]
+
+LaTeX Warning: Citation `stein1967computational' on page 7 undefined on input l
+ine 310.
+
+
+LaTeX Warning: Citation `vallee1998complete' on page 7 undefined on input line 
+311.
+
+[7] [8] <chart_7.png, id=378, 602.25pt x 372.39125pt>
+File: chart_7.png Graphic file (type png)
+ <use chart_7.png>
+Package pdftex.def Info: chart_7.png used on input line 348.
+(pdftex.def)             Requested size: 252.94499pt x 156.40324pt.
+
+[9 <./chart_7.png (PNG copy)>] <chart_6.png, id=385, 602.25pt x 372.39125pt>
+File: chart_6.png Graphic file (type png)
+
+<use chart_6.png>
+Package pdftex.def Info: chart_6.png used on input line 379.
+(pdftex.def)             Requested size: 252.94499pt x 156.40324pt.
+ [10] [11 <./chart_6.png (PNG copy)>] [12]
+
+LaTeX Warning: Citation `nvidia2012gpu' on page 13 undefined on input line 468.
+
+
+[13] [14]
+
+LaTeX Warning: Citation `lenstra:ron' on page 15 undefined on input line 554.
+
+[15] [16] <chart_1.png, id=428, 602.25pt x 372.39125pt>
+File: chart_1.png Graphic file (type png)
+ <use chart_1.png>
+Package pdftex.def Info: chart_1.png used on input line 588.
+(pdftex.def)             Requested size: 252.94499pt x 156.40324pt.
+
+[17 <./chart_1.png (PNG copy)>] [18]
+
+LaTeX Warning: Citation `nvidiakepler' on page 19 undefined on input line 704.
+
+[19] [20]
+Chapter 2.
+[21
+
+] <vulnerability.png, id=454, 1498.59875pt x 848.16875pt>
 File: vulnerability.png Graphic file (type png)
 
 <use vulnerability.png>
-Package pdftex.def Info: vulnerability.png used on input line 144.
+Package pdftex.def Info: vulnerability.png used on input line 746.
 (pdftex.def)             Requested size: 411.93878pt x 233.13712pt.
- [3 <./vulnerability.png>] [4]
-<x509.png, id=196, 765.86125pt x 550.055pt>
+ [22 <./vulnerability.png>] [23]
+<x509.png, id=478, 765.86125pt x 550.055pt>
 File: x509.png Graphic file (type png)
  <use x509.png>
-Package pdftex.def Info: x509.png used on input line 218.
+Package pdftex.def Info: x509.png used on input line 820.
 (pdftex.def)             Requested size: 205.96939pt x 147.9293pt.
 
-<tls.jpg, id=198, 702.625pt x 732.7375pt>
+<tls.jpg, id=480, 702.625pt x 732.7375pt>
 File: tls.jpg Graphic file (type jpg)
  <use tls.jpg>
-Package pdftex.def Info: tls.jpg used on input line 225.
+Package pdftex.def Info: tls.jpg used on input line 827.
 (pdftex.def)             Requested size: 205.96939pt x 214.79164pt.
- [5] [6 <./x509.png> <./tls.jpg>] [7] [8] <cert_security.png, id=234, 602.25pt 
-x 372.39125pt>
+ [24] [25 <./x509.png> <./tls.jpg>] [26] [27] <cert_security.png, id=514, 602.2
+5pt x 372.39125pt>
 File: cert_security.png Graphic file (type png)
 
 <use cert_security.png>
-Package pdftex.def Info: cert_security.png used on input line 315.
+Package pdftex.def Info: cert_security.png used on input line 917.
 (pdftex.def)             Requested size: 308.95409pt x 191.0421pt.
- [9] <bit_length.png, id=241, 602.25pt x 372.39125pt>
+ [28] <bit_length.png, id=521, 602.25pt x 372.39125pt>
 File: bit_length.png Graphic file (type png)
 
 <use bit_length.png>
-Package pdftex.def Info: bit_length.png used on input line 341.
+Package pdftex.def Info: bit_length.png used on input line 943.
 (pdftex.def)             Requested size: 308.95409pt x 191.0421pt.
- [10 <./cert_security.png (PNG copy)>] [11 <./bit_length.png (PNG copy)>] [12] 
-[13]
+ [29 <./cert_security.png (PNG copy)>] [30 <./bit_length.png (PNG copy)>] [31] 
+[32]
 Chapter 3.
-[14
+[33
 
-] [15] [16]
-Overfull \hbox (0.9246pt too wide) in paragraph at lines 542--547
+] [34] [35]
+Overfull \hbox (0.9246pt too wide) in paragraph at lines 1144--1149
 []\OT1/cmr/m/n/12 Significant ad-di-tional speedups were gained, rang-ing up to
  three times speedup
  []
 
-[17] [18] [19] [20] [21]
+[36] [37] [38] [39] [40]
 Chapter 4.
-[22
+[41
 
-] [23] (./Paris.bbl
+] [42] (./Paris.bbl
 Underfull \hbox (badness 10000) in paragraph at lines 30--35
 []\OT1/cmr/m/n/12 C. Fu.  Chunk-ing data across mul-ti-ple C++ AMP ker-nels.
  []
@@ -498,40 +621,50 @@ Underfull \hbox (badness 10000) in paragraph at lines 30--35
 rchive / 2012 / 03 /
  []
 
-[24
+[43
 
 
-] [25])
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 707.
- [26]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 707.
+] [44])
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 1309.
+ [45]
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 1309.
  (./Paris.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 707.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 707.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 1309.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 1309.
+
 Package rerunfilecheck Info: File `Paris.out' has not changed.
-(rerunfilecheck)             Checksum: 62F8E736D27C327279B69162544D06E6;1227.
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 707.
+(rerunfilecheck)             Checksum: 34FFF1127E78D6F9BC0D015FFB44EA1B;2651.
+
+
+LaTeX Warning: There were undefined references.
+
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 1309.
  ) 
 Here is how much of TeX's memory you used:
- 6717 strings out of 493489
- 95221 string characters out of 3146915
- 186719 words of memory out of 3000000
- 9852 multiletter control sequences out of 15000+200000
- 12624 words of font info for 49 fonts, out of 3000000 for 9000
+ 8012 strings out of 493489
+ 112167 string characters out of 3146915
+ 222057 words of memory out of 3000000
+ 11043 multiletter control sequences out of 15000+200000
+ 12933 words of font info for 50 fonts, out of 3000000 for 9000
  957 hyphenation exceptions out of 8191
- 29i,10n,30p,319b,422s stack positions out of 5000i,500n,10000p,200000b,50000s
+ 30i,18n,30p,319b,524s stack positions out of 5000i,500n,10000p,200000b,50000s
 </usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/share/
-texmf-dist/fonts/type1/public/amsfonts/cm/cmmi12.pfb></usr/share/texmf-dist/fon
-ts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texmf-dist/fonts/type1/public
-/amsfonts/cm/cmr12.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cm
-r7.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/sha
-re/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texmf-dist/
-fonts/type1/public/amsfonts/cm/cmti12.pfb></usr/share/texmf-dist/fonts/type1/pu
-blic/amsfonts/cm/cmtt12.pfb>
-Output written on Paris.pdf (33 pages, 530329 bytes).
+texmf-dist/fonts/type1/public/amsfonts/cm/cmbx8.pfb></usr/share/texmf-dist/font
+s/type1/public/amsfonts/cm/cmex10.pfb></usr/share/texmf-dist/fonts/type1/public
+/amsfonts/cm/cmmi12.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/c
+mmi6.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/
+share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texmf-dis
+t/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/share/texmf-dist/fonts/type1/p
+ublic/amsfonts/cm/cmr6.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/c
+m/cmr7.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr
+/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texmf-d
+ist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/share/texmf-dist/fonts/type1
+/public/amsfonts/cm/cmti12.pfb></usr/share/texmf-dist/fonts/type1/public/amsfon
+ts/cm/cmtt12.pfb>
+Output written on Paris.pdf (53 pages, 666530 bytes).
 PDF statistics:
- 423 PDF objects out of 1000 (max. 8388607)
- 368 compressed objects within 4 object streams
- 81 named destinations out of 1000 (max. 500000)
- 194 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 738 PDF objects out of 1000 (max. 8388607)
+ 651 compressed objects within 7 object streams
+ 169 named destinations out of 1000 (max. 500000)
+ 385 words of extra memory for PDF output out of 10000 (max. 10000000)
 

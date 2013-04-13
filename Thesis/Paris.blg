@@ -5,13 +5,21 @@ The style file: abbrv.bst
 Database file #1: references.bib
 Warning--entry type for "charles2012chunking" isn't style-file defined
 --line 74 of file references.bib
-Warning--to sort, need author or key in tlsconcepts
+Warning--I didn't find a database entry for "rsa"
+Warning--I didn't find a database entry for "lenstra:ron"
+Warning--I didn't find a database entry for "henrysolving"
+Warning--I didn't find a database entry for "nvidia2012programming"
+Warning--I didn't find a database entry for "stein1967computational"
+Warning--I didn't find a database entry for "vallee1998complete"
+Warning--I didn't find a database entry for "nvidia2012gpu"
+Warning--I didn't find a database entry for "nvidiakepler"
 Warning--to sort, need author or key in rsa2004announces
 Warning--to sort, need author or key in rsa2004supports
+Warning--to sort, need author or key in tlsconcepts
 Warning--to sort, need author or key in rsa2007challenge
 You've used 16 entries,
             2118 wiz_defined-function locations,
-            581 strings with 6762 characters,
+            589 strings with 6874 characters,
 and the built_in function-call counts, 5157 in all, are:
 = -- 514
 > -- 212
@@ -50,4 +58,4 @@ warning$ -- 4
 while$ -- 44
 width$ -- 18
 write$ -- 173
-(There were 5 warnings)
+(There were 13 warnings)

@@ -1,9 +1,12 @@
 \addvspace {10\p@ }
+\contentsline {figure}{\numberline {1.1}{\ignorespaces Total percentage of CUDA implementation that is parallel}}{9}{figure.1.1}
+\contentsline {figure}{\numberline {1.2}{\ignorespaces Number of comparisons needed vs. total number of keys in set}}{11}{figure.1.2}
+\contentsline {figure}{\numberline {1.3}{\ignorespaces Speedup of CUDA Implementation to Sequential C++}}{17}{figure.1.3}
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {2.1}{\ignorespaces Explanation of poor-prime vulnerability}}{3}{figure.2.1}
-\contentsline {figure}{\numberline {2.2}{\ignorespaces X.509 Fields\cite {holz2011ssl}}}{6}{figure.2.2}
-\contentsline {figure}{\numberline {2.3}{\ignorespaces TLS Overview\cite {tlsconcepts}}}{6}{figure.2.3}
-\contentsline {figure}{\numberline {2.4}{\ignorespaces Presence of RSA key or other security in Alexa top 1M sites}}{10}{figure.2.4}
-\contentsline {figure}{\numberline {2.5}{\ignorespaces Breakdown of Alexa top 1M sites' RSA keys by bit-length}}{11}{figure.2.5}
+\contentsline {figure}{\numberline {2.1}{\ignorespaces Explanation of poor-prime vulnerability}}{22}{figure.2.1}
+\contentsline {figure}{\numberline {2.2}{\ignorespaces X.509 Fields\cite {holz2011ssl}}}{25}{figure.2.2}
+\contentsline {figure}{\numberline {2.3}{\ignorespaces TLS Overview\cite {tlsconcepts}}}{25}{figure.2.3}
+\contentsline {figure}{\numberline {2.4}{\ignorespaces Presence of RSA key or other security in Alexa top 1M sites}}{29}{figure.2.4}
+\contentsline {figure}{\numberline {2.5}{\ignorespaces Breakdown of Alexa top 1M sites' RSA keys by bit-length}}{30}{figure.2.5}
 \addvspace {10\p@ }
 \addvspace {10\p@ }

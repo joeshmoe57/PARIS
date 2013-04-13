@@ -1,7 +1,7 @@
 CC=gcc
 GPP=g++
 NVCC=nvcc
-NVFLAGS= 
+NVFLAGS=
 MEMFLAGS=-Xptxas="-v"
 ARCHFLAGS=-arch=compute_30 -code=sm_30
 CFLAGS=-g -O3 -Wall -Werror -std=c99
@@ -59,13 +59,13 @@ getKeys.o: getKeys.cpp sqlite3.o libcrypto.a libssl.a cfmemopen.o
 	$(GPP) $(PFLAGS) -o $@ -c $^
 
 sqlite3.o: sqlite3.c
-	$(CC) $(CFLAGS) -o $@ -c $^ $(LFLAGS) 
+	$(CC) $(CFLAGS) -o $@ -c $^ $(LFLAGS)
 
 cfmemopen.o: cfmemopen.c
 	$(GPP) $(PFLAGS) -o $@ -c $^ $(LFLAGS)
 
 cudaGCD: cudaGCD.cu keyMath.o globals.h getKeys.o sqlite3.o libcrypto.a libssl.a cfmemopen.o
-	$(NVCC) $(ARCHFLAGS) -o $@ cudaGCD.cu keyMath.o getKeys.o sqlite3.o libcrypto.a libssl.a cfmemopen.o  $(LFLAGS)
+	$(NVCC) $(ARCHFLAGS) -o $@ cudaGCD.cu keyMath.o getKeys.o sqlite3.o libcrypto.a libssl.a cfmemopen.o $(LFLAGS)
 
 seqGCD: seqGCD.cpp keyMath.o globals.h getKeys.o sqlite3.o libcrypto.a libssl.a cfmemopen.o
 	$(GPP) $(PFLAGS) -o $@ seqGCD.cpp keyMath.o getKeys.o sqlite3.o libcrypto.a libssl.a cfmemopen.o $(LFLAGS)

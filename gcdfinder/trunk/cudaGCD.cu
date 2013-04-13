@@ -9,7 +9,7 @@ extern "C" {
 
 //Kernel Function
 /* TODO Figure out if de_coords could be moved into shared memory */
-__global__ void GCD_Compare_All(unsigned *x_dev, uint16_t *gcd_dev, xyCoord * dev_coord, int numBlocks) {
+__global__ void GCD_Compare_All(uint32_t * x_dev, uint16_t * gcd_dev, xyCoord * dev_coord, int numBlocks) {
    //Load up shared memory
    __shared__ volatile unsigned int x[BLKDIM][BLKDIM][NUM_INTS];
    __shared__ volatile unsigned int y[BLKDIM][BLKDIM][NUM_INTS];
@@ -24,6 +24,10 @@ __global__ void GCD_Compare_All(unsigned *x_dev, uint16_t *gcd_dev, xyCoord * de
       int keyX = tidx + NUM_INTS * (tidy + coord.x * BLKDIM);
       int keyY = tidx + NUM_INTS * (tidz + coord.y * BLKDIM);
 
+      // if (coord.x == coord.y)
+      //    we're on a diagonal, and should only use tidy > tidz
+      // else // coord.x > coord.y)
+      //    we must do an entire 4x4 block
       if (coord.x != coord.y || tidy > tidz) {
          //Check this!! - FIX THIS
          //if(/*tidy == 0 && tidz == 0 && */tidx < NUM_INTS && tidy < BLKDIM && tidz < BLKDIM) {
@@ -159,7 +163,7 @@ __device__ void cusubtract(volatile unsigned *x, volatile unsigned *y, volatile 
    z[tid] = t;
 }
 
-
+// TODO document
 void dimConversion(int numBlocks, int width, xyCoord * coords) {
    int x = 0, y = 0;
    for (int i = 0; i < numBlocks; ++i) {
@@ -172,43 +176,22 @@ void dimConversion(int numBlocks, int width, xyCoord * coords) {
    }
 }
 
-int main(int argc, char**argv) {
-   long totalNumKeys;
-   std::vector<RSA*> privKeys;
-   uint32_t *keys;
-
-   if(argc != 2) {
-       printf("Wrong number of args (Only number of keys)");
-       exit(1);
-   }
-
-   //get number of keys to process
-   sscanf(argv[1], "%d", &totalNumKeys);
-   // TODO assumption that totalNumKeys is a multiple of BLKDIM is being made
-
-   if((keys = (uint32_t *) malloc(totalNumKeys * NUM_INTS * sizeof(uint32_t)))
-       == 0) {
-      perror("Cannot Malloc Key Vector");
-      exit(1);
-   }
-
-   totalNumKeys = getAllKeys(KEYS_DB, totalNumKeys, &privKeys, keys);
-
-   dprint("getKeys returns %d\n", totalNumKeys);
-
-   // Print what is at memory where the keys will be going
-   /*
-#if DEBUG
-   for (int i = 0; i < totalNumKeys; ++i) 
-      printNumHex(keys + i * NUM_INTS);
-   fflush(stdout);
-#endif
-*/
-
-   /* This is a modified version of the geometic expansion of the sum from 1 to totalNumKeys/BLKDIM*/
-   /* This is also a generic solution that allows for multiple versions of BLKDIM. Since for our implementation, this value is fixed, one could also just use:
-    * int numBlocks = (totalNumKeys * totalNumKeys + 4 * totalNumKeys) >> 5;
-    */
+/* This is a modified version of the geometic expansion of:
+ *    sum from 1 to keys/BLKDIM 
+ * That is,
+ * sum(x, 1, n) = 1/2 * n * (n + 1)
+ * So,
+ * sum(x, 1, keys / BLKDIM)
+ *    === 1/2 * (keys / BLKDIM) * (keys / BLKDIM + 1)
+ *    === 1/2 * ((keys / BLKDIM) ^ 2 + keys / BLKDIM)
+ *    === 1/2 * (1 / BLKDIM ^ 2) * (keys ^ 2 + BLKDIM * keys)
+ *
+ * This is also a generic solution that allows for multiple versions of BLKDIM.
+ * Since for our implementation, this value is fixed, one could also just use:
+ * numBlocks = (keys * keys + 4 * keys) >> 5;
+ */
+long calculateNumberOfBlocks(long keys) {
+   // TODO this algorithm assumes BLKDIM ^ 2 is a power of 2
    int sq = BLKDIM * BLKDIM * 2;
    int shift = 0;
    while (!(sq & 1)) {
@@ -216,78 +199,198 @@ int main(int argc, char**argv) {
       ++shift;
    }
 
-   dprint("totalNumKeys = %d; shift = %d\n", totalNumKeys, shift);
+   dprint("keys = %d; shift = %d\n", keys, shift);
+   int rem = keys % BLKDIM > 0 ? 1 : 0;
 
-   /* TODO Assumes totalNumberOfKeys is less than sqrt(INT_MAX) */ 
-   long numBlocks = (totalNumKeys * totalNumKeys + BLKDIM * totalNumKeys) >> (shift);
-   printf("totalNumKeys = %d; BLKDIM = %d; shift = %d\n product = %d product = %d\n", 
-         totalNumKeys, BLKDIM, shift, totalNumKeys * totalNumKeys, BLKDIM * totalNumKeys);
+   //return (keys * keys + BLKDIM * keys) >> (shift);
+   return 1/2.0 * (( keys / BLKDIM + rem) * (keys / BLKDIM + rem) +  keys / BLKDIM + rem); 
+}
 
-   dprint("numBlocks = %ld\n", numBlocks);
+/* In order to maximize the number of keys processed per card, the amount of
+ * free memory is queried, and used to obtain a maximal number of keys based on
+ * the known memory contraints and formulas.
+ *
+ * The value returned corresponds to the maximal number of keys that can be
+ * completely processed on the provided device.
+ */
+long calculateMaxKeysForDevice(int deviceNumber) {
+   size_t f = 0, t = 0;
+   cudaSetDevice(deviceNumber);
+   cudaMemGetInfo(&f, &t);
+   dprint("Free: %ld Total: %ld\n", (long) f, (long) t);
 
-   //unsigned int *gcd_res = (unsigned int * ) malloc(numBlocks * BLKDIM * BLKDIM * NUM_INTS * sizeof(int));
-   uint16_t * gcd_res = (uint16_t * ) malloc(numBlocks * sizeof(uint16_t));
-   if (gcd_res == NULL) {
-      fprintf(stderr, "Error with malloc\n");
+   // For the current implementation, limited to 4x4 blocks, and 1024-bit keys,
+   // The following is a manipulation of the quadratic formula
+   long A = 3;
+   long B;
+   //if (diagonal) {
+      // B will always be 2060
+      //B = BLKDIM * (BLKDIM * BYTES_PER_KEY + A);
+   //} else {
+      // B will always be 3072 
+      B = BLKDIM * BLKDIM * (BYTES_PER_KEY + BYTES_PER_KEY / 2);
+   //}
+   long C = BLKDIM * BLKDIM * t;
+
+   return (long) ((1.0/(2 * A)) * (-B + sqrt(B * B + 4 * A * C)));
+}
+
+/* Calculates the number of total kernel launches necessary for a set of divisions.
+ * Based on the way we are dividing the matrix (into 4 parts each time), this
+ * value will just be increasing powers of 4.
+ */
+int calculateNumberOfKernelLaunches(int numDivisions) {
+   int kernels = 1;
+   int i;
+   for (i = 1; i < numDivisions; ++i) {
+      kernels *= 4;
+   }
+   return kernels;
+}
+
+/* Calculates the indices in the key list where segmentations will occur. 
+ * This function returns a pointer to the list of indices; the caller is
+ * responsible for freeing this memory.
+ */
+int * calculateKeyListSegments(unsigned long numKeys, int segments) {
+   int leftOverKeys = numKeys % segments;
+   dprint("%d\n", leftOverKeys);
+   int stepBase = numKeys / segments;
+   dprint("%d\n", stepBase);
+
+   int * indexList = (int *) malloc(segments * sizeof(int));
+
+   int i = 0;
+   indexList[i] = stepBase;
+   do {
+      // This is the remainder of keys, and gets distributed to the segments
+      // as soon as possible. 
+      // Notice the final index of the list is not checked for this:
+      // if it was the case that leftOvers > 0 on the last index, it wouldn't
+      // be a remainder since this implies leftOverKeys == segments
+      if (leftOverKeys > 0) {
+         indexList[i] = indexList[i] + 1;
+         --leftOverKeys;
+      }
+      ++i;
+      indexList[i] = stepBase + indexList[i - 1];
+   } while (i < segments - 1);
+
+   if (leftOverKeys > 0)
+      fprintf(stderr, "ERROR: Left over keys remain after assigning indices.\n");
+
+   return indexList;
+}
+
+int main(int argc, char**argv) {
+   unsigned long totalNumKeys;
+   std::vector<RSA*> privKeys;
+   uint32_t *keys;
+   // This holds the the number of times the key set will be divided so that 
+   // results will fit onto the GPU. 
+   // Note: this is not the same as the number of kernels that will be launched.
+   int segmentDivisionFactor = 1;
+
+   if(argc != 2) {
+       printf("Wrong number of args (Only number of keys)");
+       exit(1);
+   }
+   
+   // TODO use args not scanf
+   //get number of keys to process
+   sscanf(argv[1], "%lu", &totalNumKeys);
+
+   // TODO assumption that totalNumKeys is a multiple of BLKDIM is being made
+   if((keys = (uint32_t *) malloc(totalNumKeys * NUM_INTS * sizeof(uint32_t)))
+       == NULL) {
+      perror("Cannot malloc Key Vector");
       exit(-1);
    }
 
-   xyCoord * coords = (xyCoord * ) malloc(numBlocks * sizeof(xyCoord));
+   totalNumKeys = getAllKeys(KEYS_DB, totalNumKeys, &privKeys, keys);
+   dprint("getKeys returns %d\n", totalNumKeys);
 
+   int device = 0;
+   int maxKeys = calculateMaxKeysForDevice(device);
+   dprint("maxKeys = %ld\n", maxKeys);
+
+   unsigned long keysSegmentSize = totalNumKeys;
+   while (keysSegmentSize > maxKeys) {
+      segmentDivisionFactor <<= 1;
+      keysSegmentSize >>= 1;
+   }
+   dprint("segment factor: %ld\n", segmentDivisionFactor);
+   dprint("total / segment factor: %ld\n", totalNumKeys / segmentDivisionFactor);
+   dprint("keysSegmentSize: %ld\n", keysSegmentSize);
+   int numberOfKernelLaunches =
+      calculateNumberOfKernelLaunches(segmentDivisionFactor);
+   dprint("number of kernel launches: %d\n", numberOfKernelLaunches);
+
+   int * segmentIndices = calculateKeyListSegments(totalNumKeys, segmentDivisionFactor);
+   for (int i = 0; i < segmentDivisionFactor; ++i)
+      dprint("i = %d | %d\n", i, segmentIndices[i]);
+
+   for (int i = 0; i < numberOfKernelLaunches; ++i) {
+      int currentNumKeys = totalNumKeys / segmentDivisionFactor;
+   }
+
+   /* TODO Assumes totalNumberOfKeys is less than sqrt(LONG_MAX) */ 
+   long numBlocks = calculateNumberOfBlocks(totalNumKeys);
+   dprint("numBlocks = %ld\n", numBlocks);
+
+   xyCoord * coords;
+   if ((coords = (xyCoord * ) malloc(numBlocks * sizeof(xyCoord))) == NULL) {
+      perror("Cannot malloc space for coordinates");
+      exit(-1);
+   }
    dprint("calling dimConversion with %d, %d\n", numBlocks, totalNumKeys / BLKDIM);
-
    dimConversion(numBlocks, totalNumKeys / BLKDIM, coords);
-
-   // Print the coordinates of the blocks if they were in a square
 
    /*
 #if DEBUG
+   // Print the coordinates of the blocks if they were in a square
    for (int i = 0; i < numBlocks; ++i) 
       printf("(%d, %d)\n", coords[i].x, coords[i].y);
    fflush(stdout);
 #endif
 */
 
-   unsigned int * dev_keys;
+   uint16_t * gcd_res;
+   if ((gcd_res = (uint16_t *) malloc(numBlocks * sizeof(uint16_t))) == NULL) {
+      perror("Cannot malloc space for gcd results");
+      exit(-1);
+   }
+
+   uint32_t * dev_keys;
    uint16_t * dev_gcd;
    xyCoord * dev_coords;
 
-   int ret = 0;
    /* Sizes added since they are used many times. Trying to keep consistency 
     * so changes don't break things.*/
-   int dev_keysSize = totalNumKeys * NUM_INTS * sizeof(int);
-   //int dev_gcdSize = numBlocks * BLKDIM * BLKDIM * NUM_INTS * sizeof(int);
-   int dev_gcdSize = numBlocks * sizeof(uint16_t);
+   unsigned int dev_keysSize = totalNumKeys * NUM_INTS * sizeof(int);
+   unsigned int dev_gcdSize = numBlocks * sizeof(uint16_t);
+   unsigned int dev_coordSize = numBlocks * sizeof(xyCoord);
+   dprint("%u bytes for dev_keys\n", dev_keysSize);
+   dprint("%u bytes for dev_gcd\n", dev_gcdSize);
+   dprint("%u bytes for dev_coords\n", dev_coordSize);
+   dprint("%lu bytes for all\n", dev_keysSize + dev_gcdSize + dev_coordSize);
+
    memset(gcd_res, 0, dev_gcdSize);
 
-   ret = cudaMalloc((void **)&dev_keys, dev_keysSize);
+   cudaMalloc((void **)&dev_keys, dev_keysSize);
    dprint("cudaMalloc:%s\n", cudaGetErrorString(cudaGetLastError()));
+   cudaMemcpy(dev_keys, keys, dev_keysSize, cudaMemcpyHostToDevice);
+   dprint("cudaMemcpy:%s\n", cudaGetErrorString(cudaGetLastError()));
 
-   dprint("%d bytes for dev_keys\n", dev_keysSize);
-   dprint("malloc: %d\n", ret);
-   dprint("%d bytes for dev_gcd\n", dev_gcdSize);
-
-   ret = cudaMalloc((void **)&dev_gcd, dev_gcdSize);
+   cudaMalloc((void **)&dev_gcd, dev_gcdSize);
    dprint("cudaMalloc:%s\n", cudaGetErrorString(cudaGetLastError()));
    cudaMemcpy(dev_gcd, gcd_res, dev_gcdSize, cudaMemcpyHostToDevice);
    dprint("cudaMemcpy:%s\n", cudaGetErrorString(cudaGetLastError()));
 
-   dprint("malloc: %d\n", ret);
-
-   ret = cudaMalloc((void **)&dev_coords, numBlocks * sizeof(xyCoord));
+   cudaMalloc((void **)&dev_coords, dev_coordSize);
+   dprint("cudaMalloc:%s\n", cudaGetErrorString(cudaGetLastError()));
+   cudaMemcpy(dev_coords, coords, dev_coordSize, cudaMemcpyHostToDevice);
    dprint("cudaMemcpy:%s\n", cudaGetErrorString(cudaGetLastError()));
-
-   dprint("malloc: %d\n", ret);
-   
-   ret = cudaMemcpy(dev_coords, coords, numBlocks * sizeof(xyCoord), cudaMemcpyHostToDevice);
-   dprint("cudaMemcpy:%s\n", cudaGetErrorString(cudaGetLastError()));
-
-   dprint("memcopy: %d\n", ret);
-
-   ret = cudaMemcpy(dev_keys, keys, dev_keysSize, cudaMemcpyHostToDevice);
-   dprint("cudaMemcpy:%s\n", cudaGetErrorString(cudaGetLastError()));
-
-   dprint("memcopy: %d\n", ret);
 
    int dimGridx = numBlocks > MAX_BLOCK_DIM ? MAX_BLOCK_DIM : numBlocks;
    int dimy = 1 + numBlocks / MAX_BLOCK_DIM;
@@ -295,22 +398,25 @@ int main(int argc, char**argv) {
    dim3 dimGrid(dimGridx, dimGridy); 
    dim3 dimBlock(NUM_INTS, BLKDIM, BLKDIM);
 
-
-   dprint("dimGrid = %d %d %d; dimBlock = %d %d %d\n", dimGrid.x, dimGrid.y, dimGrid.z, dimBlock.x, dimBlock.y, dimBlock.z);
+   dprint("dimGrid = %d %d %d; dimBlock = %d %d %d\n", dimGrid.x, dimGrid.y,
+         dimGrid.z, dimBlock.x, dimBlock.y, dimBlock.z);
 
    //hrt_start();
    GCD_Compare_All<<<dimGrid, dimBlock>>>(dev_keys, dev_gcd, dev_coords, numBlocks);
    dprint("kernel:%s\n", cudaGetErrorString(cudaGetLastError()));
-   cudaThreadSynchronize();
-   dprint("cudaThreadSynchronize:%s\n", cudaGetErrorString(cudaGetLastError()));
+   cudaDeviceSynchronize();
+   dprint("cudaDeviceSynchronize:%s\n", cudaGetErrorString(cudaGetLastError()));
 
    //hrt_stop();
    //fprintf(stderr, "Kernel took %s.\n", hrt_string());
 
-   ret = cudaMemcpy(gcd_res, dev_gcd, dev_gcdSize, cudaMemcpyDeviceToHost);
+   // Copy the results from the card to the CPU
+   cudaMemcpy(gcd_res, dev_gcd, dev_gcdSize, cudaMemcpyDeviceToHost);
    dprint("cudaMemcpy:%s\n", cudaGetErrorString(cudaGetLastError()));
+   
+   // END GPU WORK
 
-   dprint("memcopy: %d\n", ret);
+   // open a file and write results into it
 
    for (int k = 0; k < numBlocks; ++k) {
       /* check this block for bad keys */
@@ -367,8 +473,9 @@ int main(int argc, char**argv) {
          }
          */
    }
-
+   free(keys);
    free(gcd_res);
+   free(coords);
    return 0;
 }
 

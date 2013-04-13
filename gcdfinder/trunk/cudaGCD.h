@@ -3,6 +3,7 @@
 #include <sys/resource.h>
 #include <errno.h>
 #include "hrt.h"
+#include <math.h>
 
 #include "getKeys.h"
 #include <vector>
@@ -39,3 +40,5 @@ __device__ void shiftL1(volatile unsigned *x);
 __device__ void cusubtract(volatile unsigned *x, volatile unsigned *y, volatile unsigned *z);
 __device__ int geq(volatile unsigned *x, volatile unsigned *y);
 void dimConversion(int numBlocks, int width, xyCoord * coords);
+long calculateNumberOfBlocks(long keys);
+long calculateMaxKeysForDevice(int deviceNumber);
