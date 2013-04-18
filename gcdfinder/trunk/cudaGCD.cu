@@ -8,8 +8,14 @@ extern "C" {
 }
 
 //Kernel Function
+
+__global__ void GCD_Compare_Upper(unsigned *x_dev, unsigned *y_dev, uint16_t *gcd_dev, int numBlocks) {
+}
+
 /* TODO Figure out if de_coords could be moved into shared memory */
-__global__ void GCD_Compare_All(uint32_t * x_dev, uint16_t * gcd_dev, xyCoord * dev_coord, int numBlocks) {
+/* TODO Kernel should handle blocks without data in the whole thing*/
+__global__ void GCD_Compare_Diagonal(uint32_t * x_dev, xyCoord * dev_coord,
+   uint16_t * gcd_dev, int numBlocks) {
    //Load up shared memory
    __shared__ volatile unsigned int x[BLKDIM][BLKDIM][NUM_INTS];
    __shared__ volatile unsigned int y[BLKDIM][BLKDIM][NUM_INTS];
@@ -164,6 +170,8 @@ __device__ void cusubtract(volatile unsigned *x, volatile unsigned *y, volatile 
 }
 
 // TODO document
+/* width is the number of blocks across the top of the matrix
+   */
 void dimConversion(int numBlocks, int width, xyCoord * coords) {
    int x = 0, y = 0;
    for (int i = 0; i < numBlocks; ++i) {
@@ -192,7 +200,7 @@ void dimConversion(int numBlocks, int width, xyCoord * coords) {
  */
 long calculateNumberOfBlocks(long keys) {
    // TODO this algorithm assumes BLKDIM ^ 2 is a power of 2
-   int sq = BLKDIM * BLKDIM * 2;
+   /*int sq = BLKDIM * BLKDIM * 2;
    int shift = 0;
    while (!(sq & 1)) {
       sq >>= 1;
@@ -200,10 +208,19 @@ long calculateNumberOfBlocks(long keys) {
    }
 
    dprint("keys = %d; shift = %d\n", keys, shift);
+   */
+
    int rem = keys % BLKDIM > 0 ? 1 : 0;
 
    //return (keys * keys + BLKDIM * keys) >> (shift);
-   return 1/2.0 * (( keys / BLKDIM + rem) * (keys / BLKDIM + rem) +  keys / BLKDIM + rem); 
+   return 1/2.0 * ((keys / BLKDIM + rem) * (keys / BLKDIM + rem) +  keys / BLKDIM + rem); 
+}
+
+long calculateNumberOfBlocks(long xKeys, long yKeys) {
+   int xRem = xKeys % BLKDIM > 0 ? 1 : 0;
+   int yRem = yKeys % BLKDIM > 0 ? 1 : 0;
+
+   return (xKeys / BLKDIM + xRem) * (yKeys / BLKDIM + yRem);
 }
 
 /* In order to maximize the number of keys processed per card, the amount of
@@ -225,10 +242,10 @@ long calculateMaxKeysForDevice(int deviceNumber) {
    long B;
    //if (diagonal) {
       // B will always be 2060
-      //B = BLKDIM * (BLKDIM * BYTES_PER_KEY + A);
+   B = BLKDIM * (BLKDIM * BYTES_PER_KEY + A);
    //} else {
       // B will always be 3072 
-      B = BLKDIM * BLKDIM * (BYTES_PER_KEY + BYTES_PER_KEY / 2);
+      //B = BLKDIM * BLKDIM * (BYTES_PER_KEY + BYTES_PER_KEY / 2);
    //}
    long C = BLKDIM * BLKDIM * t;
 
@@ -263,6 +280,7 @@ int * calculateKeyListSegments(unsigned long numKeys, int segments) {
    int i = 0;
    indexList[i] = stepBase;
    do {
+      // TODO break into 2 loops
       // This is the remainder of keys, and gets distributed to the segments
       // as soon as possible. 
       // Notice the final index of the list is not checked for this:
@@ -280,6 +298,118 @@ int * calculateKeyListSegments(unsigned long numKeys, int segments) {
       fprintf(stderr, "ERROR: Left over keys remain after assigning indices.\n");
 
    return indexList;
+}
+
+void allocateKeysToGPU(uint32_t * dev_keys, uint32_t * keys, unsigned int keysSize) {
+   cudaMalloc((void **)&dev_keys, keysSize);
+   dprint("cudaMalloc:%s\n", cudaGetErrorString(cudaGetLastError()));
+   cudaMemcpy(dev_keys, keys, keysSize, cudaMemcpyHostToDevice);
+   dprint("cudaMemcpy:%s\n", cudaGetErrorString(cudaGetLastError()));
+}
+
+void allocateCoordsToGPU(long numKeys, long numBlocks, xyCoord * dev_coords,
+      xyCoord * coords, unsigned int coordSize) {
+   if ((coords = (xyCoord * ) realloc(coords, coordSize)) == NULL) {
+      perror("Cannot malloc space for coordinates");
+      exit(-1);
+   }
+   dprint("calling dimConversion with %d, %d\n", numBlocks, numKeys / BLKDIM);
+   // TODO see if + rem is appropriate
+   dimConversion(numBlocks, numKeys / BLKDIM, coords);
+
+   cudaMalloc((void **)&dev_coords, coordSize);
+   dprint("cudaMalloc:%s\n", cudaGetErrorString(cudaGetLastError()));
+   cudaMemcpy(dev_coords, coords, coordSize, cudaMemcpyHostToDevice);
+   dprint("cudaMemcpy:%s\n", cudaGetErrorString(cudaGetLastError()));
+}
+
+uint16_t * calcAllocGCDResult(uint16_t * gcd, long numBlocks) {
+   unsigned int gcdSize = numBlocks * sizeof(uint16_t);
+   //if ((gcd_res = (uint16_t *) realloc(gcdSize)) == NULL) {
+   //   perror("Cannot malloc space for gcd results");
+   //   exit(-1);
+   //}
+   memset(gcd, 0, gcdSize);
+
+   // gcd results holder on the GPU
+   uint16_t * dev_gcd;
+
+   cudaMalloc((void **)&dev_gcd, gcdSize);
+   dprint("cudaMalloc:%s\n", cudaGetErrorString(cudaGetLastError()));
+   cudaMemcpy(dev_gcd, gcd, gcdSize, cudaMemcpyHostToDevice);
+   dprint("cudaMemcpy:%s\n", cudaGetErrorString(cudaGetLastError()));
+
+   return dev_gcd;
+}
+
+void doDiagonalKernel(uint32_t * dev_keys, xyCoord * dev_coords, 
+       uint16_t * dev_gcd, long numBlocks) { 
+
+   int dimGridx = numBlocks > MAX_BLOCK_DIM ? MAX_BLOCK_DIM : numBlocks;
+   int dimy = 1 + numBlocks / MAX_BLOCK_DIM;
+   int dimGridy = 1 < dimy ? dimy : 1;
+   dim3 dimGrid(dimGridx, dimGridy); 
+   dim3 dimBlock(NUM_INTS, BLKDIM, BLKDIM);
+
+   dprint("dimGrid = %d %d %d; dimBlock = %d %d %d\n", dimGrid.x, dimGrid.y,
+         dimGrid.z, dimBlock.x, dimBlock.y, dimBlock.z);
+
+   GCD_Compare_Diagonal<<<dimGrid, dimBlock>>>(dev_keys, dev_coords, dev_gcd, numBlocks);
+}
+
+void doUpperKernel(uint32_t * dev_xKeys, uint32_t * dev_yKeys, uint16_t * dev_gcd,
+      long numBlocks) { 
+
+   int dimGridx = numBlocks > MAX_BLOCK_DIM ? MAX_BLOCK_DIM : numBlocks;
+   int dimy = 1 + numBlocks / MAX_BLOCK_DIM;
+   int dimGridy = 1 < dimy ? dimy : 1;
+   dim3 dimGrid(dimGridx, dimGridy); 
+   dim3 dimBlock(NUM_INTS, BLKDIM, BLKDIM);
+
+   dprint("dimGrid = %d %d %d; dimBlock = %d %d %d\n", dimGrid.x, dimGrid.y,
+         dimGrid.z, dimBlock.x, dimBlock.y, dimBlock.z);
+
+   GCD_Compare_Upper<<<dimGrid, dimBlock>>>(dev_xKeys, dev_yKeys, dev_gcd, numBlocks);
+}
+
+void writeGCDResults(long numBlocks, uint32_t * keys, xyCoord * coords, uint16_t * gcd_res) {
+   for (int k = 0; k < numBlocks; ++k) {
+      /* check this block for bad keys */
+      if (gcd_res[k] > 0) {
+         printf("bad key found in block: (%d, %d)\n", coords[k].x, coords[k].y);
+         printf("k = %d %x\n", k, gcd_res[k]);
+
+         // Visit each block
+         for (int j = 0; j < BLKDIM; ++j) {
+            // check if any bits in a column are found
+            if (gcd_res[k] & YMASKS[j]) {
+               // find which row 
+               for (int i = 0; i < BLKDIM; ++i) {
+                  if (gcd_res[k] & YMASKS[j] & XMASKS[i]) {
+                     int one = NUM_INTS * (BLKDIM * coords[k].x + i);
+                     int two = NUM_INTS * (BLKDIM * coords[k].y + j);
+                     printf("key %d, %d in block (%d, %d)\n", i, j, coords[k].x, coords[k].y);
+                     printf("VULNERABLE KEY PAIR FOUND:\n");
+                     printf("one: %d\n", one);
+                     printf("two: %d\n", two);
+                     printNumHex(keys + one);
+                     printNumHex(keys + two);
+                     uint32_t gcd[NUM_INTS];
+                     memset(gcd, 0, NUM_INTS * sizeof(uint32_t));
+
+                     gcd1024(&keys[one],
+                             &keys[two],
+                             gcd);
+                     printf("Done calculating gcd.\n");
+
+                     printf("PRIVATE KEY:\n");
+                     printNumHex(gcd);
+                  }
+               }
+            }
+         }
+      }
+   }
 }
 
 int main(int argc, char**argv) {
@@ -319,6 +449,7 @@ int main(int argc, char**argv) {
       segmentDivisionFactor <<= 1;
       keysSegmentSize >>= 1;
    }
+
    dprint("segment factor: %ld\n", segmentDivisionFactor);
    dprint("total / segment factor: %ld\n", totalNumKeys / segmentDivisionFactor);
    dprint("keysSegmentSize: %ld\n", keysSegmentSize);
@@ -330,21 +461,117 @@ int main(int argc, char**argv) {
    for (int i = 0; i < segmentDivisionFactor; ++i)
       dprint("i = %d | %d\n", i, segmentIndices[i]);
 
-   for (int i = 0; i < numberOfKernelLaunches; ++i) {
-      int currentNumKeys = totalNumKeys / segmentDivisionFactor;
-   }
+   // We look at the first segment index since it will also be a count, and if
+   // there were remainders, they will have been allocated to this index.
+   long firstNumKeys = segmentIndices[0];
+   // calculate max yKeys size
+   long maxYKeySize = firstNumKeys * NUM_INTS * sizeof(int);
 
-   /* TODO Assumes totalNumberOfKeys is less than sqrt(LONG_MAX) */ 
-   long numBlocks = calculateNumberOfBlocks(totalNumKeys);
-   dprint("numBlocks = %ld\n", numBlocks);
+   long maxDiagBlocks = calculateNumberOfBlocks(firstNumKeys);
+   int r = firstNumKeys / BLKDIM > 0 ? 1 : 0;
+   long maxUpperBlocks = calculateNumberOfBlocks(firstNumKeys, firstNumKeys / 2 + r);
+   long maxBlocks = maxDiagBlocks > maxUpperBlocks ? maxDiagBlocks : maxUpperBlocks;
+   // calculate max xyCoords size
+   long maxXYCoordsSize = sizeof(xyCoord) * maxBlocks;
+   
+   // calculate max gcd size
+   long maxGCDSize = sizeof(uint16_t) * maxBlocks;
 
-   xyCoord * coords;
-   if ((coords = (xyCoord * ) malloc(numBlocks * sizeof(xyCoord))) == NULL) {
-      perror("Cannot malloc space for coordinates");
+   // allocate max yKeys on host 
+   uint32_t * yKeys;
+   /*if ((yKeys = (uint32_t *) malloc(maxYKeySize)) == NULL) {
+      perror("Cannot malloc space for y keys");
       exit(-1);
    }
-   dprint("calling dimConversion with %d, %d\n", numBlocks, totalNumKeys / BLKDIM);
-   dimConversion(numBlocks, totalNumKeys / BLKDIM, coords);
+   */
+
+   // allocate max xyCoords on host
+   xyCoord * coords;
+   if ((coords = (xyCoord *) malloc(maxXYCoordsSize)) == NULL) {
+      perror("Cannot malloc space for xy coords");
+      exit(-1);
+   }
+
+   // allocate max gcd on host
+   uint16_t * gcd_res;
+   if ((gcd_res = (uint16_t *) malloc(maxGCDSize)) == NULL) {
+      perror("Cannot malloc space for gcd results");
+      exit(-1);
+   }
+
+   // allocate max yKeys on card
+   uint32_t * dev_yKeys;
+   cudaMalloc((void **)&dev_yKeys, maxYKeySize);
+   dprint("cudaMalloc:%s\n", cudaGetErrorString(cudaGetLastError()));
+
+   // allocate max xyCoords on card
+   xyCoord * dev_coords;
+   cudaMalloc((void **)&dev_coords, maxXYCoordsSize);
+   dprint("cudaMalloc:%s\n", cudaGetErrorString(cudaGetLastError()));
+
+   // allocate max gcd on card
+   uint16_t * dev_gcd;
+   cudaMalloc((void **)&dev_gcd, maxGCDSize);
+   dprint("cudaMalloc:%s\n", cudaGetErrorString(cudaGetLastError()));
+
+   int xIdx = 0, yIdx = 0;
+   int xPrevIdx = 0, yPrevIdx = 0;
+   long numBlocks;
+   for (int y = 0; y < segmentDivisionFactor; ++y) {
+      yIdx = segmentIndices[y];
+      yKeys = keys + yIdx;
+      
+      int yNumKeys = yIdx - yPrevIdx;
+      unsigned int yKeysSize = yNumKeys * NUM_INTS * sizeof(int);
+      cudaMemcpy(dev_yKeys, yKeys, yKeysSize, cudaMemcpyHostToDevice);
+      dprint("cudaMemcpy:%s\n", cudaGetErrorString(cudaGetLastError()));
+
+      for (int x = y; x < segmentDivisionFactor; ++x) {
+         if (x == y) {// call kernel with same single key set (triangle)
+            // calculate numBlocks, memories, and pull xIdx from set of keys
+            /* TODO Assumes totalNumberOfKeys is less than sqrt(LONG_MAX) */ 
+            numBlocks = calculateNumberOfBlocks(yNumKeys);
+            dprint("numBlocks = %ld\n", numBlocks);
+
+            int rem = yNumKeys % BLKDIM > 0 ? 1 : 0;
+            dimConversion(numBlocks, yNumKeys / BLKDIM + rem, coords);
+            // TODO maybe memset the end of coords to 0 using maxXYCoordSize
+            unsigned int coordSize = numBlocks * sizeof(xyCoord);
+            cudaMemcpy(dev_coords, coords, coordSize, cudaMemcpyHostToDevice);
+            dprint("cudaMemcpy:%s\n", cudaGetErrorString(cudaGetLastError()));
+
+            doDiagonalKernel(dev_yKeys, dev_coords, dev_gcd, numBlocks);
+         } else {// call kernel with 2 different key sets (rectangle)
+            // move in half steps
+            xIdx = segmentIndices[x];
+            uint32_t * xKeys = keys + xIdx;
+
+            int xNumKeys = xIdx - xPrevIdx;
+            unsigned int xKeysSize = xNumKeys * NUM_INTS * sizeof(int);
+            uint32_t * dev_xKeys;
+            allocateKeysToGPU(dev_xKeys, xKeys, xKeysSize);
+
+            numBlocks = calculateNumberOfBlocks(xNumKeys, yNumKeys);
+            dprint("numBlocks = %ld\n", numBlocks);
+
+            doUpperKernel(dev_xKeys, dev_yKeys, dev_gcd, numBlocks);
+         }
+
+         // cudaFree(dev_xKeys);
+         // cudaFree(dev_yKeys);
+         // cudaFree(dev_coords);
+
+         // Copy the results from the card to the CPU
+         cudaMemcpy(gcd_res, dev_gcd, maxGCDSize, cudaMemcpyDeviceToHost);
+         dprint("cudaMemcpy:%s\n", cudaGetErrorString(cudaGetLastError()));
+
+         // do useful things with gcd_res
+         writeGCDResults(numBlocks, keys, coords, gcd_res);
+
+         xPrevIdx = xIdx;
+         yPrevIdx = yIdx;
+      }
+   }
 
    /*
 #if DEBUG
@@ -355,71 +582,16 @@ int main(int argc, char**argv) {
 #endif
 */
 
-   uint16_t * gcd_res;
-   if ((gcd_res = (uint16_t *) malloc(numBlocks * sizeof(uint16_t))) == NULL) {
-      perror("Cannot malloc space for gcd results");
-      exit(-1);
-   }
 
-   uint32_t * dev_keys;
-   uint16_t * dev_gcd;
-   xyCoord * dev_coords;
+   // TODO open a file and write results into it
 
-   /* Sizes added since they are used many times. Trying to keep consistency 
-    * so changes don't break things.*/
-   unsigned int dev_keysSize = totalNumKeys * NUM_INTS * sizeof(int);
-   unsigned int dev_gcdSize = numBlocks * sizeof(uint16_t);
-   unsigned int dev_coordSize = numBlocks * sizeof(xyCoord);
-   dprint("%u bytes for dev_keys\n", dev_keysSize);
-   dprint("%u bytes for dev_gcd\n", dev_gcdSize);
-   dprint("%u bytes for dev_coords\n", dev_coordSize);
-   dprint("%lu bytes for all\n", dev_keysSize + dev_gcdSize + dev_coordSize);
+   free(segmentIndices);
+   free(keys);
+   free(gcd_res);
+   free(coords);
 
-   memset(gcd_res, 0, dev_gcdSize);
-
-   cudaMalloc((void **)&dev_keys, dev_keysSize);
-   dprint("cudaMalloc:%s\n", cudaGetErrorString(cudaGetLastError()));
-   cudaMemcpy(dev_keys, keys, dev_keysSize, cudaMemcpyHostToDevice);
-   dprint("cudaMemcpy:%s\n", cudaGetErrorString(cudaGetLastError()));
-
-   cudaMalloc((void **)&dev_gcd, dev_gcdSize);
-   dprint("cudaMalloc:%s\n", cudaGetErrorString(cudaGetLastError()));
-   cudaMemcpy(dev_gcd, gcd_res, dev_gcdSize, cudaMemcpyHostToDevice);
-   dprint("cudaMemcpy:%s\n", cudaGetErrorString(cudaGetLastError()));
-
-   cudaMalloc((void **)&dev_coords, dev_coordSize);
-   dprint("cudaMalloc:%s\n", cudaGetErrorString(cudaGetLastError()));
-   cudaMemcpy(dev_coords, coords, dev_coordSize, cudaMemcpyHostToDevice);
-   dprint("cudaMemcpy:%s\n", cudaGetErrorString(cudaGetLastError()));
-
-   int dimGridx = numBlocks > MAX_BLOCK_DIM ? MAX_BLOCK_DIM : numBlocks;
-   int dimy = 1 + numBlocks / MAX_BLOCK_DIM;
-   int dimGridy = 1 < dimy ? dimy : 1;
-   dim3 dimGrid(dimGridx, dimGridy); 
-   dim3 dimBlock(NUM_INTS, BLKDIM, BLKDIM);
-
-   dprint("dimGrid = %d %d %d; dimBlock = %d %d %d\n", dimGrid.x, dimGrid.y,
-         dimGrid.z, dimBlock.x, dimBlock.y, dimBlock.z);
-
-   //hrt_start();
-   GCD_Compare_All<<<dimGrid, dimBlock>>>(dev_keys, dev_gcd, dev_coords, numBlocks);
-   dprint("kernel:%s\n", cudaGetErrorString(cudaGetLastError()));
-   cudaDeviceSynchronize();
-   dprint("cudaDeviceSynchronize:%s\n", cudaGetErrorString(cudaGetLastError()));
-
-   //hrt_stop();
-   //fprintf(stderr, "Kernel took %s.\n", hrt_string());
-
-   // Copy the results from the card to the CPU
-   cudaMemcpy(gcd_res, dev_gcd, dev_gcdSize, cudaMemcpyDeviceToHost);
-   dprint("cudaMemcpy:%s\n", cudaGetErrorString(cudaGetLastError()));
-   
-   // END GPU WORK
-
-   // open a file and write results into it
-
+   /*
    for (int k = 0; k < numBlocks; ++k) {
-      /* check this block for bad keys */
       if (gcd_res[k] > 0) {
          printf("bad key found in block: (%d, %d)\n", coords[k].x, coords[k].y);
          printf("k = %d %x\n", k, gcd_res[k]);
@@ -454,28 +626,9 @@ int main(int argc, char**argv) {
             }
          }
       }
-         /*
-      for (int i = 0; i < BLKDIM; ++i)
-         for (int j = 0; j < BLKDIM; ++j) {
-               int x = i + BLKDIM * coords[k].x;
-               int y = j + BLKDIM * coords[k].y;
-
-               if(x > y )
-               {
-                  printf("x\n");
-                  printNumHex(keys[x]);
-                  printf("y\n");
-                  printNumHex(keys[y]);
-
-                  printf("k = %d i = %d j = %d\n", k, x, y);
-                  printNumHex(gcd_res + NUM_INTS * (BLKDIM * (k * BLKDIM + j)+ i));
-               }
-         }
-         */
    }
-   free(keys);
-   free(gcd_res);
-   free(coords);
+   */
+
    return 0;
 }
 

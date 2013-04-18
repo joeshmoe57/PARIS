@@ -33,12 +33,24 @@ typedef struct xy {
 } xyCoord;
 
 //__global__ void HighThroughputGCD(unsigned *x_dev, unsigned *gcd_dev);
-__global__ void GCD_Compare_All(unsigned *x_dev, uint16_t *gcd_dev, xyCoord * dev_coord);
+__global__ void GCD_Compare_Diagonal(unsigned *x_dev, xyCoord * dev_coord, uint16_t *gcd_dev, int numBlocks);
+__global__ void GCD_Compare_Upper(unsigned *x_dev, unsigned *y_dev, uint16_t *gcd_dev, int numBlocks);
 __device__ void gcd(volatile unsigned *x, volatile unsigned *y);
 __device__ void shiftR1(volatile unsigned *x);
 __device__ void shiftL1(volatile unsigned *x);
 __device__ void cusubtract(volatile unsigned *x, volatile unsigned *y, volatile unsigned *z);
 __device__ int geq(volatile unsigned *x, volatile unsigned *y);
+
 void dimConversion(int numBlocks, int width, xyCoord * coords);
 long calculateNumberOfBlocks(long keys);
-long calculateMaxKeysForDevice(int deviceNumber);
+long maximizeKeys(int deviceNumber, bool diagonal);
+
+void allocateKeysToGPU(uint32_t * dev_keys, uint32_t * keys, unsigned int keysSize);
+void allocateCoordsToGPU(xyCoord * dev_coords, uint32_t * coords, unsigned int coordSize);
+uint16_t * calcAllocGCDResult(uint16_t * gcd, long numBlocks);
+void doDiagonalKernel(uint32_t * dev_keys, xyCoord * dev_coords, uint16_t * dev_gcd,
+      long numBlocks);
+void doUpperKernel(uint32_t * dev_xKeys, uint32_t * dev_yKeys, uint16_t * dev_gcd,
+      long numBlocks);
+
+void writeGCDResults(long numBlocks, uint32_t * keys, xyCoord * coords, uint16_t * gcd_res);
