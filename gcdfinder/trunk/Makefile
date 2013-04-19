@@ -4,7 +4,7 @@ NVCC=nvcc
 NVFLAGS=
 MEMFLAGS=-Xptxas="-v"
 ARCHFLAGS=-arch=compute_30 -code=sm_30
-CFLAGS=-g -O3 -Wall -Werror -std=c99
+CFLAGS=-g -O3 -Wall -std=c99
 PFLAGS=-g -O3 -Wall -Werror
 LFLAGS=-lpthread -ldl
 ALL=seqGCD cudaGCD
