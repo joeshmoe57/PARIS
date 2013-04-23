@@ -7,7 +7,7 @@ extern "C" {
 #include "keyMath.h"
 }
 
-//Kernel Function
+//Kernel Functions
 
 __global__ void GCD_Compare_Upper(unsigned *x_dev, unsigned *y_dev, uint16_t *gcd_dev, int numBlocks) {
 }
@@ -382,10 +382,10 @@ void writeGCDResults(long numBlocks, uint32_t * keys, xyCoord * coords, uint16_t
          // Visit each block
          for (int j = 0; j < BLKDIM; ++j) {
             // check if any bits in a column are found
-            if (gcd_res[k] & YMASKS[j]) {
+            if (gcd_res[k] > 0 & YMASKS[j]) {
                // find which row 
                for (int i = 0; i < BLKDIM; ++i) {
-                  if (gcd_res[k] & YMASKS[j] & XMASKS[i]) {
+                  if (gcd_res[k] > 0 & YMASKS[j] > 0 & XMASKS[i] > 0) {
                      int one = NUM_INTS * (BLKDIM * coords[k].x + i);
                      int two = NUM_INTS * (BLKDIM * coords[k].y + j);
                      printf("key %d, %d in block (%d, %d)\n", i, j, coords[k].x, coords[k].y);
@@ -431,6 +431,8 @@ int main(int argc, char**argv) {
    sscanf(argv[1], "%lu", &totalNumKeys);
 
    // TODO assumption that totalNumKeys is a multiple of BLKDIM is being made
+   // TODO keys must fit into RAM as well as the other allocated variables like
+   // gcd_res and xyCoord
    if((keys = (uint32_t *) malloc(totalNumKeys * NUM_INTS * sizeof(uint32_t)))
        == NULL) {
       perror("Cannot malloc Key Vector");
@@ -439,6 +441,11 @@ int main(int argc, char**argv) {
 
    totalNumKeys = getAllKeys(KEYS_DB, totalNumKeys, &privKeys, keys);
    dprint("getKeys returns %d\n", totalNumKeys);
+#ifdef DEBUG
+   for (int i = 0; i < totalNumKeys; ++i) {
+      printNumHex(keys + i);
+   }
+#endif
 
    int device = 0;
    int maxKeys = calculateMaxKeysForDevice(device);
@@ -498,6 +505,7 @@ int main(int argc, char**argv) {
       perror("Cannot malloc space for gcd results");
       exit(-1);
    }
+   memset(gcd_res, 0, maxGCDSize);
 
    // allocate max yKeys on card
    uint32_t * dev_yKeys;
@@ -535,6 +543,12 @@ int main(int argc, char**argv) {
 
             int rem = yNumKeys % BLKDIM > 0 ? 1 : 0;
             dimConversion(numBlocks, yNumKeys / BLKDIM + rem, coords);
+#if DEBUG
+   // Print the coordinates of the blocks if they were in a square
+   for (int i = 0; i < numBlocks; ++i) 
+      printf("(%d, %d)\n", coords[i].x, coords[i].y);
+   fflush(stdout);
+#endif
             // TODO maybe memset the end of coords to 0 using maxXYCoordSize
             unsigned int coordSize = numBlocks * sizeof(xyCoord);
             cudaMemcpy(dev_coords, coords, coordSize, cudaMemcpyHostToDevice);
