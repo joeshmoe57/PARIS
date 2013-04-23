@@ -17,18 +17,18 @@ __global__ void GCD_Compare_Upper(unsigned *x_dev, unsigned *y_dev, uint16_t *gc
 __global__ void GCD_Compare_Diagonal(uint32_t * x_dev, xyCoord * dev_coord,
    uint16_t * gcd_dev, int numBlocks) {
    //Load up shared memory
-   __shared__ volatile unsigned int x[BLKDIM][BLKDIM][NUM_INTS];
-   __shared__ volatile unsigned int y[BLKDIM][BLKDIM][NUM_INTS];
-   int tidx = threadIdx.x;
-   int tidy = threadIdx.y;
+   __shared__ volatile uint32_t x[BLKDIM][BLKDIM][NUM_INTS];
+   __shared__ volatile uint32_t y[BLKDIM][BLKDIM][NUM_INTS];
+   uint32_t tidx = threadIdx.x;
+   uint32_t tidy = threadIdx.y;
    // remove and see if reg count decreases
-   int tidz = threadIdx.z;
-   int blkIdx = blockIdx.x + blockIdx.y * gridDim.x;
+   uint32_t tidz = threadIdx.z;
+   uint32_t blkIdx = blockIdx.x + blockIdx.y * gridDim.x;
 
    if (blkIdx < numBlocks) {
       xyCoord coord = dev_coord[blkIdx];
-      int keyX = tidx + NUM_INTS * (tidy + coord.x * BLKDIM);
-      int keyY = tidx + NUM_INTS * (tidz + coord.y * BLKDIM);
+      uint32_t keyX = tidx + NUM_INTS * (tidy + coord.x * BLKDIM);
+      uint32_t keyY = tidx + NUM_INTS * (tidz + coord.y * BLKDIM);
 
       // if (coord.x == coord.y)
       //    we're on a diagonal, and should only use tidy > tidz
@@ -382,7 +382,7 @@ void writeGCDResults(long numBlocks, uint32_t * keys, xyCoord * coords, uint16_t
          // Visit each block
          for (int j = 0; j < BLKDIM; ++j) {
             // check if any bits in a column are found
-            if (gcd_res[k] > 0 & YMASKS[j]) {
+            if (gcd_res[k] > 0 & YMASKS[j] > 0) {
                // find which row 
                for (int i = 0; i < BLKDIM; ++i) {
                   if (gcd_res[k] > 0 & YMASKS[j] > 0 & XMASKS[i] > 0) {
@@ -443,7 +443,7 @@ int main(int argc, char**argv) {
    dprint("getKeys returns %d\n", totalNumKeys);
 #ifdef DEBUG
    for (int i = 0; i < totalNumKeys; ++i) {
-      printNumHex(keys + i);
+      printNumHex(keys + i * NUM_INTS );
    }
 #endif
 
@@ -472,17 +472,20 @@ int main(int argc, char**argv) {
    // there were remainders, they will have been allocated to this index.
    long firstNumKeys = segmentIndices[0];
    // calculate max yKeys size
-   long maxYKeySize = firstNumKeys * NUM_INTS * sizeof(int);
+   long maxYKeySize = firstNumKeys * NUM_INTS * sizeof(uint32_t);
+   dprint("maxYKeySize: %d\n", maxYKeySize);
 
    long maxDiagBlocks = calculateNumberOfBlocks(firstNumKeys);
-   int r = firstNumKeys / BLKDIM > 0 ? 1 : 0;
+   int r = firstNumKeys % BLKDIM > 0 ? 1 : 0;
    long maxUpperBlocks = calculateNumberOfBlocks(firstNumKeys, firstNumKeys / 2 + r);
    long maxBlocks = maxDiagBlocks > maxUpperBlocks ? maxDiagBlocks : maxUpperBlocks;
    // calculate max xyCoords size
    long maxXYCoordsSize = sizeof(xyCoord) * maxBlocks;
+   dprint("maxXYCoordsSize: %d\n", maxXYCoordsSize);
    
    // calculate max gcd size
    long maxGCDSize = sizeof(uint16_t) * maxBlocks;
+   dprint("maxGCDSize: %d\n", maxGCDSize);
 
    // allocate max yKeys on host 
    uint32_t * yKeys;
@@ -527,15 +530,19 @@ int main(int argc, char**argv) {
    long numBlocks;
    for (int y = 0; y < segmentDivisionFactor; ++y) {
       yIdx = segmentIndices[y];
-      yKeys = keys + yIdx;
+      dprint("yIdx: %d\n", yIdx);
+      yKeys = keys;
       
       int yNumKeys = yIdx - yPrevIdx;
-      unsigned int yKeysSize = yNumKeys * NUM_INTS * sizeof(int);
+      dprint("yNumKeys: %d\n", yNumKeys);
+      unsigned int yKeysSize = yNumKeys * NUM_INTS * sizeof(uint32_t);
+      dprint("yKeysSize: %d\n", yKeysSize);
       cudaMemcpy(dev_yKeys, yKeys, yKeysSize, cudaMemcpyHostToDevice);
       dprint("cudaMemcpy:%s\n", cudaGetErrorString(cudaGetLastError()));
 
       for (int x = y; x < segmentDivisionFactor; ++x) {
          if (x == y) {// call kernel with same single key set (triangle)
+            dprint("Found diagonal key set: %d\n", x);
             // calculate numBlocks, memories, and pull xIdx from set of keys
             /* TODO Assumes totalNumberOfKeys is less than sqrt(LONG_MAX) */ 
             numBlocks = calculateNumberOfBlocks(yNumKeys);
@@ -543,7 +550,7 @@ int main(int argc, char**argv) {
 
             int rem = yNumKeys % BLKDIM > 0 ? 1 : 0;
             dimConversion(numBlocks, yNumKeys / BLKDIM + rem, coords);
-#if DEBUG
+#ifdef DEBUG
    // Print the coordinates of the blocks if they were in a square
    for (int i = 0; i < numBlocks; ++i) 
       printf("(%d, %d)\n", coords[i].x, coords[i].y);
@@ -551,17 +558,19 @@ int main(int argc, char**argv) {
 #endif
             // TODO maybe memset the end of coords to 0 using maxXYCoordSize
             unsigned int coordSize = numBlocks * sizeof(xyCoord);
+            dprint("coordSize: %d\n", coordSize);
             cudaMemcpy(dev_coords, coords, coordSize, cudaMemcpyHostToDevice);
             dprint("cudaMemcpy:%s\n", cudaGetErrorString(cudaGetLastError()));
 
             doDiagonalKernel(dev_yKeys, dev_coords, dev_gcd, numBlocks);
          } else {// call kernel with 2 different key sets (rectangle)
+            dprint("Found rectangular key set: %d\n", x);
             // move in half steps
             xIdx = segmentIndices[x];
             uint32_t * xKeys = keys + xIdx;
 
             int xNumKeys = xIdx - xPrevIdx;
-            unsigned int xKeysSize = xNumKeys * NUM_INTS * sizeof(int);
+            unsigned int xKeysSize = xNumKeys * NUM_INTS * sizeof(uint32_t);
             uint32_t * dev_xKeys;
             allocateKeysToGPU(dev_xKeys, xKeys, xKeysSize);
 
@@ -580,6 +589,7 @@ int main(int argc, char**argv) {
          dprint("cudaMemcpy:%s\n", cudaGetErrorString(cudaGetLastError()));
 
          // do useful things with gcd_res
+         dprint("writing: %d\n", numBlocks);
          writeGCDResults(numBlocks, keys, coords, gcd_res);
 
          xPrevIdx = xIdx;
