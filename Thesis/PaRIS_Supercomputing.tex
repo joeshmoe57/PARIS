@@ -88,11 +88,14 @@ We can leverage massive-parallelism and the computational power that is granted
 by today's commodity hardware such as GPUs to make checks that would
 otherwise be impossible to perform, attainable. Our work presents a practical
 tool for validating RSA keys for poor prime numbers: a fundamental problem
-that has led to significant security holes.
+that has led to significant security holes, despite the RSA algorithm's
+mathematical soundness.
 
-Our implementation using NVIDIA's CUDA framework offers a 27.5 times speedup
-over a reference sequential implementation. This level of speedup brings this
-validation into the realm of runtime reachability.
+Our tool leverages NVIDIA's CUDA framework to perform a complete set of greatest
+common divisor calculations between all keys in a provided set. Our
+implementation offers a 27.5 times speedup over a reference sequential
+implementation. This level of speedup brings this validation into the realm of
+runtime-reachability.
 
 \keywords{CUDA \and RSA \and greatest common divisor \and parallel computation}
 \end{abstract}
@@ -102,32 +105,33 @@ validation into the realm of runtime reachability.
 \section{Introduction}
 \label{sec:intro}
 RSA is a public key encryption scheme which relies on the difficulty of 
-factoring large numbers. The algorithm is prevalent throughout security, 
-specifically it is used for many web-security applications. An RSA public key is 
-comprised of a modulus $n$ of specified length (the product of primes $p$ and 
-$q$), and an exponent $e$. The length of $n$ is given in terms of bits, thus 
-the term ``1024-bit RSA key" refers to the number of bits which make up this 
-value. The associated private key uses the same $n$, and another value $d$ such 
-that $d \cdot e = 1 \:\text{mod} \;\phi(n)$ where $\phi(n) = (p - 1) \cdot
-(q - 1)$\cite{rivest1978method}. Ideally, given the number of possible primes that may be
-used to construct a 1024-bit modulus, no random number generators should reuse
-either prime. Thus, the likelihood of either $p$ or $q$ being repeated in a set
-of keys should be approximately 0. An individual key may be considered secure by
-itself, but when compared to other keys, might exhibit a weakness which allows
-each key's $d$ to be calculated entirely from public information.
+factoring large numbers. The algorithm is prevalent throughout security, and is 
+specifically used for many web-security applications (see
+$\S$~\ref{sec:motivation}). An RSA key contains public and private components,
+both of which are calculated based on two randomly-generated prime values: $p$
+and $q$ (RSA is explained at greater length in $\S$~\ref{subsec:rsa}). Ideally,
+given the number of possible primes that may be used to construct a 1024-bit
+key, no random number generators should reuse either prime, and all keys should
+contain unique components. Thus, the likelihood of either $p$ or $q$ being
+repeated in a set of keys should be approximately 0. Since in reality, random
+number generation is difficult, and often less than random, primes are, in fact,
+repeated. Due to this, an individual key may be considered secure by itself, but
+when compared to other keys might exhibit a weakness which allows each key's
+private components to be calculated entirely from public information.
 
 When considering two keys, a weakness exists when the greatest common 
 divisor of both moduli, $n_1$ and $n_2$, is greater than 1. If $GCD(n_1, 
 n_2) = p$, then $p$ must be a shared prime factor of $n_1$ and $n_2$. Thus, 
-$q_1 = \frac{n_1}{p}$ and $q_2 = \frac{n_2}{p}$. Once $p$ and $q$ are known, 
-$d_1$ and $d_2$ can be directly calculated, yielding both private key pairs.
-This vulnerability is detailed in~\ref{fig:vuln}.
+$q_1 = \frac{n_1}{p}$ and $q_2 = \frac{n_2}{p}$. Once $p$ and $q$ are known,
+$d_1$ and $d_2$ (values in the private components) can be directly calculated,
+yielding both private key pairs. This vulnerability is detailed in
+Figure~\ref{fig:vuln}.
 
-This weakness is discussed in \cite{lenstra2012ron}, which showed a 
-significant number of existing RSA keys were susceptible to this exploit. The 
-primary goal of our work was to speedup the most computationally intensive 
-part of their process by implementing the GCD comparisons of RSA 1024-bit keys 
-using NVIDIA's CUDA platform.
+This weakness is discussed in \cite{lenstra2012ron}, which shows a significant
+number of existing RSA keys were susceptible to this exploit. The primary goal
+of our work was to speedup the most computationally intensive part of their
+process by implementing the GCD comparisons of RSA 1024-bit keys using NVIDIA's
+CUDA platform.
 
 To aid in accomplishing this goal, the work in \cite{fujimoto2009high} was 
 expanded and adapted to compare all combinations of keys in a given set. In 
@@ -141,25 +145,32 @@ be executed in parallel, resulting in further speedup.
 
 \subsection{RSA}
 \label{subsec:rsa}
-RSA is an asymmetric key encryption scheme. Keys come in matched pairs:
-public keys and private keys. Using the same algorithm, information encrypted
-with the one key, can be decrypted with the other and vice versa. A party must
-keep the private keep secret, but the public portion of the key can be seen and
-used by anyone in the world. To generate a pair, an algorithm is performed on
-two randomly-generated prime numbers whose product is of a certain bit-length
-(e.g. 1024 bits). These are the primes that our work looks to discover
-inadequacies with.
+RSA is an asymmetric key encryption scheme. Keys come in matched pairs: a
+public key and a private key. The public key is comprised of a modulus $n$ of
+specified length (the product of primes $p$ and $q$), and an exponent $e$. The
+length of $n$ is given in terms of bits, thus the term ``1024-bit RSA key"
+refers to the number of bits which make up this value. The associated private
+key uses the same $n$, and another value $d$ such that $d \cdot e = 1
+\:\text{mod} \;\phi(n)$ where $\phi(n) = (p - 1) \cdot (q - 1)$
+\citep{rivest1978method}.
 
-The work presented by \cite{lenstra2012ron} shows that around
-0.2\% of RSA keys collected from sources including the SSL Observatory suffer
-from inadequate random prime generation. They show that when the primes used to
-build an RSA public-private key pair are not actually random, factoring does
-not need to be done to break the keys. Instead, only a greater common divisor
-needs to be calculated between two RSA moduli. When anything greater than 1 is
-found as a result of this calculation, the keys can be considered broken and
-offer no protection. This is because once a GCD greater than 1 is found, the
-private keys can be generated from the publicly available information. The
-vulnerability is explained in detail in Figure~\ref{fig:vuln}.
+Using the same algorithm, information encrypted with the one key, can be
+decrypted with the other and vice versa. A party must keep the private key
+secret, but the public portion of the key can be seen and used by anyone in the
+world. To generate a pair, an algorithm is performed using two
+randomly-generated prime numbers whose product is of a certain bit-length (e.g.
+1024 bits). PARIS aims to uncover the inadequacies present in these primes.
+
+%The work presented by \cite{lenstra2012ron} shows that around 0.2\% of RSA keys
+%collected from sources including the SSL Observatory suffer from inadequate
+%random prime generation. They show that when the primes used to build an RSA
+%public-private key pair are not actually random, factoring does not need to be
+%done to break the keys. Instead, only a greater common divisor needs to be
+%calculated between two RSA moduli. When anything greater than 1 is found as a
+%result of this calculation, the keys can be considered broken and offer no
+%protection. This is because once a GCD greater than 1 is found, the private
+%keys can be generated from the publicly available information. The
+%vulnerability is explained in detail in Figure~\ref{fig:vuln}.
 
 \begin{figure}
    \centering
@@ -168,15 +179,15 @@ vulnerability is explained in detail in Figure~\ref{fig:vuln}.
    \label{fig:vuln}
 \end{figure}
 
-A tool by \cite{scharfglass2012breaking} performs a
-parallelized version of this GCD calculation (using the binary GCD algorithm)
-between every pair combination in a given set of keys. It structures these
-calculations so that as many as possible can be done at once. To increase
-parallelism, and because the keys are so large, they are broken up into 32
-chunks, which are also operated on in parallel using the GPU. Through these 2
-levels of parallelism, a speedup of 27.5 is achieved. This tool provides a
-practical tool for checking a given set of keys for the vulnerability we are
-focusing on.
+%A tool by \cite{scharfglass2012breaking} performs a
+%parallelized version of this GCD calculation (using the binary GCD algorithm)
+%between every pair combination in a given set of keys. It structures these
+%calculations so that as many as possible can be done at once. To increase
+%parallelism, and because the keys are so large, they are broken up into 32
+%chunks, which are also operated on in parallel using the GPU. Through these 2
+%levels of parallelism, a speedup of 27.5 is achieved. This tool provides a
+%practical tool for checking a given set of keys for the vulnerability we are
+%focusing on.
 
 \subsection{CUDA}
 \label{subsec:cuda}
@@ -185,12 +196,12 @@ write programs that make use of NVIDIA's GPUs (cf.
 \cite{nvidia2012programming}). These massively-parallel hardware devices are 
 capable of processing large amounts of data simultaneously, allowing 
 significant speedups in programs with sections of parallelizable code using 
-the SIMD model. The platform allows for various arrangements of threads to 
-perform work, based on the developer's decomposition of the problem. Our 
-solution to the problem presented in this paper is discussed in 
-$\S$\ref{sec:gridorg}. In general, individual threads are grouped into up-to 
-3-dimensional blocks to allow sharing of common memory between threads. These 
-blocks can then be organized into a 2-dimensional grid. 
+the Simultaneous Instruction, Multiple Data (SIMD) model. The platform allows
+for various arrangements of threads to perform work, based on the developer's
+decomposition of the problem. Our solution is discussed in
+$\S$~\ref{sec:gridorg}. In general, individual threads are grouped into up-to
+3-dimensional blocks to allow sharing of common memory between threads. These
+blocks can then be organized into a 2-dimensional grid.  
 
 The GPU breaks the total number of threads into groups called warps, which 
 consist of 32 threads that will be executed simultaneously on a single
@@ -208,19 +219,20 @@ block can access the same section of shared memory.
 
 \section{Motivation}
 \label{sec:motivation}
-\cite{scharfglass2012breaking} use NVIDIA's CUDA framework to significantly
-speedup a check for the vulnerability presented in \cite{lenstra2012ron}. The
-work in \cite{scharfglass2012breaking} lacks any context or explanation of
-usage for RSA keys in general, and although their data set is security- and
-encryption-focused, no discussion is given to the security aspects and the
-potential impacts of the work. Some research was done in an attempt to add
-context to the work, and the implications it might have.
+Despite PARIS's focus on performance and speedup of the vulnerability check,
+its impacts and implications to computer security are equally as important.
+RSA is widely used and we look into some of its more popular applications to
+help motivate why our work and PARIS's increase in practicality is important to
+the world of computer security. We aim to discuss what types of data might be
+vulnerable due to this exploit (as well as others effecting RSA), impacts the
+vulnerability has, and put a portion of the current state of computer security
+into a real-world context concerning RSA.
 
 Most initial research yielded general statements that did not explain or give
 appropriate context to RSA (statements including ``\dots all over the
 Internet\dots" were accurate, but not informative). More in-depth research
 yielded two primary use-cases of RSA: Digital Rights Management (DRM) and
-Secure Socket Layer (SSL) and Transport Layer Security (TLS) Internet
+Secure Socket Layer (SSL) / Transport Layer Security (TLS) Internet
 security protocols. Other uses included password alternatives (e.g. ssh
 connections or command line interface tools like \texttt{git}) but these are
 more difficult to collect data for and analyze since they tend to be done on
@@ -233,12 +245,13 @@ distribution of various types of media content. It is adopted by content
 providers and device manufacturers to ensure users don't misuse or wrongfully 
 share protected, copyrighted content.
 The RSA Association proposed a protocol that could be applied to various types
-of media content that secured its usage \cite{rsa2004announces,rsa2004supports}. These announcements argued that using RSA for DRM offered
-benefits to the content providers, the device manufacturers, and, arguably, the
-consumers of the content. It apparently allowed device manufactures and
-content providers to ensure proper usage of protected content while allowing
-users to consume and playback their rightfully-owned media on an array of
-their own devices.
+of media content that secured its usage
+\citep{rsa2004announces,rsa2004supports}. These announcements argued that
+using RSA for DRM offered benefits to the content providers, the device
+manufacturers, and, arguably, the consumers of the content. It apparently
+allowed device manufactures and content providers to ensure proper usage of
+protected content while allowing users to consume and playback their
+rightfully-owned media on an array of their own devices.
 
 \subsection{Internet Security and Certificates}
 \label{subsec:netsec}
@@ -263,34 +276,32 @@ algorithms defined in the specification. RSA is by far the most popular,
 accounting for over half of the found certificates (as shown in
 Figure~\ref{fig:certs}). Other options include DSA and Diffie-Hellman. For more
 detailed information about X.509 certificates and analysis on their
-infrastructure, see \cite{holz2011ssl}.
-
-\begin{figure*}
-   \centering
-   \includegraphics[width=0.35\textwidth]{x509}
-   \caption{X.509 Fields\cite{holz2011ssl}}
-   \label{fig:x509}
-\end{figure*}
+infrastructure, see \citet{holz2011ssl}.
 
 \begin{figure}
    \centering
-   \includegraphics[width=0.5\linewidth]{tls}
-   \caption{TLS Overview\cite{tlsconcepts}}
-   \label{fig:tls}
+   \includegraphics[width=0.75\textwidth]{x509}
+   \caption{X.509 Fields \citep{holz2011ssl}\label{fig:x509}}
+\end{figure}
+
+\begin{figure}
+   \centering
+   \includegraphics[width=0.75\textwidth]{tls}
+   \caption{TLS Overview \citep{tlsconcepts}\label{fig:tls}}
 \end{figure}
 
 \subsection{Data Collection}
 \label{subsec:datacol}
-The proposed protocol given by the RSA actually modeled the certificate model
-used by SSL/TLS. For this reason, the SSL certificate model was the primary
-focus of the data collected. Moreover, the data set of RSA keys in SSL
+The proposed DRM protocol given by the RSA actually modeled the certificate
+model used by SSL/TLS. For this reason, the SSL certificate model was the
+primary focus of the data collected. Moreover, the data set of RSA keys in SSL
 certificates is much larger than DRM implementations that use RSA. Thus, the
 data set that was collected and then analyzed consisted entirely of X.509
 certificates.
 
 Since a primary motivation of this work is the potential impact that vulnerable
 RSA keys may have, a data set representative of a large portion of traffic was
-desired. A survey was done over 2007-2010 \cite{labovitz2011internet} that
+desired. A survey was done over 2007-2010 \citep{labovitz2011internet} that
 gathered some useful data on the Internet as a whole. Relevant to web traffic,
 this study showed that together, the major content data networks (CDN) (i.e.
 Google, Facebook, Amazon, etc.) account for nearly 17\% of web traffic.
@@ -330,16 +341,16 @@ lies beyond the scope of this project.
 A Python script was used to parse the CSV file provided by Alexa. Each
 extracted URL was visited on port 443 (corresponding to ``https://") using 
 \texttt{openssl}. If a site responded on that port, it provided an X.509
-certificate to be parsed and verified. Most of the time, this is done by a
-user's web browser which has certificate authorities' private keys hidden
-within. However, since the work here was not concerned with the actual web
-content, the certificate was simply saved. When certificates were found, the
-``Subject Public Key Algorithm" section was inspected. If this contained some
-form of RSA, \texttt{openssl} was used again to extract the RSA key and save
-it into a PEM file (a standard format for saving public and private key
-information in). Additionally, since part of this work's motivation lies in
-expanding the work done in \cite{scharfglass2012breaking}, the keys were also
-stored into a SQLite3 database so that later retrieval by the tool was trivial.
+certificate to be parsed and verified. During a normal web session, this is
+done by a user's web browser which has certificate authorities' private keys
+hidden within. However, since the work here was not concerned with the actual
+web content, the certificate was simply saved. When certificates were found,
+the ``Subject Public Key Algorithm" section was inspected. If this contained
+some form of RSA, \texttt{openssl} was used again to extract the RSA key and
+save it into a PEM file (a standard format for saving public and private key
+information in). Additionally, since part the motivation of data collection is
+PARIS, the keys were also stored into a SQLite3 database so that later
+retrieval using PARIS was trivial.  
 
 After writing an initial implementation of the Python script, it was realized
 that the collection process was too slow. Therefore, some of Python's
@@ -378,8 +389,8 @@ websites in the list fell into this category.
 
 Also of note are the specifics of bit-lengths found. It is a surprising data
 set for various reasons. First, bit-lengths as small as 384, 512, and 768 were
-not expected as keys of this size were factored years ago
-\cite{rsa2007challenge}, and cannot be expected to offer much
+not expected since keys of this size were factored years ago
+\citep{rsa2007challenge}, and cannot be expected to offer much
 security\footnote{Interesting note: The author attempted to visit the sites
 384-bit keys. Google Chrome did not find a web page on port 443 for any of
 the sites.}.
@@ -399,8 +410,8 @@ and, even more surprisingly, 8192-bit.
 
 \begin{table}
 \centering
-\caption{Alexa top 1M X.509 RSA bit-length}
-\begin{tabular}{|r|r|}\hline
+\caption{Alexa top 1M X.509 RSA bit-length\label{tab:bits}}
+\begin{tabular}{|l|r|}\hline
 \textbf{Bits} & \textbf{Count}\\\hline
 384 & 4 \\ \hline
 512 & 309 \\ \hline
@@ -412,27 +423,23 @@ and, even more surprisingly, 8192-bit.
 4096 & 4511 \\ \hline
 8192 & 14 \\ \hline
 other & 44 \\ \hline
-\label{tab:bits}
 \end{tabular}
 \end{table}
 
-Further analysis was done using the tool described in
-\cite{scharfglass2012breaking}. This tool performs a complete check of all
-RSA keys in a given set for the previously mentioned vulnerability described
-in \cite{lenstra2012ron}. This check is done using NVIDIA's CUDA framework to
-parallelize the work as much as possible which allows for a practical security
-validation tool. At the time of writing, the tool's current implementation is
-limited to 1024-bit RSA keys. Due to this limitation, the data set was
-reduced to 46,736 RSA keys. Due to the $O(n^2)$ nature of this problem,
-this check resulted in $1,092,150,216$ comparisons. The run of the tool using
-this data set took 138 minutes, 37 seconds or $131,305$ comparisons per second.
-After applying the tool to this set of keys, it was found that no keys were
-susceptible to the vulnerability (insofar as none of the keys in the set
-shared primes with a given key). Although no vulnerabilities were detected,
-this does not mean the set is completely secure from the previously mentioned
-vulnerability. Since such a limited data set was used, and the security tool
-relies on large sets to accumulate many primes, the analysis presented can
-only be considered an initial pass.
+Following the surface-level analysis, PARIS was used to perform a complete
+check of all RSA keys in a set in order to check for the previously mentioned
+vulnerability \citep{lenstra2012ron}. At the time this data analyzed, PARIS was
+limited to 1024-bit RSA keys. Due to this limitation, the data set was reduced
+to 46,736 RSA keys. Due to the $O(n^2)$ nature of this problem, this check
+resulted in $1,092,150,216$ comparisons. The run of the tool using this data
+set took 138 minutes, 37 seconds or $131,305$ comparisons per second.  After
+applying the tool to this set of keys, it was found that no keys were
+susceptible to the vulnerability (insofar as none of the keys in the set shared
+primes with any other key in the set). Although no vulnerabilities were
+detected, this does not mean the set is completely secure from the previously
+mentioned vulnerability. Since such a limited data set was used, and the
+security tool relies on large sets to accumulate many primes, the analysis
+presented can only be considered an initial pass.  
 
 \subsection{Implications}
 \label{subsec:implications}
@@ -455,27 +462,9 @@ issues. If many machines and key-pairs are being setup and generated as part of
 an initial setup process for a new network of users, poor random number
 generation could have severe consequences when done at scale. This would likely
 create many new, vulnerable keys at once. By being aware that this problem
-could exist, and that a tool such as \cite{scharfglass2012breaking} exists, an
-insecure set of users could be avoided or detected much earlier than would have
-otherwise occurred.
-
-\subsection{Conclusions}
-\label{subsec:conc}
-This survey determined that the primary use of RSA keys in practice is the
-signing of SSL certificates. A data set was gathered that accounts for a
-significant amount of certificates in the context of web traffic. Some
-surface-level analysis was done to gain a general understanding of the
-collected data. A high-performance tool was then applied to a subset of the
-data to check for a vulnerability within the data subset. No vulnerabilities
-were found; however, due to limitations in the tool used, as well as
-limitations in the data set, this cannot be considered a complete analysis
-and requires further investigation.
-
-Though limited, this survey does successfully add real-world application
-context to the work done in \cite{scharfglass2012breaking}. Specific
-implications are able to be draw from the practicality of the tool, and more
-tangible examples of what vulnerabilities in RSA keys looks like have been
-realized.
+could exist, and that a tool such as PARIS exists, an insecure set of keys 
+could be avoided or detected much earlier than would have otherwise been
+possible.  
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -488,21 +477,20 @@ An RSA vulnerability was discovered and detailed in \cite{lenstra2012ron} in
 early 2012 that forms the basis of the exploit the work presented here builds
 upon. Namely, that poor random number generation in RSA keys results in
 insecure encryption using these keys. Specifically, a key's private components
-can be generated using publicly available information by taking advantage of
-the work presented in \cite{scharfglass2012breaking}.
+can be generated using publicly available information.
 
 The exploit explored in \cite{lenstra2012ron} makes use of the two prime
 values that play a fundamental role in an RSA key. These values must be
 sufficiently random such that repeated values are infeasible and mathematically
-extremely improbable to encounter due to the scope of the set (this work
-focuses on 1024-bit keys). However, on some systems and due to some
-less-than-adequate code, this may not always be the case. When these values are
-repeated between keys, the greatest-common-divisor algorithm can be applied to
-find the shared value between keys. This is significant because the GCD
-calculation is significantly less computationally expensive than the
-alternative: factoring the large values. With this new information about each key,
-they private components are straight-forward to generate since the RSA
-key-generation process is public and not difficult to implement.
+extremely improbable to encounter due to the scope of the set (PARIS focuses on
+1024-bit keys). However, on some systems and due to some less-than-adequate
+code, this may not always be the case. When these values are repeated between
+keys, the greatest-common-divisor algorithm can be applied to find the shared
+value between keys. This is significant because the GCD calculation is
+significantly less computationally expensive than the alternative: factoring
+the large values. With this new information about each key, they private
+components are straight-forward to generate since the RSA key-generation
+process is public and not difficult to implement.  
 
 A large sample set was obtained via the OpenSSL Observatory and by crawling the
 Internet for SSL certificates (which use RSA as an encryption scheme). Since it
@@ -516,8 +504,8 @@ vulnerability were avoided).
 \subsection{The Process}
 \label{subsec:process}
 As mentioned, the vulnerability is exploited by performing greatest common
-divisor (GCD) calculations with pairs of keys. The research presented in this
-paper looks at how to most quickly and efficiently analyze a large database of
+divisor (GCD) calculations with pairs of keys. The research presented here
+looks at how to most quickly and efficiently analyze a large database of
 RSA keys and detect if this vulnerability is present within the set.
 Traditionally, this would be a tedious process that would likely be infeasible
 due to time constraints. Since the calculations are independent of one another
@@ -533,19 +521,19 @@ fashion, further optimizing the process.
 
 \subsection{Multiple GPUs}
 \label{subsec:muliGPU}
-As an extension to the work in \cite{scharfglass2012breaking}, multiple GPU
-support will be explored. This concept is discussed at length in
-\cite{schaa2009exploring}. Here, several GPU configurations are investigated to
-analyze how a distributed system may benefit over a single-GPU design.
-Work is divided intelligently among the systems in the distributed system to
-gain more performance increase than would be possible with a single system.
-
-At the time \cite{schaa2009exploring} was written, single-system,
-multiple-GPU configurations were not possible using CUDA over SLI (Scalable
-Link Interface, NVIDIA's brand for the interface between multiple GPUs).
-However, this is possible now, and will be explored at length in our work.
-This configuration offers benefits including transfer speeds over alternative
-configurations.
+%As an extension to the work in \cite{scharfglass2012breaking}, multiple GPU
+%support will be explored. This concept is discussed at length in
+%\cite{schaa2009exploring}. Here, several GPU configurations are investigated to
+%analyze how a distributed system may benefit over a single-GPU design.
+%Work is divided intelligently among the systems in the distributed system to
+%gain more performance increase than would be possible with a single system.
+%
+%At the time \cite{schaa2009exploring} was written, single-system,
+%multiple-GPU configurations were not possible using CUDA over SLI (Scalable
+%Link Interface, NVIDIA's brand for the interface between multiple GPUs).
+%However, this is possible now, and will be explored at length in our work.
+%This configuration offers benefits including transfer speeds over alternative
+%configurations.
 
 The work done in \cite{thibault2009cuda} helps to make a case for the
 additional speedup that making use of multiple GPUs can offer. This work was
@@ -572,16 +560,11 @@ system.
 
 \subsection{Large Data}
 \label{subsec:largedata}
-Since one of our primary goals is to remove the limitation present in
-\cite{scharfglass2012breaking} that prevents larger sets of keys from being
-analyzed, work investigating how to manage large data sets is relevant.
-Specifically, large data sets that must be managed by the GPU.
-
-One such work is \cite{wu2009clustering}. In this work, like our own, the data
-is too large to fit within the extremely-limited memory of the GPU. Thus, the
-data must be partitioned. In this work, the data was first prepared by
-organizing it so that it could be effectively partitioned. There was a
-straightforward way of doing so for this application (K-means).
+\cite{wu2009clustering} explores a data set, like our own, where the data is
+too large to fit within the extremely-limited memory of the GPU. Thus, the data
+must be partitioned. In this work, the data was first prepared by organizing it
+so that it could be effectively partitioned. There was a straightforward way of
+doing so for this application (K-means).  
 
 Additionally, some features of the GPU were considered and used, namely
 asynchronous memory transfer, a type of multi-tasked streaming. This feature
@@ -620,12 +603,7 @@ some of the most important (if not \emph{the} most important) aspects of
 creating a parallel solution for use with a GPGPU. The work done in
 \cite{ryoo2008optimization} gives a detailed overview of how one might optimize
 work done with CUDA. It discusses the memory model, and how certain techniques
-such as tiling are used to optimize the performance gains. Although some of
-these techniques are used in the original implementation found in
-\cite{scharfglass2012breaking}, it does not appear that they were used
-extensively. It seems that the research and surveying done in
-\cite{ryoo2008optimization} can be applied to our work here and our speedup
-will benefit from their results.
+such as tiling are used to optimize the performance gains.
 
 Unfortunately, this work was done before multi-GPU systems were fully available
 and accessible using CUDA. The optimization strategies presented in this work
@@ -644,21 +622,12 @@ is used: the initial, most straight-forward implementation, and another
 implementation optimized around the CUDA memory model. The latter offered
 significant performance increases over the original. 
 
-A similar approach will be applied to the work that is used from
-\cite{scharfglass2012breaking}. Namely, shared memory will be used as efficiently
-as possible to allow CUDA to perform at its greatest capacity. This is a vital
-concept in general when optimizing for CUDA; however, the work and challenges
-from \cite{peters2011fast} are similar to our own, so the implementation
-overlaps more than arbitrary examples.
-
-Another important contribution to the field and concepts of distributed systems
-is the work presented in \cite{dean2008mapreduce}. MapReduce has become an
-extremely useful tool for companies like Google with massive data centers that
-must distribute the work to perform as reasonable (real-time) levels. MapReduce
-explores how work might be delegated to multiple workers that exist in a
-particular distributed system. These concepts apply to the problem of
-performing the necessary GCD comparisons using multiple GPUs in a single
-system.
+%A similar approach will be applied to the work that is used from
+%\cite{scharfglass2012breaking}. Namely, shared memory will be used as efficiently
+%as possible to allow CUDA to perform at its greatest capacity. This is a vital
+%concept in general when optimizing for CUDA; however, the work and challenges
+%from \cite{peters2011fast} are similar to our own, so the implementation
+%overlaps more than arbitrary examples.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -781,7 +750,7 @@ grows at a rate of $k^2$, where $k$ is the number of keys.
 
 \subsection{Theoretical Speedup}
 \label{subsec:theory}
-Maximum speedup is defined as follows:
+Maximum speedup is defined in Equation~\ref{eq:speed}:
 \begin{equation}
    \mbox{Max Speedup} = \frac{1}{1 - P}
    \label{eq:speed}
@@ -803,7 +772,7 @@ where
 \end{itemize}
 
 Since $g$ will increase significantly more rapidly than $k$, $P$ (based on 
-equation~\ref{eq:percent}) will approach $1$ as $k$ approaches 
+Equation~\ref{eq:percent}) will approach $1$ as $k$ approaches 
 $\infty$. This relationship can be observed in Figure~\ref{fig:parPercent}.
 
 \begin{figure}
@@ -823,7 +792,7 @@ any pair. Given a known set of keys, it is not known before processing
 the keys which will be likely to have a GCD greater than 1; therefore, there 
 is no way to eliminate comparisons between specific pairs. The natural 
 organization to fulfill this requirement is a comparison matrix of the all 
-keys. Each location in the matrix corresponds to a comparison between two 
+keys. Each location in the matrix corresponds to a GCD comparison between two 
 keys.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -857,6 +826,11 @@ performed significantly, shown in Figure~\ref{fig:compvkeys}.
 
 \subsubsection{Large Keys Sets}
 \label{subsubsec:largesets}
+% TODO
+How is it organized
+How is it decomposed
+When does decomposition stop
+How do you know it works
 
 \subsection{Grid Organization}
 \label{sec:gridorg}
@@ -872,7 +846,7 @@ there are 32.
 \end{displaymath}
 The remaining dimensions, $y$ and $z$, were set to 4, resulting in a block of 
 512 threads. This design decision was experimentally determined. See 
-$\S$\ref{sec:occupancy} for details about Occupancy optimizations.
+$\S$~\ref{sec:occupancy} for details about Occupancy optimizations.
 \begin{displaymath}
    32 \cdot 4 \times 4 = 512
 \end{displaymath}
@@ -985,9 +959,14 @@ memory to transfer before calling the kernel.
 
 \subsection{Generating the Private Key}
 \label{subsec:private}
+% TODO
+What conditions need to be met
+When does this happen
+What needs to be done to print out the key
 
 \subsection{Multiple GPUs}
 \label{subsec:multiGPU}
+%TODO
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -996,6 +975,9 @@ memory to transfer before calling the kernel.
 
 \subsection{Test Machine}
 \label{subsec:testmachine}
+
+\subsubsection{Initial Setup}
+\label{subsubsec:initsetup}
 All performance measurements were made on a single machine with an Intel Xeon 
 W3503 dual-core CPU and 4 GB of RAM. This machine has one NVIDIA GeForce
 GTX 480 GPU with 480 CUDA cores and 1.5 GB of memory. The CUDA driver 
@@ -1003,18 +985,24 @@ version present on the machine is 4.2.0, release 302.17, the runtime version is
 4.2.9. The CUDA compute capability is version 2.0, and the maximum threads per 
 block is 1024, with each warp having 32 threads.
 
+\subsubsection{Updated Setup}
+\label{subsubsec:updatedsetup}
+% TODO
+Kepler!
+
 \subsection{Reference Implementations}
 \label{subsec:refimpl}
 In order to check the accuracy of the final implementation, as well as to 
 provide a point of comparison for benchmarking, two reference implementations 
 of this exploit were created. Each was able to use the same format key 
-databases (described in $\S$\ref{subsec:testsets}). 
+databases (described in $\S$~\ref{subsec:testsets}). 
 
 The first implementation was written purely in Python using the open source
 PyCrypto cryptography library. This implementation was able to perform the
 entire exploit, from finding weak 1024-bit RSA public keys through generating
 the discovered private keys. This implementation was not used for performance
-comparison as it was dissimilar to the other two implementations.
+comparison as it was dissimilar to the other two implementations. However, it
+was used to validate the exploit itself and serve as an algorithm reference.
 
 A sequential version of the binary GCD algorithm was implemented to serve as a 
 second validation tool for the CUDA implementation. This version sequentially 
@@ -1026,7 +1014,8 @@ errors did not result merely from processing the data in parallel.
 \label{subsec:testsets}
 In order to conduct meaningful tests, it was necessary to use an identical 
 data set in all tests. To facilitate this, a tool was written in Python to 
-generate both regular and intentionally weak RSA key pairs using PyCrypto and store them in an SQLite3 database. All keys were generated with a 
+generate both regular and intentionally weak RSA key pairs using PyCrypto and
+store them in an SQLite3 database. All keys were generated with a 
 constant $e$ of 65537, chosen because this was discovered to be a commonly used 
 value (cf. \cite{lenstra2012ron}).
 
@@ -1037,7 +1026,7 @@ In order to generate a weak key, this program would generate an initial
 normal RSA key but save the prime used for $p$. For each subsequent bad key, 
 $p$ would be replaced with this constant, and $n$ was recalculated. The 
 result was that each weak key would have a GCD greater than 1 when 
-tested against any other weak key. 
+tested against any other weak key, namely, $p$. 
 
 Using this tool, it was possible to build arbitrarily large test sets with a 
 known number of keys exhibiting the weakness. When these databases 
@@ -1045,6 +1034,7 @@ were processed using any of the reference implementations, the
 discovered number of weak keys could be directly compared with the 
 number of keys expected to be found. This allowed both repeatable testing to 
 measure run time, and a method to validate the parallel algorithm was indeed 
+finding GCDs as expected. 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -1092,6 +1082,7 @@ number of keys due to the very long run time of the sequential implementation.
 
 \subsection{Scalable Implementation}
 \label{scaleimpl}
+% TODO
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -1102,85 +1093,51 @@ implementation when compared to the sequential implementation. Many
 more keys are able to be compared in a given amount of time using the CUDA
 implementation. 
 
-A tool was developed to efficiently and completely compare a list of 1024-bit 
-RSA public keys, avoiding repetition and unnecessary work. This 
-tools allows an increased number of keys to be compared 
-compared to prior work, in turn allowing overall execution time to decrease due 
-to the increased parallelism.
+PARIS is a tool that allows for efficient and complete comparisons of a list of
+1024-bit RSA public keys, avoiding repetition and unnecessary work. This tool
+allows an increased number of keys to be compared to prior work, in turn
+allowing overall execution time to decrease due to the increased parallelism.
 
-The tool described in this paper offers significant advantages over other GCD 
-algorithms in CUDA, and practically applies this for comparison of 1024-bit 
-RSA keys in order to test for a particular weakness. There also exist 
-several areas where the implementation would benefit from further 
-investigation and development including application of the GCDs, and 
-expansion to iterative kernel calls in order to handle even larger sets of 
-keys to compare.
+PARIS offers significant advantages over other GCD algorithms in CUDA, and
+practically applies this for comparison of 1024-bit RSA keys in order to test
+for a particular weakness.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Future Work}
 \label{sec:future}
-The primary limiting factor of this implementation is the amount of memory 
-available on the GPU. Since all key combinations must computed to expose any 
-potential weakness, the kernel was structured to take a single vector of 
-keys and perform all possible comparisons. In order to process more keys, 
-either a GPU with more memory must be used, or the algorithm must be modified 
-in order to use multiple, iterative kernel launches. The iterative kernel 
-approach would require memory to be separated into two sections that could 
-each be filled with subsections of the large, complete array of keys. All 
-comparisons would then be performed between the two subsections by calling the 
-kernel that is currently implemented. Upon returning from the kernel, the data 
-in one subsection would be shifted, and all the compares would then be done 
-for those two sets of keys. This process would continue until both vectors 
-have iterated over all keys: specifically, the kernel call would reside in a 
-pair of nested \texttt{for} loops. This change would allow the implementation 
-presented here to process an arbitrary number of keys.
+To further enhance the throughput of PARIS, asynchronous memory transfers could
+be added to the implementation. When combined with multiple kernel launches, a
+significant portion of the memory I/O (which is one of the main limiting
+factors of performance using the GPU) would be able to be masked by
+simultaneously processing the data currently on the GPU while new data is being
+copied onto it.
 
-To further enhance the above proposed addition, asynchronous memory 
-transfers could also be added to the implementation. When combined with 
-multiple kernel launches, a significant portion of the memory I/O (which is one 
-of the main limiting factors of performance using the GPU) would be able to be 
-masked by simultaneously processing the data currently on the GPU while new 
-data is being copied onto it.
-
-An aspect that was originally intended for this project, but was not 
-implemented was to have the CUDA kernel return the actual GCD of any keys that 
-were found to be ``weak'' in the sense there existed a GCD greater than 1. 
-Since a large majority of the GCDs found by our implementation are equal to 
-one, memory is wasted if all the results are transferred back to the host. The 
-most memory efficient solution would include dynamically allocating memory for 
-any significant results on the device. This would remove the recalculation step 
-in the current implementation needed to produce private keys.
-
-Recently NVIDIA has released information about a new GPU architecture called 
-Kepler\cite{nvidiakepler}.
 The Kepler architecture introduces new features that may increase the 
-performance of this implementation. A feature known as Dynamic
-Parallelism  allows a CUDA kernel to launch new kernels from the GPU. This
-would allow dynamic allocation of block sizes for different areas of the
-comparison matrix and remove idle threads from the kernel. Hyper-Q is a new
-technology that manages multiple CUDA kernels from multiple CPU threads. With
-the current Fermi architecture, only one CUDA kernel may run on the device at
-one time. This can lead to under utilization of the GPU hardware. An approach
-using multiple CPU threads, each running their own CUDA kernel, could greatly
-increase throughput.
+performance of this implementation. A feature known as Dynamic Parallelism 
+allows a CUDA kernel to launch new kernels from the GPU. This would allow
+dynamic allocation of block sizes for different areas of the comparison matrix
+and remove idle threads from the kernel. Hyper-Q is a new technology that
+manages multiple CUDA kernels from multiple CPU threads. With the current Fermi
+architecture, only one CUDA kernel may run on the device at one time. This can
+lead to under utilization of the GPU hardware. An approach using multiple CPU
+threads, each running their own CUDA kernel, could greatly increase throughput.
 
-The final missing component of this implementation would be to complete the 
-algorithm and use the GCDs which are being calculated to generate RSA private 
-key pairs. In order to do this, a heterogeneous multi-process approach may be 
-most straightforward. After the parallel run completes, the bit-vector of 
-results would be examined to find the key pairs which produced GCDs greater 
-than one. In these cases, the GCD would be recomputed, and used as either $p$ 
-or $q$. Once this was done, the missing prime would be computed, then based on 
-this, $d$ would be found. The resulting RSA public/private key pair could be 
-exported or stored for later verification.
+% TODO
+% database things
+%
+% online tool
+%
+% 2048 bit
+%
+% Try other GCD algorithm for comparison
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{acknowledgements}
 We'd like to thank Kerry Scharfglass and Darrin Weng for their contributions
-to the original work and fundamental implementation that formed the basis for
-the tool.
+to the original work \citep{scharfglass2012breaking} and fundamental
+implementation that formed the basis for the tool.
 \end{acknowledgements}
 
 % BibTeX users please use one of

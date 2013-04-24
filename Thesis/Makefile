@@ -9,18 +9,18 @@ SPFLAGS = -c --mode=tex
 
 TITLE=PARIS
 SUPERTITLE=PaRIS_Supercomputing
-ALL:paper
+ALL:pdf
 
 all: $(ALL)
 
-super: $(SUPERTITLE).tex
+super:
 	$(SPELL) $(SPFLAGS) $(SUPERTITLE).tex
 	$(LATEX) $(SUPERTITLE).tex
 	$(BIBTEX) $(SUPERTITLE).aux
 	$(LATEX) $(SUPERTITLE).tex
 	$(LATEX) $(SUPERTITLE).tex
 
-paper: $(TITLE).tex 
+paper:
 	$(SPELL) $(SPFLAGS) $(TITLE).tex
 	$(LATEX) $(TITLE).tex
 	$(BIBTEX) $(TITLE).aux
