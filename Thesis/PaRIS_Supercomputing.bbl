@@ -1,0 +1,117 @@
+\begin{thebibliography}{21}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{{#1}}
+\providecommand{\urlprefix}{URL }
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{DOI~\discretionary{}{}{}#1}\else
+  \providecommand{\doi}{DOI~\discretionary{}{}{}\begingroup
+  \urlstyle{rm}\Url}\fi
+\providecommand{\eprint}[2][]{\url{#2}}
+
+\bibitem[{rsa(2004{\natexlab{a}})}]{rsa2004announces}
+ (2004{\natexlab{a}}) {RSA} security announces new digital rights management
+  solution. \url{http://www.rsa.com/press_release.aspx?id=5159}, accessed: 22
+  February 2013
+
+\bibitem[{rsa(2004{\natexlab{b}})}]{rsa2004supports}
+ (2004{\natexlab{b}}) {RSA} security supports open mobile alliance {DRM} 2.0
+  for delivery of secure content.
+  \url{http://www.rsa.com/press_release.aspx?id=3337}, accessed: 27 February
+  2013
+
+\bibitem[{rsa(2007)}]{rsa2007challenge}
+ (2007) The {RSA} {F}actoring {C}hallenge.
+  \url{http://www.rsa.com/rsalabs/node.asp?id=2093}
+
+\bibitem[{tls(2013)}]{tlsconcepts}
+ (2013) Transport security layer ({TLS}) concepts.
+  \url{http://tech.kaazing.com/documentation/xmpp/3.5/security/c_tls.html},
+  accessed: 3 March 2013
+
+\bibitem[{Corporation(2012{\natexlab{a}})}]{nvidia2012gpu}
+Corporation N (2012{\natexlab{a}}) {CUDA} occupancy calculator.
+  \url{http://developer.download.nvidia.com/compute/cuda/CUDA_Occupancy_calcul%
+ator.xls}
+
+\bibitem[{Corporation(2012{\natexlab{b}})}]{nvidia2012programming}
+Corporation N (2012{\natexlab{b}}) {NVIDIA} {CUDA} {C} programming guide.
+  \url{http://developer.download.nvidia.com/compute/DevZone/docs/html/C/doc/CU%
+DA_C_Programming_Guide.pdf}
+
+\bibitem[{Corporation(2012{\natexlab{c}})}]{nvidiakepler}
+Corporation N (2012{\natexlab{c}}) {NVIDIA's} next generation {CUDA} compute
+  architecture: {Kepler GK110}.
+  \url{http://www.nvidia.com/content/PDF/kepler/NVIDIA-Kepler-GK110-
+  Architecture-Whitepaper.pdf}
+
+\bibitem[{Dean and Ghemawat(2008)}]{dean2008mapreduce}
+Dean J, Ghemawat S (2008) Map{R}educe: simplified data processing on large
+  clusters. Communications of the {ACM} 51(1):107--113
+
+\bibitem[{Fujimoto(2009)}]{fujimoto2009high}
+Fujimoto N (2009) High-throughput multiple-precision {GCD} on the {CUDA}
+  architecture. In: Signal Processing and Information Technology (ISSPIT), 2009
+  IEEE International Symposium on, IEEE, pp 507--512
+
+\bibitem[{Holz et~al(2011)Holz, Braun, Kammenhuber, and Carle}]{holz2011ssl}
+Holz R, Braun L, Kammenhuber N, Carle G (2011) The {SSL} landscape: a thorough
+  analysis of the x.509 {PKI} using active and passive measurements. In:
+  Proceedings of the 2011 ACM SIGCOMM conference on Internet measurement
+  conference, ACM, pp 427--444
+
+\bibitem[{Labovitz(2011)}]{labovitz2011internet}
+Labovitz C (2011) Internet {T}raffic {E}volution 2007-2011. In: Global Peering
+  Forum, April
+
+\bibitem[{Lenstra et~al(2012)Lenstra, Hughes, Augier, Bos, Kleinjung, and
+  Wachter}]{lenstra2012ron}
+Lenstra AK, Hughes JP, Augier M, Bos JW, Kleinjung T, Wachter C (2012) Ron was
+  wrong, whit is right. IACR eprint archive 64
+
+\bibitem[{Peters et~al(2011)Peters, Schulz-Hildebrandt, and
+  Luttenberger}]{peters2011fast}
+Peters H, Schulz-Hildebrandt O, Luttenberger N (2011) Fast in-place,
+  comparison-based sorting with {CUDA}: a study with bitonic sort. Concurrency
+  and Computation: Practice and Experience 23(7):681--693
+
+\bibitem[{Rivest et~al(1978)Rivest, Shamir, and Adleman}]{rivest1978method}
+Rivest RL, Shamir A, Adleman L (1978) A method for obtaining digital signatures
+  and public-key cryptosystems. Communications of the ACM 21(2):120--126
+
+\bibitem[{Ryoo et~al(2008)Ryoo, Rodrigues, Baghsorkhi, Stone, Kirk, and
+  Hwu}]{ryoo2008optimization}
+Ryoo S, Rodrigues C, Baghsorkhi S, Stone S, Kirk D, Hwu W (2008) Optimization
+  principles and application performance evaluation of a multithreaded {GPU}
+  using {CUDA}. In: Proceedings of the 13th ACM SIGPLAN Symposium on Principles
+  and practice of parallel programming, ACM, pp 73--82
+
+\bibitem[{Schaa and Kaeli(2009)}]{schaa2009exploring}
+Schaa D, Kaeli D (2009) Exploring the multiple-{GPU} design space. In: Parallel
+  \& Distributed Processing, 2009. IPDPS 2009. IEEE International Symposium on,
+  IEEE, pp 1--12
+
+\bibitem[{Scharfglass et~al(2012)Scharfglass, Weng, White, and
+  Lupo}]{scharfglass2012breaking}
+Scharfglass K, Weng D, White J, Lupo C (2012) Breaking weak 1024-bit {RSA} keys
+  with {CUDA}. In: Parallel and Distributed Computing, Applications and
+  Technologies (PDCAT)
+
+\bibitem[{Stein(1967)}]{stein1967computational}
+Stein J (1967) Computational problems associated with {R}acah algebra. Journal
+  of Computational Physics 1(3):397--405
+
+\bibitem[{Thibault and Senocak(2009)}]{thibault2009cuda}
+Thibault J, Senocak I (2009) Cuda implementation of a {N}avier-{S}tokes solver
+  on multi-{GPU} desktop platforms for incompressible flows. Mechanical and
+  Biomedical Engineering Faculty Publications and Presentations p~4
+
+\bibitem[{Vall{\'e}e(1998)}]{vallee1998complete}
+Vall{\'e}e B (1998) The complete analysis of the binary {E}uclidean algorithm.
+  Algorithmic Number Theory pp 77--94
+
+\bibitem[{Wu et~al(2009)Wu, Zhang, and Hsu}]{wu2009clustering}
+Wu R, Zhang B, Hsu M (2009) Clustering billions of data points using {GPU}s.
+  In: Proceedings of the combined workshops on UnConventional high performance
+  computing workshop plus memory access workshop, ACM, pp 1--6
+
+\end{thebibliography}

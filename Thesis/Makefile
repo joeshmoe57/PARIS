@@ -7,10 +7,18 @@ DVIPDF = dvipdf
 SPELL = aspell
 SPFLAGS = -c --mode=tex
 
-TITLE = Paris
-ALL: paper
+TITLE=PARIS
+SUPERTITLE=PaRIS_Supercomputing
+ALL:paper
 
 all: $(ALL)
+
+super: $(SUPERTITLE).tex
+	$(SPELL) $(SPFLAGS) $(SUPERTITLE).tex
+	$(LATEX) $(SUPERTITLE).tex
+	$(BIBTEX) $(SUPERTITLE).aux
+	$(LATEX) $(SUPERTITLE).tex
+	$(LATEX) $(SUPERTITLE).tex
 
 paper: $(TITLE).tex 
 	$(SPELL) $(SPFLAGS) $(TITLE).tex

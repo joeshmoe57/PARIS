@@ -89,9 +89,9 @@ unfortunate side-effect of making validation equally as difficult.
 
 We can leverage massive-parallelism and the computational power that is granted
 by today's commodity hardware such as GPUs to make checks that would
-otherwise be impossible to perform, attainable. Our work presents a practical tool for
-validating RSA keys for poor prime numbers: a fundamental problem that has led
-to significant security holes.
+otherwise be impossible to perform, attainable. Our work presents a practical
+tool for validating RSA keys for poor prime numbers: a fundamental problem
+that has led to significant security holes.
 
 Our implementation using NVIDIA's CUDA framework offers a 27.5 times speedup
 over a reference sequential implementation. This level of speedup brings this
@@ -115,7 +115,7 @@ validation into the realm of runtime reachability.
 % ------------- Main chapters here --------------------
 
 \chapter{Introduction}
-\label{introduction}
+\label{sec:intro}
 
 RSA is a public key encryption scheme which relies on the difficulty of 
 factoring large numbers. The algorithm is prevalent throughout security, 
@@ -184,6 +184,7 @@ be executed in parallel, resulting in further speedup.
 %
 
 \section{Overview of CUDA}
+\label{sec:cuda}
 CUDA is a platform that provides a set of tools along with the ability to 
 write programs that make use of NVIDIA's GPUs (cf. 
 \cite{nvidia2012programming}). These massively-parallel hardware devices are 
@@ -209,13 +210,16 @@ a limited number of registers that each SM has access to. Each thread in a
 block can access the same section of shared memory.
 
 \section{Algorithm Description}
+\label{sec:alg}
 \subsection{Binary GCD}
+\label{subsec:binGCD}
 Binary GCD is a well known algorithm for computing the greatest common divisor 
 of two numbers. Instead of relying on costly division operations like Euclid's 
 algorithm, bit-wise shifts are employed. The implementation
 presented in this paper follows the outline displayed in Algorithm~\ref{alg:binGCD}.
 
 \begin{algorithm}
+   \label{alg:binGCD}
    \KwIn{$x$ and $y$: two integers.}
    \KwOut{The greatest common divisor of $x$ and $y$.}
    \nl\Repeat {$GCD(x, y) = GCD(0, y) = y$} {
@@ -234,10 +238,10 @@ presented in this paper follows the outline displayed in Algorithm~\ref{alg:binG
       }
    }
    \caption{Binary GCD algorithm outline}
-   \label{alg:binGCD}
 \end{algorithm}
 
 \subsection{Parallel Functions}
+\label{subsec:parfunc}
 To accomplish Algorithm \ref{alg:binGCD} using CUDA, the following three 
 functions had to parallelized: shift, subtract, and greater-than-or-equal. As 
 outlined in \cite{fujimoto2009high}, each 1024-bit number is divided across one 
@@ -251,6 +255,7 @@ to a thread in a warp. Each thread shifts its value once and
 uses its copy of the adjacent integer to determine if a bit has shifted 
 between threads. This procedure is outlined in Algorithm \ref{alg:parShift}.
 \begin{algorithm}
+   \label{alg:parShift}
    \KwIn{$x[32]$ is a 1024-bit integer represented as an array of 32 \texttt{int}s, $threadID$ is the 0-31 index of the thread in warp.}
    \nl\eIf {$threadID \neq 0$} {
       \nl$temp\gets x[threadID - 1]$\;
@@ -260,18 +265,18 @@ between threads. This procedure is outlined in Algorithm \ref{alg:parShift}.
    \nl$x\gets x>>1$\;
    \nl$x\gets x \:\text{OR}\: (temp << 31)$\;
    \caption{Parallel right shift}
-   \label{alg:parShift}
 \end{algorithm}
 
 The parallel subtract uses a method called \emph{carry skip} from 
 \cite{fujimoto2009high}. First, each thread subtracts its piece and sets the 
 ``borrow" flag of \texttt{threadID - 1} if an underflow occurred. Next, each 
-thread checks if it was borrowed from and if so, decrements itself and clears the 
-flag. Then, if another underflow occurs, the borrow flag at \texttt{threadID 
-- 1} will be set. This continues until all the borrow flags are cleared. An 
-outline can be found in Algorithm \ref{alg:parSub}.
+thread checks if it was borrowed from and if so, decrements itself and clears
+the flag. Then, if another underflow occurs, the borrow flag at
+\texttt{threadID - 1} will be set. This continues until all the borrow flags
+are cleared. An outline can be found in Algorithm \ref{alg:parSub}.
 
 \begin{algorithm}
+   \label{alg:parSub}
    \KwIn{$x$ and $y$: two 1024-bit integers, $threadID$ is the 0-31 index of the thread in warp.}
    \nl$x[threadID]\gets x[threadID]-y[threadID]$\;
    \nl\If {underflow} {
@@ -287,7 +292,6 @@ outline can be found in Algorithm \ref{alg:parSub}.
       }
    }
    \caption{Parallel subtract using ``carry skip"}
-   \label{alg:parSub}
 \end{algorithm}
 
 The parallel greater-than-or-equal has each thread check if its integers are 
@@ -297,6 +301,7 @@ This is done atomically to ensure the correct value is stored. Finally, all
 the threads do a greater-than-or-equal comparison with the integers specified
 by the position variable. This function is outlined in Algorithm \ref{alg:parGEQ}.
 \begin{algorithm}
+   \label{alg:parGEQ}
    \KwIn{$x$ and $y$: two 1024-bit integers, $threadID$ is the 0-31 index of the thread in warp.}
    \KwOut{$True$ if $x \geq y$; else $False$.}
    \nl\If {$x[threadID] \neq y[threadID]$} {
@@ -304,10 +309,10 @@ by the position variable. This function is outlined in Algorithm \ref{alg:parGEQ
    }
    \nl\Return $x[pos] \geq y[pos]$
    \caption{Parallel greater-than-or-equal-to}
-   \label{alg:parGEQ}
 \end{algorithm}
 
 \subsection{Computational Complexity}
+\label{subsec:compcomp}
 The computational complexity of the binary GCD algorithm has been shown by 
 Stein and Vall$\acute{\text{e}}$e (cf. \cite{stein1967computational}, 
 \cite{vallee1998complete}) to have a worst case complexity of $\mathcal{O}(n^2)$ 
@@ -320,6 +325,7 @@ To compare all the keys together, the amount of GCDs that must be calculated
 grows at a rate of $k^2$, where $k$ is the number of keys.
 
 \subsection{Theoretical Speedup}
+\label{subsec:theory}
 Maximum speedup is defined as follows:
 \begin{equation}
    \mbox{Max Speedup} = \frac{1}{1 - P}
@@ -353,6 +359,7 @@ $\infty$. This relationship can be observed in Figure \ref{fig:parPercent}.
 \end{figure}
 
 \section{Problem Description}
+\label{sec:probdesc}
 The RSA weakness described above demands that each key in a set be 
 compared with each other key to determine if a GCD greater than 1 exists for 
 any pair. Given a known set of keys, it is not known before processing 
@@ -363,7 +370,9 @@ keys. Each location in the matrix corresponds to a comparison between two
 keys.
 
 \section{Implementation}
+\label{sec:impl}
 \subsection{Problem Decomposition}
+\label{subsec:probdecomp}
 Initially, the comparison matrix seems to be an $n^2$ solution. However, the 
 diagonal of the matrix created consists of unproductive GCD calculations since 
 these entries would compare each key with itself. Furthermore, the matrix is 
@@ -377,18 +386,17 @@ This reduction in number of overall compares decreases the work
 performed significantly, shown in Figure \ref{fig:compvkeys}. 
 
 \begin{figure}
+   \label{fig:compvkeys}
    \centering
    \includegraphics[width=3.5in]{chart_6.png}
    \caption{Number of comparisons needed vs. total number of keys in set}
-   \label{fig:compvkeys}
 \end{figure}
 
 \subsection{Grid Organization}
-\label{sec:GridOrg}
+\label{sec:gridorg}
 One of the most important aspects of any CUDA implementation is the 
 organization of the thread and block array to ensure that the architecture is 
-appropriately used to its full potential. The thread array in this 
-%JW%
+appropriately used to its full potential. The threads array in this 
 implementation was organized using 3 dimensions. The $x$ dimension represented 
 the sectioning of a 1024-bit value into individual 32-bit integers, of which 
 there are 32. 
@@ -418,8 +426,8 @@ Blocks were arranged in row-major order based on the key comparisons that they
 held. The formula for the number of blocks, $B$, needed for a vector of keys of 
 size $k$ can be seen in Equation \ref{eq:blocks}.
 \begin{equation}
-   \sum_{i=1}^{\left\lceil \frac{k}{4} \right\rceil}i = B
    \label{eq:blocks}
+   \sum_{i=1}^{\left\lceil \frac{k}{4} \right\rceil}i = B
 \end{equation}
 
 The limit for a grid in a single dimension is $2^{16} - 1 = 65535$ 
@@ -428,15 +436,16 @@ the number of blocks available for computation, a second grid dimension was
 added. This increased the theoretical maximum number of keys per kernel 
 launch as seen in Equation \ref{eq:maxKeys}.
 \begin{equation}
+   \label{eq:maxKeys}
    \begin{split}
    \sum_{i = 1}^{\left\lceil\frac{k}{4}\right\rceil} i & \leq {\left(2^{16} - 
    1\right)}^2\\
    k & \leq 370716\\
    \end{split}
-   \label{eq:maxKeys}
 \end{equation}
 
 \subsection{Shared Memory}
+\label{subsec:shared}
 Shared memory was used to load the necessary keys from global memory. Two 
 arrays were created in shared memory, representing the thread-array; both 
 3-dimensional, $32\times4\times4$ and had an integer loaded into each 
@@ -454,7 +463,7 @@ comparison within a block. Within the subtract function, shared memory was
 utilized to represent the borrow value for each integer. 
 
 \subsection{Occupancy}
-\label{sec:Occupancy}
+\label{sec:occupancy}
 Each SM can be assigned multiple blocks at the same time as long as there are 
 enough free registers and shared memory available. The ratio of active warps 
 to the maximum number of warps supported by a SM is called \emph{occupancy}. 
@@ -475,6 +484,7 @@ occupancy for these block sizes. A block size of 512 threads was chosen
 because it results in the greatest occupancy and thus the best performance. 
 
 \begin{table}
+   \label{tab:occupancy}
 %\tbl{Table giving occupancy for various block dimensions\label{tab:occupancy}}{
    \centering
    \begin{tabular}{l|rrrr}
@@ -482,12 +492,11 @@ because it results in the greatest occupancy and thus the best performance.
       \hline
               Occupancy & 67\% & 94\% & 100\% & 52\%\\
    \end{tabular}
-   \caption{Table giving occupancy for various block 
-     dimensions\label{tab:occupancy}}
- 
+   \caption{Table giving occupancy for various block dimensions}
 \end{table}
 
 \subsection{Bit-vector}
+\label{subsec:bitvector}
 The initial approach was to allocate a large, multi-dimensional array of 
 integers that would hold the results of the CUDA GCD calculations. This was 
 allocated to the GPU, so each thread could have access as needed; however, 
@@ -510,7 +519,9 @@ due to the time saved in memory transfers since there was significantly less
 memory to transfer before calling the kernel.
 
 \section{Experimental Setup}
+\label{sec:expsetup}
 \subsection{Test Machine}
+\label{subsec:testmachine}
 All performance measurements were made on a single machine with an Intel Xeon 
 W3503 dual-core CPU and 4 GB of RAM. This machine has one NVIDIA GeForce
 GTX 480 GPU with 480 CUDA cores and 1.5 GB of memory. The CUDA driver 
@@ -519,6 +530,7 @@ version present on the machine is 4.2.0, release 302.17, the runtime version is
 block is 1024, with each warp having 32 threads.
 
 \subsection{Reference Implementations}
+\label{subsec:refimpl}
 In order to check the accuracy of the final implementation, as well as to 
 provide a point of comparison for benchmarking, two reference implementations 
 of this exploit were created. Each was able to use the same format key 
@@ -531,15 +543,13 @@ PyCrypto cryptography library. % 2.7.1.
 %can perform operations on these values, it was most straightforward to 
 %implement the entire program using these tools. The open source PyCrypto\footnote{https://www.dlitz.net/software/pycrypto/} 
 %library (version 2.5) was used to import and process the RSA key pairs. 
-This 
-implementation was able to perform the entire exploit, from finding 
-weak 1024-bit RSA 
-public keys through generating the discovered private keys. 
+This implementation was able to perform the entire exploit, from finding 
+weak 1024-bit RSA public keys through generating the discovered private keys. 
 %It was used 
 %primarily as a sanity check for the database generation in order to 
 %determine if the keys generated as expected. 
-This implementation was not used for performance 
-comparison as it was dissimilar to the other two implementations.
+This implementation was not used for performance comparison as it was
+dissimilar to the other two implementations.
 
 A sequential version of the binary GCD algorithm was implemented to serve as a 
 second validation tool for the CUDA implementation. This version sequentially 
@@ -548,7 +558,7 @@ same format. Comparison with this implementation ensured that unexpected errors
 did not result merely from processing the data in parallel.
 
 \subsection{Test Sets}
-\label{sec:testSets}
+\label{sec:testsets}
 In order to conduct meaningful tests, it was necessary to use an identical 
 data set in all tests. To facilitate this, a tool was written in Python to 
 generate both regular and intentionally weak RSA key pairs using PyCrypto and store them in an SQLite3 database. All keys were generated with a 
@@ -573,6 +583,7 @@ measure run time, and a method to validate the parallel algorithm was indeed
 finding GCDs as expected. 
 
 \section{Results}
+\label{sec:results}
 The accuracy of the parallel implementation was verified against the 
 sequential implementation by using identical test data sets with known 
 weak keys. Since both implementations found the same set of compromised keys,
@@ -580,24 +591,23 @@ it was validated that these two implementations
 were internally consistent. Furthermore, both matched the results of the 
 separate Python reference implementation: supporting the assertion of accurate 
 functionality. The speedup of the CUDA implementation (seen in Figure 
-\ref{fig:speedup}) was calculated by comparing its run time with that of the sequential 
-implementation. Compare this 
-with Figure \ref{fig:parPercent}: this similarity is evidence of the 
-implementation presented here matching with theoretical expectations.
+\ref{fig:speedup}) was calculated by comparing its run time with that of the
+sequential implementation. Compare this with Figure \ref{fig:parPercent}:
+this similarity is evidence of the implementation presented here matching
+with theoretical expectations.
 
 \begin{figure}
+   \label{fig:speedup}
    \centering
    \includegraphics[width=3.5in]{chart_1.png}
    \caption{Speedup of CUDA Implementation to Sequential C++}
-   \label{fig:speedup}
 \end{figure}
 
 Figure \ref{fig:speedup} shows that speedup increases dramatically with 
-the number 
-of keys until about 2000 comparisons. At this point, the GPU becomes saturated 
-with enough blocks to fully occupy all of the SMs. Speedup remains constant at
-27.5 for up to 200000 keys. We have no data beyond this number of keys due to 
-the very long run time of the sequential implementation. 
+the number of keys until about 2000 comparisons. At this point, the GPU
+becomes saturated with enough blocks to fully occupy all of the SMs. Speedup
+remains constant at 27.5 for up to 200000 keys. We have no data beyond this
+number of keys due to the very long run time of the sequential implementation. 
 
 %The increase in the number of 
 %comparisons affects the sequential performance significantly more than the CUDA 
@@ -626,6 +636,7 @@ the very long run time of the sequential implementation.
 
 \begin{table*}
 %\tbl{Average run-times of sequential and CUDA implementations\label{tab:runtimes}}{
+   \label{tab:runtimes}
    \centering
    \begin{tabular}{|l|*{5}{r}|}\hline
       Number of Keys        & 20   & 200  & 2000   & 20000    & 200000 \\ \hline
@@ -633,7 +644,7 @@ the very long run time of the sequential implementation.
       CUDA Time (sec)       & 0.21 & 0.31 & 20.21  & 2005.09  & 6748.23\\\hline
       \textbf{Speedup}      & 0.6  & 18.0 & 27.2   & 27.5     & 27.5\\\hline
    \end{tabular}
-   \caption{Run-times of sequential and CUDA implementations\label{tab:runtimes}}
+   \caption{Run-times of sequential and CUDA implementations}
 \end{table*}
 
 %One run of the CUDA implementation was performed using a data set of 200,000 
@@ -650,6 +661,7 @@ the very long run time of the sequential implementation.
 %1024-bit values.
 
 \section{Conclusion}
+\label{sec:concl}
 A large speedup resulted directly from writing a CUDA 
 implementation when compared to the sequential implementation. Many 
 more keys are able to be compared in a given amount of time using the CUDA
@@ -670,6 +682,7 @@ expansion to iterative kernel calls in order to handle even larger sets of
 keys to compare.
 
 \section{Future Work}
+\label{sec:future}
 The primary limiting factor of this implementation is the amount of memory 
 available on the GPU. Since all key combinations must computed to expose any 
 potential weakness, the kernel was structured to take a single vector of 
@@ -705,24 +718,30 @@ in the current implementation needed to produce private keys.
 Recently NVIDIA has released information about a new GPU architecture called 
 Kepler\cite{nvidiakepler}.
 The Kepler architecture introduces new features that may increase the 
-performance of this implementation. \newpage A feature known as Dynamic Parallelism 
-allows a CUDA kernel to launch new kernels from the GPU. This would allow 
-dynamic allocation of block sizes for different areas of the comparison matrix 
-and remove idle threads from the kernel. Hyper-Q is a new technology that 
-manages multiple CUDA kernels from multiple CPU threads. With the current 
-Fermi architecture, only one CUDA kernel may run on the device at one time. 
-This can lead to under utilization of the GPU hardware. An approach using 
-multiple CPU threads, each running their own CUDA kernel, could greatly 
+performance of this implementation. \newpage A feature known as Dynamic
+Parallelism  allows a CUDA kernel to launch new kernels from the GPU. This
+would allow dynamic allocation of block sizes for different areas of the
+comparison matrix and remove idle threads from the kernel. Hyper-Q is a new
+technology that manages multiple CUDA kernels from multiple CPU threads. With
+the current Fermi architecture, only one CUDA kernel may run on the device at
+one time. This can lead to under utilization of the GPU hardware. An approach
+using multiple CPU threads, each running their own CUDA kernel, could greatly
 increase throughput.
 
 The final missing component of this implementation would be to complete the 
 algorithm and use the GCDs which are being calculated to generate RSA private 
 key pairs. In order to do this, a heterogeneous multi-process approach may be 
 most straightforward. After the parallel run completes, the bit-vector of 
+results would be examined to find the key pairs which produced GCDs greater 
+than one. In these cases, the GCD would be recomputed, and used as either $p$ 
+or $q$. Once this was done, the missing prime would be computed, then based on 
+this, $d$ would be found. The resulting RSA public/private key pair could be 
+exported or stored for later verification.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \chapter{Background}
-\label{background}
+\label{ch:background}
 RSA is an asymmetric key encryption scheme. Keys come in matched pairs:
 public keys and private keys. Using the same algorithm, information encrypted
 with the one key, can be decrypted with the other and vice versa. A party must
@@ -744,10 +763,10 @@ private keys can be generated from the publicly available information. The
 vulnerability is explained in detail in Figure \ref{fig:vuln}.
 
 \begin{figure}
+   \label{fig:vuln}
    \centering
    \includegraphics[width=\linewidth]{vulnerability.png}
    \caption{Explanation of poor-prime vulnerability}
-   \label{fig:vuln}
 \end{figure}
 
 A tool by Scharfglass et. al. \cite{scharfglass2012breaking} performs a
@@ -761,7 +780,7 @@ practical tool for checking a given set of keys for the vulnerability we are
 focusing on.
 
 \section{Motivation}
-\lablel{motivation}
+\lablel{sec:motivation}
 Scharfglass et. al. use NVIDIA's CUDA framework to significantly speedup a
 check for the vulnerability
 presented in \cite{lenstra2012ron}. The work in \cite{scharfglass2012breaking}
@@ -820,20 +839,21 @@ detailed information about X.509 certificates and analysis on their
 infrastructure, see \cite{holz2011ssl}.
 
 \begin{figure}
+   \label{fig:x509}
    \centering
    \includegraphics[width=0.5\linewidth]{x509.png}
    \caption{X.509 Fields\cite{holz2011ssl}}
-   \label{fig:x509}
 \end{figure}
 
 \begin{figure}
+   \label{fig:tls}
    \centering
    \includegraphics[width=0.5\linewidth]{tls.jpg}
    \caption{TLS Overview\cite{tlsconcepts}}
-   \label{fig:tls}
 \end{figure}
 
 \subsection{Data Collection}
+\label{subsec:datacol}
 The proposed protocol given by the RSA actually modeled the certificate model
 used by SSL/TLS. For this reason, the SSL certificate model was the primary
 focus of the data collected. Moreover, the data set of RSA keys in SSL
@@ -850,6 +870,7 @@ Google, Facebook, Amazon, etc.) account for nearly 17\% of web traffic.
 Specific breakdowns and conversions can be found in Table \ref{tab:traffic}.
 
 \begin{table}
+\label{tab:traffic}
 \centering
 \caption{Major CDN Traffic (2010)}
 \begin{tabular}{|>{\raggedright}p{0.4\linewidth}
@@ -862,7 +883,6 @@ Amazon CDN (NASA/JPL, PBS,\dots) & 0.55 & 1\\ \hline
 EdgeCast (Yahoo!, Break, Imgur,\dots) & 0.5 & 0.909\\ \hline
 LeaseWeb (Heineken, Starbucks,\dots) & 0.8 & 1.454\\
 \hline\end{tabular}
-\label{tab:traffic}
 \end{table}
 
 Alexa was used to find websites with large amounts of
@@ -907,6 +927,7 @@ them into the SQLite3 database. This reimplementation offered a 15$\times$
 speedup over the previous, na\"{i}ve approach.
 
 \subsection{Data Analysis}
+\label{datanalysis}
 After collecting data from each of the top one million Alexa sites, some
 surface-level analysis was performed in order to gain an overview of the
 security of these one million sites. This analysis included overall security
@@ -917,10 +938,10 @@ offer specific breakdown for bit-lengths, and offers details that cannot be
 seen in the figure.
 
 \begin{figure}
+   \label{fig:certs}
    \centering
    \includegraphics[width=0.75\linewidth]{cert_security.png}
    \caption{Presence of RSA key or other security in Alexa top 1M sites}
-   \label{fig:certs}
 \end{figure}
 
 Interestingly (and slightly worrisome), is that the majority of web sites in
@@ -943,13 +964,14 @@ expected, but means that a large number of high-traffic websites have adequate
 and, even more surprisingly, 8192-bit.
 
 \begin{figure}
+   \label{fig:bits}
    \centering
    \includegraphics[width=0.75\linewidth]{bit_length.png}
    \caption{Breakdown of Alexa top 1M sites' RSA keys by bit-length}
-   \label{fig:bits}
 \end{figure}
 
 \begin{table}
+\label{tab:bits}
 \centering
 \caption{Alexa top 1M X.509 RSA bit-length}
 \begin{tabular}{|r|r|}\hline
@@ -965,7 +987,6 @@ and, even more surprisingly, 8192-bit.
 8192 & 14 \\ \hline
 other & 44 \\ \hline
 \end{tabular}
-\label{tab:bits}
 \end{table}
 
 Further analysis was done using the tool described in
@@ -987,6 +1008,7 @@ relies on large sets to accumulate many primes, the analysis presented can
 only be considered an initial pass.
 
 \subsection{Implications}
+\label{subsec:implications}
 For the same reasons the data set was chosen to be X.509 certificates, presence
 of the vulnerability mentioned here would have the largest effect on Internet
 security: specifically in the certificate infrastructure. If servers were
@@ -1037,6 +1059,7 @@ otherwise occurred.
 %flagged as potentially insecure for key generation.
 %
 \subsection{Conclusions}
+\label{subsec:conc}
 This survey determined that the primary use of RSA keys in practice is the
 signing of SSL certificates. A data set was gathered that accounts for a
 significant amount of certificates in the context of web traffic. Some
@@ -1059,6 +1082,7 @@ realized.
 \label{related}
 
 \section{The Vulnerability}
+\label{sec:vuln}
 An RSA vulnerability was discovered and detailed in \cite{lenstra2012ron} in
 early 2012 that forms the basis of the exploit the work presented here builds
 upon. Namely, that poor random number generation in RSA keys results in
@@ -1089,6 +1113,7 @@ conception 2048-bit keys are more secure (this would be true if this
 vulnerability were avoided).
 
 \section{The Process}
+\label{sec:proc}
 As mentioned, the vulnerability is exploited by performing greatest common
 divisor (GCD) calculations with pairs of keys. The research presented in this
 paper looks at how to most quickly and efficiently analyze a large database of
@@ -1128,6 +1153,7 @@ fashion, further optimizing the process.
 %
 
 \section{Multiple GPUs}
+\label{sec:multGPU}
 As an extension to the work in \cite{scharfglass2012breaking}, multiple GPU support
 will be explored. This concept is discussed at length in
 \cite{schaa2009exploring}. Here, several GPU configurations are investigated to
@@ -1166,6 +1192,7 @@ organize our own data may offer increased advantages when moving to a multi-GPU
 system.
 
 \section{Large Data}
+\label{sec:largedata}
 Since one of our primary goals is to remove the limitation present in
 \cite{scharfglass2012breaking} that prevents larger sets of keys from being
 analyzed, work investigating how to manage large data sets is relevant.
@@ -1208,6 +1235,7 @@ details must be found and applied to our work here to further increase our
 performance.
 
 \section{Optimization}
+\label{sec:opti}
 As mentioned, data decomposition and organization around the architecture are
 some of the most important (if not \emph{the} most important) aspects of
 creating a parallel solution for use with a GPGPU. The work done in
@@ -1227,6 +1255,7 @@ from \cite{thibault2009cuda}). Leveraging techniques in both realms will offer
 the greatest amount of performance gain.
 
 \section{Similar Algorithms}
+\label{sec:simialg}
 A similar algorithm that suffers from the same problems that pairwise
 comparisons does (each element much be traversed and compared), is search. The
 work done in \cite{peters2011fast} explores how search can be optimized for the

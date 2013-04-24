@@ -1,0 +1,51 @@
+This is BibTeX, Version 0.99c (TeX Live 2009/Debian)
+The top-level auxiliary file: PaRIS_Supercomputing.aux
+The style file: spbasic.bst
+Database file #1: references.bib
+Reallocated wiz_functions (elt_size=4) to 6000 items from 3000.
+Warning--to sort, need author or key in rsa2004announces
+Warning--to sort, need author or key in rsa2004supports
+Warning--to sort, need author or key in tlsconcepts
+Warning--to sort, need author or key in rsa2007challenge
+You've used 21 entries,
+            3270 wiz_defined-function locations,
+            776 strings with 8591 characters,
+and the built_in function-call counts, 21632 in all, are:
+= -- 2365
+> -- 405
+< -- 17
++ -- 207
+- -- 126
+* -- 1487
+:= -- 2530
+add.period$ -- 21
+call.type$ -- 21
+change.case$ -- 164
+chr.to.int$ -- 18
+cite$ -- 33
+duplicate$ -- 2199
+empty$ -- 1727
+format.name$ -- 169
+if$ -- 4549
+int.to.chr$ -- 4
+int.to.str$ -- 1
+missing$ -- 173
+newline$ -- 73
+num.names$ -- 68
+pop$ -- 610
+preamble$ -- 1
+purify$ -- 126
+quote$ -- 0
+skip$ -- 891
+stack$ -- 0
+substring$ -- 1973
+swap$ -- 1102
+text.length$ -- 7
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 189
+warning$ -- 4
+while$ -- 137
+width$ -- 0
+write$ -- 235
+(There were 4 warnings)
