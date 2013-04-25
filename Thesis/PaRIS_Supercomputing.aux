@@ -101,57 +101,68 @@
 \newlabel{sec:impl}{{7}{15}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {7.1}Problem Decomposition}{15}}
 \newlabel{subsec:probdecomp}{{7.1}{15}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {7.1.1}Small Key Sets}{15}}
-\newlabel{subsubsec:smallsets}{{7.1.1}{15}}
 \@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces Number of comparisons needed vs. total number of keys in set}}{16}}
 \newlabel{fig:compvkeys}{{7}{16}}
 \newlabel{eq:gcd}{{3}{16}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {7.1.2}Large Keys Sets}{16}}
-\newlabel{subsubsec:largesets}{{7.1.2}{16}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {7.2}Grid Organization}{16}}
 \newlabel{sec:gridorg}{{7.2}{16}}
 \newlabel{eq:blocks}{{4}{17}}
 \newlabel{eq:maxKeys}{{5}{17}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {7.3}Shared Memory}{17}}
 \newlabel{subsec:shared}{{7.3}{17}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.4}Occupancy}{17}}
+\newlabel{sec:occupancy}{{7.4}{17}}
 \citation{nvidia2012gpu}
+\citation{scharfglass2012breaking}
 \@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Table giving occupancy for various block dimensions}}{18}}
 \newlabel{tab:occupancy}{{3}{18}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {7.4}Occupancy}{18}}
-\newlabel{sec:occupancy}{{7.4}{18}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {7.5}Bit-vector}{18}}
 \newlabel{subsec:bitvector}{{7.5}{18}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {7.6}Generating the Private Key}{19}}
-\newlabel{subsec:private}{{7.6}{19}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {7.7}Multiple GPUs}{19}}
-\newlabel{subsec:multiGPU}{{7.7}{19}}
-\@writefile{toc}{\contentsline {section}{\numberline {8}Experimental Setup}{19}}
-\newlabel{sec:expsetup}{{8}{19}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {8.1}Test Machine}{19}}
-\newlabel{subsec:testmachine}{{8.1}{19}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {8.1.1}Initial Setup}{19}}
-\newlabel{subsubsec:initsetup}{{8.1.1}{19}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {8.1.2}Updated Setup}{19}}
-\newlabel{subsubsec:updatedsetup}{{8.1.2}{19}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {8.2}Reference Implementations}{19}}
-\newlabel{subsec:refimpl}{{8.2}{19}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.6}Further Decomposition}{19}}
+\newlabel{subsec:furtherdecomp}{{7.6}{19}}
+\@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces A single division of the key matrix}}{20}}
+\newlabel{fig:divkeys1}{{8}{20}}
+\@writefile{lof}{\contentsline {figure}{\numberline {9}{\ignorespaces Three divisions of the key matrix}}{20}}
+\newlabel{fig:divkeys3}{{9}{20}}
+\newlabel{eq:trimem}{{6}{21}}
+\newlabel{eq:blocksy}{{7}{21}}
+\newlabel{eq:arithident}{{8}{21}}
+\newlabel{eq:blocksub}{{9}{21}}
+\newlabel{eq:trimemcomplete}{{10}{21}}
+\newlabel{eq:rectblocks}{{11}{21}}
+\newlabel{eq:rectmem}{{13}{22}}
+\newlabel{eq:keycalc}{{14}{22}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.7}Generating the Private Key}{23}}
+\newlabel{subsec:private}{{7.7}{23}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.8}Multiple GPUs}{23}}
+\newlabel{subsec:multiGPU}{{7.8}{23}}
+\@writefile{toc}{\contentsline {section}{\numberline {8}Experimental Setup}{23}}
+\newlabel{sec:expsetup}{{8}{23}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.1}Test Machine}{23}}
+\newlabel{subsec:testmachine}{{8.1}{23}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {8.1.1}Initial Setup}{23}}
+\newlabel{subsubsec:initsetup}{{8.1.1}{23}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {8.1.2}Updated Setup}{23}}
+\newlabel{subsubsec:updatedsetup}{{8.1.2}{23}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.2}Reference Implementations}{23}}
+\newlabel{subsec:refimpl}{{8.2}{23}}
 \citation{lenstra2012ron}
-\@writefile{toc}{\contentsline {subsection}{\numberline {8.3}Test Sets}{20}}
-\newlabel{subsec:testsets}{{8.3}{20}}
-\@writefile{toc}{\contentsline {section}{\numberline {9}Results}{20}}
-\newlabel{sec:results}{{9}{20}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {9.1}Initial Implementation}{20}}
-\newlabel{subsec:initimpl}{{9.1}{20}}
-\@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces Speedup of CUDA Implementation to Sequential C++}}{21}}
-\newlabel{fig:speedup}{{8}{21}}
-\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces Run-times of sequential and CUDA implementations}}{21}}
-\newlabel{tab:runtimes}{{4}{21}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {9.2}Scalable Implementation}{21}}
-\newlabel{scaleimpl}{{9.2}{21}}
-\@writefile{toc}{\contentsline {section}{\numberline {10}Conclusion}{21}}
-\newlabel{sec:concl}{{10}{21}}
-\@writefile{toc}{\contentsline {section}{\numberline {11}Future Work}{21}}
-\newlabel{sec:future}{{11}{21}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.3}Test Sets}{24}}
+\newlabel{subsec:testsets}{{8.3}{24}}
+\@writefile{toc}{\contentsline {section}{\numberline {9}Results}{24}}
+\newlabel{sec:results}{{9}{24}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {9.1}Initial Implementation}{24}}
+\newlabel{subsec:initimpl}{{9.1}{24}}
+\@writefile{lof}{\contentsline {figure}{\numberline {10}{\ignorespaces Speedup of CUDA Implementation to Sequential C++}}{25}}
+\newlabel{fig:speedup}{{10}{25}}
+\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces Run-times of sequential and CUDA implementations}}{25}}
+\newlabel{tab:runtimes}{{4}{25}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {9.2}Scalable Implementation}{25}}
+\newlabel{scaleimpl}{{9.2}{25}}
+\@writefile{toc}{\contentsline {section}{\numberline {10}Conclusion}{25}}
+\newlabel{sec:concl}{{10}{25}}
+\@writefile{toc}{\contentsline {section}{\numberline {11}Future Work}{25}}
+\newlabel{sec:future}{{11}{25}}
 \citation{scharfglass2012breaking}
 \bibstyle{spbasic}
 \bibdata{references}

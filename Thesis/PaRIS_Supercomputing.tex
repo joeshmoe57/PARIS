@@ -107,9 +107,9 @@ runtime-reachability.
 RSA is a public key encryption scheme which relies on the difficulty of 
 factoring large numbers. The algorithm is prevalent throughout security, and is 
 specifically used for many web-security applications (see
-$\S$~\ref{sec:motivation}). An RSA key contains public and private components,
+$\S$\ref{sec:motivation}). An RSA key contains public and private components,
 both of which are calculated based on two randomly-generated prime values: $p$
-and $q$ (RSA is explained at greater length in $\S$~\ref{subsec:rsa}). Ideally,
+and $q$ (RSA is explained at greater length in $\S$\ref{subsec:rsa}). Ideally,
 given the number of possible primes that may be used to construct a 1024-bit
 key, no random number generators should reuse either prime, and all keys should
 contain unique components. Thus, the likelihood of either $p$ or $q$ being
@@ -199,7 +199,7 @@ significant speedups in programs with sections of parallelizable code using
 the Simultaneous Instruction, Multiple Data (SIMD) model. The platform allows
 for various arrangements of threads to perform work, based on the developer's
 decomposition of the problem. Our solution is discussed in
-$\S$~\ref{sec:gridorg}. In general, individual threads are grouped into up-to
+$\S$\ref{sec:gridorg}. In general, individual threads are grouped into up-to
 3-dimensional blocks to allow sharing of common memory between threads. These
 blocks can then be organized into a 2-dimensional grid.  
 
@@ -803,8 +803,6 @@ keys.
 \subsection{Problem Decomposition}
 \label{subsec:probdecomp}
 
-\subsubsection{Small Key Sets}
-\label{subsubsec:smallsets}
 Initially, the comparison matrix seems to be an $n^2$ solution. However, the 
 diagonal of the matrix created consists of unproductive GCD calculations since 
 these entries would compare each key with itself. Furthermore, the matrix is 
@@ -824,14 +822,6 @@ performed significantly, shown in Figure~\ref{fig:compvkeys}.
    \label{fig:compvkeys}
 \end{figure}
 
-\subsubsection{Large Keys Sets}
-\label{subsubsec:largesets}
-% TODO
-How is it organized
-How is it decomposed
-When does decomposition stop
-How do you know it works
-
 \subsection{Grid Organization}
 \label{sec:gridorg}
 One of the most important aspects of any CUDA implementation is the 
@@ -846,7 +836,7 @@ there are 32.
 \end{displaymath}
 The remaining dimensions, $y$ and $z$, were set to 4, resulting in a block of 
 512 threads. This design decision was experimentally determined. See 
-$\S$~\ref{sec:occupancy} for details about Occupancy optimizations.
+$\S$\ref{sec:occupancy} for details about Occupancy optimizations.
 \begin{displaymath}
    32 \cdot 4 \times 4 = 512
 \end{displaymath}
@@ -957,12 +947,132 @@ different kernel or using a CPU algorithm. Efficiency would also be increased
 due to the time saved in memory transfers since there was significantly less 
 memory to transfer before calling the kernel.
 
+\subsection{Further Decomposition}
+\label{subsec:furtherdecomp}
+% TODO
+PARIS's initial implementation \citep{scharfglass2012breaking} took into account all the above implementation details; however, it was only able to run a single CUDA kernel. Furthermore, comparison runs were constrained by available memory on a given GPU, so only runs that would fit into the limited available memory could be run successfully.
+
+Decomposing the set of comparisons for an arbitrary number of keys is difficult due to the $n^2$ nature of the problem. One cannot simply partition the key set and iterate over it since this will cause gaps in the comparison matrix. Thus, the entire comparison matrix was segmented into manageable sections that were run sequentially.
+
+The full comparison matrix still exists as described above: the upper triangle of a square matrix where each entry is a GCD comparison of two unique keys from a provided set. This upper triangle is divided into smaller sections of two types: upper triangles, and rectangles (see Figure~\ref{fig:divkeys1}). This partitioning mechanism was chosen for several reasons, the primary of which is that these divisions results in nearly identical memory requirements and workloads. 
+
+If one of the divisions shown in Figure~\ref{fig:divkeys1} still does not fit into the GPU memory, a further division is done in a similar way. The upper triangular segments are partitioned identically, and the rectangles are also divided into quadrants. Figure~\ref{fig:divkeys3} shows the segments after two additional division steps. This division process continues until a single segment can fit into the GPU memory.
+
+\begin{figure}
+   \centering
+   \includegraphics[width=0.75\textwidth]{one_division}
+   \caption{A single division of the key matrix}
+   \label{fig:divkeys1}
+\end{figure}
+
+\begin{figure}
+   \centering
+   \includegraphics[width=0.75\textwidth]{three_divisions}
+   \caption{Three divisions of the key matrix}
+   \label{fig:divkeys3}
+\end{figure}
+
+To determine when to end the division process, an upper bound for the maximal number of keys that can fit onto the GPU must be determined. First, we evaluate what the memory requirements of each segment so we can maximize. We'll use the following values in our memory calculations:
+
+\begin{displaymath}
+   \begin{split}
+   T = & \mbox{ the memory needed by an upper triangular segment}\\
+       & \mbox{ of key comparisons}\\
+   R = & \mbox{ the memory required by a rectangular segment}\\
+       & \mbox{ of key comparisons}\\
+   y = & \mbox{ number of keys on the y axis being compared}\\
+   x = & \mbox{ number of keys on the x axis being compared}\\
+   B = & \mbox{ number of blocks necessary for this key set}\\
+   KEY\_SIZE = & \mbox{ the size (in bytes) of a key modulus (128)}\\
+   XY\_SIZE = & \mbox{ the size (in bytes) of the x-y coordinate (4)}\\
+   GCD\_SIZE = & \mbox{ the size (in bytes) necessary to hold GCD result}\\
+               & \mbox{ bits for a single block (2)}\\
+   \end{split}
+\end{displaymath}
+
+The upper triangular portions require 3 allocations: the set of keys to compare, the bit-vector to hold the GCD result, and an x-y coordinate mapping to aid the look-up of keys within the provided set. The x-y coordinate pair consists of two 16-bit integers (one for $x$, one for $y$), thus the 4 bytes total. The memory calculation is shown in Equation~\ref{eq:trimem}.
+
+\begin{equation}
+   T = y \cdot KEY\_SIZE + B \cdot XY\_SIZE + B \cdot GCD\_SIZE
+   \label{eq:trimem}
+\end{equation}
+
+\noindent Recall,
+\begin{equation}
+   B = \sum_{i=1}^{\left\lceil \frac{k}{4} \right\rceil}i
+   \tag{\ref{eq:blocks}}
+\end{equation}
+where $k = $number of keys. We will substitute $k$ for $y$ in the following calculations since they refer to the same value.
+
+\noindent Thus,
+\begin{equation}
+   B = \sum_{i=1}^{\left\lceil \frac{y}{4} \right\rceil}i
+   \label{eq:blocksy}
+\end{equation}
+
+\noindent We will use the arithmetic sum identity (Equation~\ref{eq:arithident}) to make the substitution in Equation~\ref{eq:blocksub}.
+\begin{equation}
+   \sum_{i=1}^{n}i = \frac{1}{2}n\left(n+1\right)
+   \label{eq:arithident}
+\end{equation}
+
+\begin{equation}
+   B = \frac{1}{2}\left(\frac{y}{4}\right) \left(\frac{y}{4}+1\right)
+   \label{eq:blocksub}
+\end{equation}
+
+\noindent Continuing Equation~\ref{eq:trimem},
+\begin{align}
+   T & = y \cdot KEY\_SIZE + B \cdot (XY\_SIZE + GCD\_SIZE)\notag\\
+   T & = y \cdot 128 + B \cdot (4 + 2)\notag\\
+   T & = y \cdot 128 + \left(\frac{1}{2}\left(\frac{y}{4}\right)\left(\frac{y}{4}+1\right)\right) \cdot 6\notag\\
+   T & = 128 y + 3 \cdot \frac{y^2}{16} + 3 \cdot \frac{y}{4}\notag\\
+   T & = 3 \cdot \frac{y^2}{16} + \frac{515y}{4}
+   \label{eq:trimemcomplete}
+\end{align}
+
+The rectangular portions also require 3 allocations: the set of keys in the $y$ direction, the set of keys in the $x$ direction, and the bit-vector to hold the GCD result. Equation~\ref{eq:rectmem} outlines the calculation of $R$. Due to the difference in shape of these GCD results, the number of blocks will not use the same formula. Instead, the number of blocks is just the area of the rectangle, shown in Equation~\ref{eq:rectblocks}. Recall, the number of keys is divided by the dimension of the blocks described in $\S$\ref{sec:gridorg}.
+
+\begin{equation}
+   B' = \frac{y}{4} \cdot \frac{x}{4}
+   \label{eq:rectblocks}
+\end{equation}
+
+\begin{align}
+   R & = y \cdot KEY\_SIZE + x \cdot KEY\_SIZE + B' \cdot GCD\_SIZE\\
+   R & = (y + x) \cdot KEY\_SIZE + B' \cdot GCD\_SIZE\notag\\
+   R & = (y + x) \cdot 128 + \left(\frac{y}{4} \cdot \frac{x}{4}\right) \cdot 2\notag\\
+   \intertext{As mentioned (and as can be seen in Figure~\ref{fig:divkeys1}), $x$ will be half of $y$. Thus,}
+   R & = (y + \frac{y}{2}) \cdot 128 + \left(\frac{y}{4} \cdot \frac{\frac{y}{2}}{4}\right) \cdot 2\notag\\
+   R & = 128y + 64y + \left(\frac{y}{4} \cdot \frac{y}{4}\right)\notag\\
+   R & = \frac{y^2}{16} + 192y
+   \label{eq:rectmem}
+\end{align}
+
+Comparing $T$ and $R$, we can see that for key sets larger than 506 keys, $T$ is larger. The difference between the functions is increasing, so $T$ will remain the larger value. Therefore, we can use $T$ as the upper bound for memory requirements. 
+
+With an equation for evaluating the maximum amount of memory required for a specified number of keys (Equation~\ref{eq:trimemcomplete}), if a limit on memory exists, we can determine the maximal number of keys that can fit within that memory. CUDA offers a function to query the total amount of memory a device has available (we'll call this $F$). With this value, Equation~\ref{eq:keycalc} can be used to find the number of keys, $y$.
+
+\begin{align*}
+   T & \leq F\\
+   3 \cdot \frac{y^2}{16} + \frac{515y}{4} & \leq F\\
+   3 \cdot \frac{y^2}{16} + \frac{515y}{4} - F & \leq 0\\
+   3 \cdot y^2 + 4\cdot515y- 16 \cdot F & \leq 0\\
+   y & = \frac{-b \pm \sqrt{b^2 - 4 \cdot a \cdot c}}{2a}\\
+   \text{ with } & a = 3, b = 2060, c = -16F
+\end{align*}
+\noindent we disregard the `-' since we can't a negative number of keys
+\begin{equation}
+   y = \frac{1}{6}\left(-2060 + \sqrt{2060^2 - 192 \cdot F}\right)
+   \label{eq:keycalc}
+\end{equation}
+
+Equation~\ref{eq:keycalc} is used to find a maximum number of keys for a GPU. The complete comparison matrix is then segmented as described above until the size of a segment is smaller than this maximal $y$. The matrix is then iterated over until all results are computed.
+
 \subsection{Generating the Private Key}
 \label{subsec:private}
 % TODO
-What conditions need to be met
-When does this happen
-What needs to be done to print out the key
+Once the entire set has been processed and the GPU work is complete, the bit-vector is inspected for ``1"s signifying a vulnerable key was found. When a ``1" is found, the GCD needs to be calculated to generate the private key. As was shown in Figure~\ref{fig:vuln}, the result of the GCD will be one of the original prime values. Each of the two moduli that was used in the GCD calculation is then divided by this value to calculate the other corresponding primes. The totient ($\phi$) is calculated using the primes. Finally $d$ is the result of finding the modular multiplicative inverse of $\phi$ and $e$ (also contained in the public key).
 
 \subsection{Multiple GPUs}
 \label{subsec:multiGPU}
@@ -995,7 +1105,7 @@ Kepler!
 In order to check the accuracy of the final implementation, as well as to 
 provide a point of comparison for benchmarking, two reference implementations 
 of this exploit were created. Each was able to use the same format key 
-databases (described in $\S$~\ref{subsec:testsets}). 
+databases (described in $\S$\ref{subsec:testsets}). 
 
 The first implementation was written purely in Python using the open source
 PyCrypto cryptography library. This implementation was able to perform the
