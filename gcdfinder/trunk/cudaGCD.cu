@@ -409,8 +409,8 @@ void writeGCDResults(long numBlocks, uint32_t * keys, xyCoord * coords, uint16_t
                }
             }
          }
-         printf("k = %d %x\n", k, gcd_res[k]);
       }
+      printf("k = %d %x\n", k, gcd_res[k]);
    }
 }
 
@@ -567,12 +567,14 @@ int main(int argc, char**argv) {
 
             int rem = yNumKeys % BLKDIM > 0 ? 1 : 0;
             dimConversion(numBlocks, yNumKeys / BLKDIM + rem, coords);
+            /*
 #ifdef DEBUG
    // Print the coordinates of the blocks if they were in a square
    for (int i = 0; i < numBlocks; ++i) 
       printf("(%d, %d)\n", coords[i].x, coords[i].y);
    fflush(stdout);
 #endif
+*/
             // TODO maybe memset the end of coords to 0 using maxXYCoordSize
             unsigned int coordSize = numBlocks * sizeof(xyCoord);
             dprint("coordSize: %d\n", coordSize);
