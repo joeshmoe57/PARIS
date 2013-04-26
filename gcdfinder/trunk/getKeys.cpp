@@ -57,7 +57,7 @@ int getAllKeys(const char* fileName, int num, std::vector<RSA*> *privKeys, uint3
    //run a query (get all keys in this case)
    char qGetAll[] = "SELECT DISTINCT blob FROM keys;";
    res = sqlite3_prepare_v2(db, qGetAll, strlen(qGetAll), &statement, (const char**)&zErrMsg);
-//   printf("res was %d\n", res);
+   //printf("res was %d\n", res);
    if(res != SQLITE_OK){
       fprintf(stderr, "SQL error: %s\n", zErrMsg);
       if (zErrMsg)
@@ -123,12 +123,14 @@ int getAllKeys(const char* fileName, int num, std::vector<RSA*> *privKeys, uint3
       memcpy(pubKeys + keyIndex * NUM_INTS, ourform, 32 * sizeof(int));
       keyIndex++;
    }
+   /*
    printf("keyIndex = %d < num = %d && res = %d == SQLITE_ROW=%d\n",
          keyIndex, num, res, SQLITE_ROW);
 
    for (std::map<int, int>::iterator it = counts.begin(); it != counts.end(); ++it) {
       printf("counts for %d: %d\n", it->first, it->second);
    }
+    */
 
    sqlite3_finalize(statement);
    sqlite3_close(db);

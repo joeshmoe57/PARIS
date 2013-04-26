@@ -376,23 +376,26 @@ void writeGCDResults(long numBlocks, uint32_t * keys, xyCoord * coords, uint16_t
    for (int k = 0; k < numBlocks; ++k) {
       /* check this block for bad keys */
       if (gcd_res[k] > 0) {
-         printf("bad key found in block: (%d, %d)\n", coords[k].x, coords[k].y);
-         printf("k = %d %x\n", k, gcd_res[k]);
+         dprint("bad key found in block: (%d, %d)\n", coords[k].x, coords[k].y);
 
-         // Visit each block
+         // traverse columns
          for (int j = 0; j < BLKDIM; ++j) {
             // check if any bits in a column are found
-            if (gcd_res[k] > 0 & YMASKS[j] > 0) {
-               // find which row 
+            if (gcd_res[k] & YMASKS[j]) {
+               dprint("Found one: column %d.\n", j);
+               // traverse rows 
                for (int i = 0; i < BLKDIM; ++i) {
-                  if (gcd_res[k] > 0 & YMASKS[j] > 0 & XMASKS[i] > 0) {
+                  if (gcd_res[k] & YMASKS[j] & XMASKS[i]) {
+                     dprint("Found one: row %d.\n", i);
                      int one = NUM_INTS * (BLKDIM * coords[k].x + i);
                      int two = NUM_INTS * (BLKDIM * coords[k].y + j);
-                     printf("key %d, %d in block (%d, %d)\n", i, j, coords[k].x, coords[k].y);
-                     printf("VULNERABLE KEY PAIR FOUND:\n");
-                     printf("one: %d\n", one);
-                     printf("two: %d\n", two);
+                     dprint("key %d, %d in block (%d, %d)\n", i, j, coords[k].x, coords[k].y);
+                     dprint("VULNERABLE KEY PAIR FOUND:\n");
+                     dprint("one: %d\n", one);
+                     dprint("two: %d\n", two);
+                     printf("x\n");
                      printNumHex(keys + one);
+                     printf("y\n");
                      printNumHex(keys + two);
                      uint32_t gcd[NUM_INTS];
                      memset(gcd, 0, NUM_INTS * sizeof(uint32_t));
@@ -400,14 +403,13 @@ void writeGCDResults(long numBlocks, uint32_t * keys, xyCoord * coords, uint16_t
                      gcd1024(&keys[one],
                              &keys[two],
                              gcd);
-                     printf("Done calculating gcd.\n");
-
-                     printf("PRIVATE KEY:\n");
+                     dprint("PRIVATE KEY:\n");
                      printNumHex(gcd);
                   }
                }
             }
          }
+         printf("k = %d %x\n", k, gcd_res[k]);
       }
    }
 }
@@ -439,15 +441,26 @@ int main(int argc, char**argv) {
       exit(-1);
    }
 
-   totalNumKeys = getAllKeys(KEYS_DB, totalNumKeys, &privKeys, keys);
+   if ((totalNumKeys = getAllKeys(KEYS_DB, totalNumKeys, &privKeys, keys)) <= 0) {
+      fprintf(stderr, "Error getting keys from database.\n");
+      exit(-1);
+   }
    dprint("getKeys returns %d\n", totalNumKeys);
+   /*
 #ifdef DEBUG
    for (int i = 0; i < totalNumKeys; ++i) {
       printNumHex(keys + i * NUM_INTS );
    }
 #endif
+*/
 
    int device = 0;
+   int deviceCount = 0;
+   cudaGetDeviceCount(&deviceCount);
+   for (int i = 0; i < deviceCount; ++i) {
+      dprint("keys for device %d = %d\n", i, calculateMaxKeysForDevice(i));
+   }
+
    int maxKeys = calculateMaxKeysForDevice(device);
    dprint("maxKeys = %ld\n", maxKeys);
 
@@ -546,7 +559,11 @@ int main(int argc, char**argv) {
             // calculate numBlocks, memories, and pull xIdx from set of keys
             /* TODO Assumes totalNumberOfKeys is less than sqrt(LONG_MAX) */ 
             numBlocks = calculateNumberOfBlocks(yNumKeys);
-            dprint("numBlocks = %ld\n", numBlocks);
+            printf("numBlocks = %ld\n", numBlocks);
+
+            unsigned int gcdSize = numBlocks * sizeof(uint16_t);
+            cudaMemcpy(dev_gcd, gcd_res, gcdSize, cudaMemcpyHostToDevice);
+            dprint("cudaMemcpy:%s\n", cudaGetErrorString(cudaGetLastError()));
 
             int rem = yNumKeys % BLKDIM > 0 ? 1 : 0;
             dimConversion(numBlocks, yNumKeys / BLKDIM + rem, coords);
@@ -575,7 +592,11 @@ int main(int argc, char**argv) {
             allocateKeysToGPU(dev_xKeys, xKeys, xKeysSize);
 
             numBlocks = calculateNumberOfBlocks(xNumKeys, yNumKeys);
-            dprint("numBlocks = %ld\n", numBlocks);
+            printf("numBlocks = %ld\n", numBlocks);
+
+            unsigned int gcdSize = numBlocks * sizeof(uint16_t);
+            cudaMemcpy(dev_gcd, gcd_res, gcdSize, cudaMemcpyHostToDevice);
+            dprint("cudaMemcpy:%s\n", cudaGetErrorString(cudaGetLastError()));
 
             doUpperKernel(dev_xKeys, dev_yKeys, dev_gcd, numBlocks);
          }
