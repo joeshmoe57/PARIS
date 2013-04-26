@@ -7,7 +7,7 @@ extern "C" {
 #include "keyMath.h"
 }
 
-//Kernel Function
+//Kernel Functions
 
 __global__ void GCD_Compare_Upper(unsigned *x_dev, unsigned *y_dev, uint16_t *gcd_dev, int numBlocks) {
 }
@@ -431,6 +431,8 @@ int main(int argc, char**argv) {
    sscanf(argv[1], "%lu", &totalNumKeys);
 
    // TODO assumption that totalNumKeys is a multiple of BLKDIM is being made
+   // TODO keys must fit into RAM as well as the other allocated variables like
+   // gcd_res and xyCoord
    if((keys = (uint32_t *) malloc(totalNumKeys * NUM_INTS * sizeof(uint32_t)))
        == NULL) {
       perror("Cannot malloc Key Vector");

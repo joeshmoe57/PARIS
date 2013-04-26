@@ -1,0 +1,227 @@
+\relax 
+\providecommand\hyper@newdestlabel[2]{}
+\providecommand\HyperFirstAtBeginDocument{\AtBeginDocument}
+\HyperFirstAtBeginDocument{\ifx\hyper@anchor\@undefined
+\global\let\oldcontentsline\contentsline
+\gdef\contentsline#1#2#3#4{\oldcontentsline{#1}{#2}{#3}}
+\global\let\oldnewlabel\newlabel
+\gdef\newlabel#1#2{\newlabelxx{#1}#2}
+\gdef\newlabelxx#1#2#3#4#5#6{\oldnewlabel{#1}{{#2}{#3}}}
+\AtEndDocument{\ifx\hyper@anchor\@undefined
+\let\contentsline\oldcontentsline
+\let\newlabel\oldnewlabel
+\fi}
+\fi}
+\global\let\hyper@last\relax 
+\gdef\HyperFirstAtBeginDocument#1{#1}
+\providecommand\HyField@AuxAddToFields[1]{}
+\providecommand\HyField@AuxAddToCoFields[2]{}
+\@writefile{loa}{\addvspace {10\p@ }}
+\@writefile{loa}{\addvspace {10\p@ }}
+\@writefile{toc}{\contentsline {chapter}{List of Tables}{vii}{chapter*.2}}
+\@writefile{loa}{\addvspace {10\p@ }}
+\citation{holz2011ssl}
+\citation{tlsconcepts}
+\@writefile{toc}{\contentsline {chapter}{List of Figures}{viii}{chapter*.3}}
+\citation{rsa}
+\@writefile{loa}{\addvspace {10\p@ }}
+\@writefile{toc}{\contentsline {chapter}{\numberline {1}Introduction}{1}{chapter.1}}
+\@writefile{lof}{\addvspace {10\p@ }}
+\@writefile{lot}{\addvspace {10\p@ }}
+\newlabel{sec:intro}{{1}{1}{Introduction}{chapter.1}{}}
+\citation{lenstra2012ron}
+\citation{fujimoto2009high}
+\citation{nvidia2012programming}
+\@writefile{toc}{\contentsline {section}{\numberline {1.1}Overview of CUDA}{2}{section.1.1}}
+\newlabel{sec:cuda}{{1.1}{2}{Overview of CUDA}{section.1.1}{}}
+\citation{fujimoto2009high}
+\@writefile{toc}{\contentsline {section}{\numberline {1.2}Algorithm Description}{3}{section.1.2}}
+\newlabel{sec:alg}{{1.2}{3}{Algorithm Description}{section.1.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.2.1}Binary GCD}{3}{subsection.1.2.1}}
+\newlabel{subsec:binGCD}{{1.2.1}{3}{Binary GCD}{subsection.1.2.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.2.2}Parallel Functions}{3}{subsection.1.2.2}}
+\newlabel{subsec:parfunc}{{1.2.2}{3}{Parallel Functions}{subsection.1.2.2}{}}
+\newlabel{alg:binGCD}{{1}{4}{Binary GCD}{algocfline.1}{}}
+\@writefile{loa}{\contentsline {algocf}{\numberline {1}{\ignorespaces Binary GCD algorithm outline}}{4}{algocf.1}}
+\citation{fujimoto2009high}
+\newlabel{alg:parShift}{{2}{5}{Parallel Functions}{algocfline.2}{}}
+\@writefile{loa}{\contentsline {algocf}{\numberline {2}{\ignorespaces Parallel right shift}}{5}{algocf.2}}
+\newlabel{alg:parSub}{{3}{6}{Parallel Functions}{algocfline.3}{}}
+\@writefile{loa}{\contentsline {algocf}{\numberline {3}{\ignorespaces Parallel subtract using ``carry skip"}}{6}{algocf.3}}
+\citation{stein1967computational}
+\citation{vallee1998complete}
+\newlabel{alg:parGEQ}{{4}{7}{Parallel Functions}{algocfline.4}{}}
+\@writefile{loa}{\contentsline {algocf}{\numberline {4}{\ignorespaces Parallel greater-than-or-equal-to}}{7}{algocf.4}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.2.3}Computational Complexity}{7}{subsection.1.2.3}}
+\newlabel{subsec:compcomp}{{1.2.3}{7}{Computational Complexity}{subsection.1.2.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.2.4}Theoretical Speedup}{8}{subsection.1.2.4}}
+\newlabel{subsec:theory}{{1.2.4}{8}{Theoretical Speedup}{subsection.1.2.4}{}}
+\newlabel{eq:speed}{{1.1}{8}{Theoretical Speedup}{equation.1.2.1}{}}
+\newlabel{eq:percent}{{1.2}{8}{Theoretical Speedup}{equation.1.2.2}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {1.3}Problem Description}{8}{section.1.3}}
+\newlabel{sec:probdesc}{{1.3}{8}{Problem Description}{section.1.3}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {1.1}{\ignorespaces Total percentage of CUDA implementation that is parallel}}{9}{figure.1.1}}
+\newlabel{fig:parPercent}{{1.1}{9}{Total percentage of CUDA implementation that is parallel}{figure.1.1}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {1.4}Implementation}{9}{section.1.4}}
+\newlabel{sec:impl}{{1.4}{9}{Implementation}{section.1.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.4.1}Problem Decomposition}{9}{subsection.1.4.1}}
+\newlabel{subsec:probdecomp}{{1.4.1}{9}{Problem Decomposition}{subsection.1.4.1}{}}
+\newlabel{eq:gcd}{{1.3}{9}{Problem Decomposition}{equation.1.4.3}{}}
+\newlabel{fig:compvkeys}{{1.4.1}{10}{Problem Decomposition}{equation.1.4.3}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {1.2}{\ignorespaces Number of comparisons needed vs. total number of keys in set}}{10}{figure.1.2}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.4.2}Grid Organization}{10}{subsection.1.4.2}}
+\newlabel{sec:gridorg}{{1.4.2}{10}{Grid Organization}{subsection.1.4.2}{}}
+\newlabel{eq:blocks}{{1.4}{11}{Grid Organization}{equation.1.4.4}{}}
+\newlabel{eq:maxKeys}{{1.5}{11}{Grid Organization}{equation.1.4.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.4.3}Shared Memory}{11}{subsection.1.4.3}}
+\newlabel{subsec:shared}{{1.4.3}{11}{Shared Memory}{subsection.1.4.3}{}}
+\citation{nvidia2012gpu}
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.4.4}Occupancy}{12}{subsection.1.4.4}}
+\newlabel{sec:occupancy}{{1.4.4}{12}{Occupancy}{subsection.1.4.4}{}}
+\newlabel{tab:occupancy}{{1.4.4}{13}{Occupancy}{subsection.1.4.4}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {1.1}{\ignorespaces Table giving occupancy for various block dimensions}}{13}{table.1.1}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.4.5}Bit-vector}{13}{subsection.1.4.5}}
+\newlabel{subsec:bitvector}{{1.4.5}{13}{Bit-vector}{subsection.1.4.5}{}}
+\citation{lenstra:ron}
+\@writefile{toc}{\contentsline {section}{\numberline {1.5}Experimental Setup}{14}{section.1.5}}
+\newlabel{sec:expsetup}{{1.5}{14}{Experimental Setup}{section.1.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.5.1}Test Machine}{14}{subsection.1.5.1}}
+\newlabel{subsec:testmachine}{{1.5.1}{14}{Test Machine}{subsection.1.5.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.5.2}Reference Implementations}{14}{subsection.1.5.2}}
+\newlabel{subsec:refimpl}{{1.5.2}{14}{Reference Implementations}{subsection.1.5.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.5.3}Test Sets}{15}{subsection.1.5.3}}
+\newlabel{sec:testsets}{{1.5.3}{15}{Test Sets}{subsection.1.5.3}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {1.6}Results}{15}{section.1.6}}
+\newlabel{sec:results}{{1.6}{15}{Results}{section.1.6}{}}
+\newlabel{fig:speedup}{{1.6}{16}{Results}{section.1.6}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {1.3}{\ignorespaces Speedup of CUDA Implementation to Sequential C++}}{16}{figure.1.3}}
+\newlabel{tab:runtimes}{{1.6}{16}{Results}{figure.1.3}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {1.2}{\ignorespaces Run-times of sequential and CUDA implementations}}{16}{table.1.2}}
+\@writefile{toc}{\contentsline {section}{\numberline {1.7}Conclusion}{17}{section.1.7}}
+\newlabel{sec:concl}{{1.7}{17}{Conclusion}{section.1.7}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {1.8}Future Work}{17}{section.1.8}}
+\newlabel{sec:future}{{1.8}{17}{Future Work}{section.1.8}{}}
+\citation{nvidiakepler}
+\@writefile{loa}{\addvspace {10\p@ }}
+\citation{lenstra2012ron}
+\@writefile{toc}{\contentsline {chapter}{\numberline {2}Background}{20}{chapter.2}}
+\@writefile{lof}{\addvspace {10\p@ }}
+\@writefile{lot}{\addvspace {10\p@ }}
+\newlabel{ch:background}{{2}{20}{Background}{chapter.2}{}}
+\citation{scharfglass2012breaking}
+\citation{lenstra2012ron}
+\citation{scharfglass2012breaking}
+\newlabel{fig:vuln}{{2}{21}{Background}{chapter.2}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2.1}{\ignorespaces Explanation of poor-prime vulnerability}}{21}{figure.2.1}}
+\citation{rsa2004announces}
+\citation{rsa2004supports}
+\@writefile{toc}{\contentsline {section}{\numberline {2.1}Motivation}{22}{section.2.1}}
+\newlabel{sec:motivation}{{2.1}{22}{Motivation}{section.2.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1.1}Digital Rights Management}{22}{subsection.2.1.1}}
+\citation{holz2011ssl}
+\citation{holz2011ssl}
+\citation{tlsconcepts}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1.2}Internet Security and Certificates}{23}{subsection.2.1.2}}
+\newlabel{fig:x509}{{2.1.2}{24}{Internet Security and Certificates}{subsection.2.1.2}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2.2}{\ignorespaces X.509 Fields\cite  {holz2011ssl}}}{24}{figure.2.2}}
+\newlabel{fig:tls}{{2.1.2}{24}{Internet Security and Certificates}{figure.2.2}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2.3}{\ignorespaces TLS Overview\cite  {tlsconcepts}}}{24}{figure.2.3}}
+\citation{labovitz2011internet}
+\citation{labovitz2011internet}
+\citation{labovitz2011internet}
+\citation{scharfglass2012breaking}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1.3}Data Collection}{25}{subsection.2.1.3}}
+\newlabel{subsec:datacol}{{2.1.3}{25}{Data Collection}{subsection.2.1.3}{}}
+\newlabel{tab:traffic}{{2.1.3}{26}{Data Collection}{subsection.2.1.3}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {2.1}{\ignorespaces Major CDN Traffic (2010)}}{26}{table.2.1}}
+\citation{rsa2007challenge}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1.4}Data Analysis}{27}{subsection.2.1.4}}
+\newlabel{datanalysis}{{2.1.4}{27}{Data Analysis}{subsection.2.1.4}{}}
+\citation{scharfglass2012breaking}
+\citation{lenstra2012ron}
+\newlabel{fig:certs}{{2.1.4}{28}{Data Analysis}{subsection.2.1.4}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2.4}{\ignorespaces Presence of RSA key or other security in Alexa top 1M sites}}{28}{figure.2.4}}
+\newlabel{fig:bits}{{2.1.4}{29}{Data Analysis}{figure.2.4}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2.5}{\ignorespaces Breakdown of Alexa top 1M sites' RSA keys by bit-length}}{29}{figure.2.5}}
+\newlabel{tab:bits}{{2.1.4}{29}{Data Analysis}{figure.2.5}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {2.2}{\ignorespaces Alexa top 1M X.509 RSA bit-length}}{29}{table.2.2}}
+\citation{scharfglass2012breaking}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1.5}Implications}{30}{subsection.2.1.5}}
+\newlabel{subsec:implications}{{2.1.5}{30}{Implications}{subsection.2.1.5}{}}
+\citation{scharfglass2012breaking}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1.6}Conclusions}{31}{subsection.2.1.6}}
+\newlabel{subsec:conc}{{2.1.6}{31}{Conclusions}{subsection.2.1.6}{}}
+\@writefile{loa}{\addvspace {10\p@ }}
+\citation{lenstra2012ron}
+\citation{scharfglass2012breaking}
+\citation{lenstra2012ron}
+\@writefile{toc}{\contentsline {chapter}{\numberline {3}Related Works}{32}{chapter.3}}
+\@writefile{lof}{\addvspace {10\p@ }}
+\@writefile{lot}{\addvspace {10\p@ }}
+\newlabel{related}{{3}{32}{Related Works}{chapter.3}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {3.1}The Vulnerability}{32}{section.3.1}}
+\newlabel{sec:vuln}{{3.1}{32}{The Vulnerability}{section.3.1}{}}
+\citation{fujimoto2009high}
+\@writefile{toc}{\contentsline {section}{\numberline {3.2}The Process}{33}{section.3.2}}
+\newlabel{sec:proc}{{3.2}{33}{The Process}{section.3.2}{}}
+\citation{scharfglass2012breaking}
+\citation{schaa2009exploring}
+\citation{schaa2009exploring}
+\citation{thibault2009cuda}
+\citation{thibault2009cuda}
+\@writefile{toc}{\contentsline {section}{\numberline {3.3}Multiple GPUs}{34}{section.3.3}}
+\newlabel{sec:multGPU}{{3.3}{34}{Multiple GPUs}{section.3.3}{}}
+\citation{scharfglass2012breaking}
+\citation{wu2009clustering}
+\@writefile{toc}{\contentsline {section}{\numberline {3.4}Large Data}{35}{section.3.4}}
+\newlabel{sec:largedata}{{3.4}{35}{Large Data}{section.3.4}{}}
+\citation{charles2012chunking}
+\citation{scharfglass2012breaking}
+\citation{ryoo2008optimization}
+\citation{scharfglass2012breaking}
+\citation{ryoo2008optimization}
+\citation{thibault2009cuda}
+\citation{peters2011fast}
+\@writefile{toc}{\contentsline {section}{\numberline {3.5}Optimization}{37}{section.3.5}}
+\newlabel{sec:opti}{{3.5}{37}{Optimization}{section.3.5}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {3.6}Similar Algorithms}{37}{section.3.6}}
+\newlabel{sec:simialg}{{3.6}{37}{Similar Algorithms}{section.3.6}{}}
+\citation{scharfglass2012breaking}
+\citation{peters2011fast}
+\citation{dean2008mapreduce}
+\@writefile{loa}{\addvspace {10\p@ }}
+\citation{scharfglass2012breaking}
+\citation{scharfglass2012breaking}
+\citation{scharfglass2012breaking}
+\citation{scharfglass2012breaking}
+\@writefile{toc}{\contentsline {chapter}{\numberline {4}Validation}{39}{chapter.4}}
+\@writefile{lof}{\addvspace {10\p@ }}
+\@writefile{lot}{\addvspace {10\p@ }}
+\citation{scharfglass2012breaking}
+\citation{scharfglass2012breaking}
+\citation{scharfglass2012breaking}
+\bibstyle{abbrv}
+\bibdata{references}
+\bibcite{rsa2004announces}{1}
+\bibcite{rsa2004supports}{2}
+\bibcite{rsa2007challenge}{3}
+\bibcite{tlsconcepts}{4}
+\bibcite{nvidia2012gpu}{5}
+\bibcite{nvidia2012programming}{6}
+\bibcite{nvidiakepler}{7}
+\@writefile{loa}{\addvspace {10\p@ }}
+\@writefile{toc}{\contentsline {chapter}{Bibliography}{41}{chapter*.4}}
+\bibcite{dean2008mapreduce}{8}
+\bibcite{charles2012chunking}{9}
+\bibcite{fujimoto2009high}{10}
+\bibcite{holz2011ssl}{11}
+\bibcite{labovitz2011internet}{12}
+\bibcite{lenstra2012ron}{13}
+\bibcite{peters2011fast}{14}
+\bibcite{ryoo2008optimization}{15}
+\bibcite{schaa2009exploring}{16}
+\bibcite{scharfglass2012breaking}{17}
+\bibcite{stein1967computational}{18}
+\bibcite{thibault2009cuda}{19}
+\bibcite{vallee1998complete}{20}
+\bibcite{wu2009clustering}{21}
