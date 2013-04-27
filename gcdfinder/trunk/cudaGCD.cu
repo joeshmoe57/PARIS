@@ -544,7 +544,7 @@ int main(int argc, char**argv) {
    for (int y = 0; y < segmentDivisionFactor; ++y) {
       yIdx = segmentIndices[y];
       dprint("yIdx: %d\n", yIdx);
-      yKeys = keys;
+      yKeys = keys + yPrevIdx;
       
       int yNumKeys = yIdx - yPrevIdx;
       dprint("yNumKeys: %d\n", yNumKeys);
@@ -560,6 +560,7 @@ int main(int argc, char**argv) {
             /* TODO Assumes totalNumberOfKeys is less than sqrt(LONG_MAX) */ 
             numBlocks = calculateNumberOfBlocks(yNumKeys);
             printf("numBlocks = %ld\n", numBlocks);
+            dprint("numBlocks = %ld\n", numBlocks);
 
             unsigned int gcdSize = numBlocks * sizeof(uint16_t);
             cudaMemcpy(dev_gcd, gcd_res, gcdSize, cudaMemcpyHostToDevice);
@@ -586,7 +587,8 @@ int main(int argc, char**argv) {
             dprint("Found rectangular key set: %d\n", x);
             // move in half steps
             xIdx = segmentIndices[x];
-            uint32_t * xKeys = keys + xIdx;
+            dprint("xIdx: %d\n", xIdx);
+            uint32_t * xKeys = keys + xPrevIdx;
 
             int xNumKeys = xIdx - xPrevIdx;
             unsigned int xKeysSize = xNumKeys * NUM_INTS * sizeof(uint32_t);
@@ -595,6 +597,7 @@ int main(int argc, char**argv) {
 
             numBlocks = calculateNumberOfBlocks(xNumKeys, yNumKeys);
             printf("numBlocks = %ld\n", numBlocks);
+            dprint("numBlocks = %ld\n", numBlocks);
 
             unsigned int gcdSize = numBlocks * sizeof(uint16_t);
             cudaMemcpy(dev_gcd, gcd_res, gcdSize, cudaMemcpyHostToDevice);
