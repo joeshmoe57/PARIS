@@ -9,46 +9,51 @@ extern "C" {
 
 //Kernel Functions
 
-__global__ void GCD_Compare_Upper(unsigned *x_dev, unsigned *y_dev, uint16_t *gcd_dev, int numBlocks) {
+__global__ void GCD_Compare_Upper(unsigned *x_dev, unsigned *y_dev,
+      uint16_t *gcd_dev, int numBlocks, int keysInXSet, int keysInYSet) {
    __shared__ volatile uint32_t x[BLKDIM][BLKDIM][NUM_INTS];
    __shared__ volatile uint32_t y[BLKDIM][BLKDIM][NUM_INTS];
    uint32_t tidx = threadIdx.x;
    uint32_t tidy = threadIdx.y;
    uint32_t tidz = threadIdx.z;
-   uint32_t blkidx = blockIdx.x;
-   uint32_t blkidy = blockIdx.y;
-   uint32_t blkIdx = blkidx + blkidy * gridDim.x;
+   uint32_t blkx = blockIdx.x;
+   uint32_t blky = blockIdx.y;
+   uint32_t blkIdx = blkx + blky * gridDim.x;
 
-   //if (blkIdx < numBlocks) {
-      uint32_t keyX = tidx + NUM_INTS * (tidy + blkidx * BLKDIM);
-      uint32_t keyY = tidx + NUM_INTS * (tidz + blkidy * BLKDIM);
+   if (blkIdx < numBlocks) {
+      uint32_t whichKeyX = tidy + blkx * BLKDIM;
+      uint32_t whichKeyY = tidz + blky * BLKDIM;
 
-         x[tidy][tidz][tidx] = x_dev[keyX];
-         y[tidy][tidz][tidx] = y_dev[keyY];
-         /*
-         if (tidx == 0 && tidy == 0 && tidz == 0) {
-            printf("in kernel\n");
-            dev_printNumHex(x_dev + keyX);
-            dev_printNumHex(y_dev + keyY);
-         }
-         */
+      if (whichKeyX < keysInXSet && whichKeyY < keysInYSet) {
+         uint32_t whichIntX = tidx + NUM_INTS * whichKeyX;
+         uint32_t whichIntY = tidx + NUM_INTS * whichKeyY;
+
+         x[tidy][tidz][tidx] = x_dev[whichIntX];
+         y[tidy][tidz][tidx] = y_dev[whichIntY];
 
          gcd(x[tidy][tidz], y[tidy][tidz]);
 
-         // TODO figure out why this is here.
+         /* If we're on the least significant thread, subtract 1 so that
+          * results that equal 1, now equal zero, and will fail the following
+          * "any".
+          * This is okay to do since we're just storing bit-vectors, and don't
+          * need to preserve the actual values, but instead, just whether the
+          * answer was greater than 1
+          */
          if (tidx == 31)
             y[tidy][tidz][tidx] -= 1;
          if (__any(y[tidy][tidz][tidx])) {
             gcd_dev[blkIdx] |= 1<<(tidy + BLKDIM * tidz);
          }
-   //}
+      }
+   }
 }
 
 
 /* TODO Figure out if de_coords could be moved into shared memory */
 /* TODO Kernel should handle blocks without data in the whole thing*/
 __global__ void GCD_Compare_Diagonal(uint32_t * x_dev, xyCoord * dev_coord,
-   uint16_t * gcd_dev, int numBlocks) {
+   uint16_t * gcd_dev, int numBlocks, int keysInSet) {
    //Load up shared memory
    __shared__ volatile uint32_t x[BLKDIM][BLKDIM][NUM_INTS];
    __shared__ volatile uint32_t y[BLKDIM][BLKDIM][NUM_INTS];
@@ -60,39 +65,51 @@ __global__ void GCD_Compare_Diagonal(uint32_t * x_dev, xyCoord * dev_coord,
 
    if (blkIdx < numBlocks) {
       xyCoord coord = dev_coord[blkIdx];
-      uint32_t keyX = tidx + NUM_INTS * (tidy + coord.x * BLKDIM);
-      uint32_t keyY = tidx + NUM_INTS * (tidz + coord.y * BLKDIM);
+      uint32_t whichKeyX = tidy + coord.x * BLKDIM;
+      uint32_t whichKeyY = tidz + coord.y * BLKDIM;
 
-      // if (coord.x == coord.y)
-      //    we're on a diagonal, and should only use tidy > tidz
-      // else // coord.x > coord.y)
-      //    we must do an entire 4x4 block
-      if (coord.x != coord.y || tidy > tidz) {
-         //Check this!! - FIX THIS
-         //if(/*tidy == 0 && tidz == 0 && */tidx < NUM_INTS && tidy < BLKDIM && tidz < BLKDIM) {
-         //    printf("tidx = %d; tidy = %d; idx = %d\n", tidx, tidy, idx);
-         x[tidy][tidz][tidx] = x_dev[keyX];
-         y[tidy][tidz][tidx] = x_dev[keyY];
+      if (whichKeyX < keysInSet && whichKeyY < keysInSet) {
+         uint32_t whichIntX = tidx + NUM_INTS * whichKeyX;
+         uint32_t whichIntY = tidx + NUM_INTS * whichKeyY;
 
-         gcd(x[tidy][tidz], y[tidy][tidz]);
-         //gcd_dev[keyX * BLKDIM + keyY * BLKDIM * NUM_INTS] = y[tidy][tidz][tidx];
+         // if (coord.x == coord.y)
+         //    we're on a diagonal, and should only use tidy > tidz
+         // else // coord.x > coord.y)
+         //    we must do an entire 4x4 block
+         if (coord.x != coord.y || tidy > tidz) {
+            //Check this!! - FIX THIS
+            //if(/*tidy == 0 && tidz == 0 && */tidx < NUM_INTS && tidy < BLKDIM && tidz < BLKDIM) {
+            //    printf("tidx = %d; tidy = %d; idx = %d\n", tidx, tidy, idx);
+            x[tidy][tidz][tidx] = x_dev[whichIntX];
+            y[tidy][tidz][tidx] = x_dev[whichIntY];
 
-         // TODO figure out why this is here.
-         if (tidx == 31)
-            y[tidy][tidz][tidx] -= 1;
-//         __syncthreads();
-         if (__any(y[tidy][tidz][tidx])) {
-            gcd_dev[blkIdx] |= 1<<(tidy + BLKDIM * tidz);
+            gcd(x[tidy][tidz], y[tidy][tidz]);
+            //gcd_dev[keyX * BLKDIM + keyY * BLKDIM * NUM_INTS] = y[tidy][tidz][tidx];
+
+            /* If we're on the least significant thread, subtract 1 so that
+             * results that equal 1, now equal zero, and will fail the following
+             * "any".
+             * This is okay to do since we're just storing bit-vectors, and don't
+             * need to preserve the actual values, but instead, just whether the
+             * answer was greater than 1
+             */
+            if (tidx == 31)
+               y[tidy][tidz][tidx] -= 1;
+            //         __syncthreads();
+            if (__any(y[tidy][tidz][tidx])) {
+               gcd_dev[blkIdx] |= 1<<(tidy + BLKDIM * tidz);
+            }
+
+            //gcd_dev[tidx + NUM_INTS * (tidy + tidz * BLKDIM) + THREADS_PER_BLOCK * blkIdx] 
+            //   = y[tidy][tidz][tidx];
+
+            /*      } else {
+                    gcd_dev[tidx + NUM_INTS * (tidy + tidz * BLKDIM) + THREADS_PER_BLOCK * blkIdx] = 0;
+            //y[tidy][tidz][tidx] = 0;
+             */
+             }
          }
-
-         //gcd_dev[tidx + NUM_INTS * (tidy + tidz * BLKDIM) + THREADS_PER_BLOCK * blkIdx] 
-         //   = y[tidy][tidz][tidx];
-         
-/*      } else {
-        gcd_dev[tidx + NUM_INTS * (tidy + tidz * BLKDIM) + THREADS_PER_BLOCK * blkIdx] = 0;
-         //y[tidy][tidz][tidx] = 0;
- */     }
-   }
+      }
 }
 
 __device__ void dev_printNumHex(uint32_t buf[NUM_INTS]){
@@ -385,7 +402,7 @@ uint16_t * calcAllocGCDResult(uint16_t * gcd, long numBlocks) {
 }
 
 void doDiagonalKernel(uint32_t * dev_keys, xyCoord * dev_coords, 
-       uint16_t * dev_gcd, long numBlocks) { 
+       uint16_t * dev_gcd, long numBlocks, int numKeys) { 
 
    int dimGridx = numBlocks > MAX_BLOCK_DIM ? MAX_BLOCK_DIM : numBlocks;
    int dimy = 1 + numBlocks / MAX_BLOCK_DIM;
@@ -397,7 +414,7 @@ void doDiagonalKernel(uint32_t * dev_keys, xyCoord * dev_coords,
          dimGrid.z, dimBlock.x, dimBlock.y, dimBlock.z);
    dprint("\\| numBlocks: %ld\n", numBlocks);
 
-   GCD_Compare_Diagonal<<<dimGrid, dimBlock>>>(dev_keys, dev_coords, dev_gcd, numBlocks);
+   GCD_Compare_Diagonal<<<dimGrid, dimBlock>>>(dev_keys, dev_coords, dev_gcd, numBlocks, numKeys);
 }
 
 void doUpperKernel(uint32_t * dev_xKeys, uint32_t * dev_yKeys, uint16_t * dev_gcd,
@@ -412,47 +429,64 @@ void doUpperKernel(uint32_t * dev_xKeys, uint32_t * dev_yKeys, uint16_t * dev_gc
          dimGrid.z, dimBlock.x, dimBlock.y, dimBlock.z);
    dprint("|_| numBlocks: %ld\n", numBlocks);
 
-   GCD_Compare_Upper<<<dimGrid, dimBlock>>>(dev_xKeys, dev_yKeys, dev_gcd, numBlocks);
+   GCD_Compare_Upper<<<dimGrid, dimBlock>>>(dev_xKeys, dev_yKeys, dev_gcd,
+         numBlocks, xNumKeys, yNumKeys);
 }
 
-void writeGCDResults(long numBlocks, uint32_t * keys, xyCoord * coords, uint16_t * gcd_res, int x, int y) {
-   for (int k = 0; k < numBlocks; ++k) {
-      /* check this block for bad keys */
-      if (gcd_res[k] > 0) {
-         dprint("bad key found in block: (%d, %d)\n", coords[k].x, coords[k].y);
+void checkBlockForGCD(uint16_t gcd_res, int blockX, int blockY, int prevKeysX,
+      int prevKeysY, uint32_t * keys) {
+   /* check this block for bad keys */
+   if (gcd_res > 0) {
+      dprint("bad key found in block: (%d, %d)\n", blockX, blockY);
+      // traverse columns
+      for (int j = 0; j < BLKDIM; ++j) {
+         // check if any bits in a column are found
+         if (gcd_res & YMASKS[j]) {
+            // traverse rows 
+            for (int i = 0; i < BLKDIM; ++i) {
+               if (gcd_res & YMASKS[j] & XMASKS[i]) {
+                  int one = NUM_INTS * (BLKDIM * blockX + i + prevKeysX);
+                  int two = NUM_INTS * (BLKDIM * blockY + j + prevKeysY);
+                  dprint("key %d, %d in block (%d, %d)\n", i, j, blockX, blockY);
+                  dprint("VULNERABLE KEY PAIR FOUND:\n");
+                  dprint("one: %d\n", one);
+                  dprint("two: %d\n", two);
+                  printf("x\n");
+                  printNumHex(keys + one);
+                  printf("y\n");
+                  printNumHex(keys + two);
+                  uint32_t gcd[NUM_INTS];
+                  memset(gcd, 0, NUM_INTS * sizeof(uint32_t));
 
-         // traverse columns
-         for (int j = 0; j < BLKDIM; ++j) {
-            // check if any bits in a column are found
-            if (gcd_res[k] & YMASKS[j]) {
-               dprint("Found one: column %d.\n", j);
-               // traverse rows 
-               for (int i = 0; i < BLKDIM; ++i) {
-                  if (gcd_res[k] & YMASKS[j] & XMASKS[i]) {
-                     dprint("Found one: row %d.\n", i);
-                     int one = NUM_INTS * (BLKDIM * coords[k].x + i + x);
-                     int two = NUM_INTS * (BLKDIM * coords[k].y + j + y);
-                     dprint("key %d, %d in block (%d, %d)\n", i, j, coords[k].x, coords[k].y);
-                     dprint("VULNERABLE KEY PAIR FOUND:\n");
-                     dprint("one: %d\n", one);
-                     dprint("two: %d\n", two);
-                     printf("x\n");
-                     printNumHex(keys + one);
-                     printf("y\n");
-                     printNumHex(keys + two);
-                     uint32_t gcd[NUM_INTS];
-                     memset(gcd, 0, NUM_INTS * sizeof(uint32_t));
-
-                     gcd1024(&keys[one],
-                             &keys[two],
-                             gcd);
-                     dprint("PRIVATE KEY:\n");
-                     printNumHex(gcd);
-                  }
+                  gcd1024(&keys[one], &keys[two], gcd);
+                  printNumHex(gcd);
                }
             }
          }
-         printf("k = %d %x\n", k, gcd_res[k]);
+      }
+   }
+}
+
+void writeGCDResults(long numBlocks, uint32_t * keys, xyCoord * coords,
+      uint16_t * gcd_res, int prevKeysX, int prevKeysY) {
+   for (int blockId = 0; blockId < numBlocks; ++blockId) {
+      int blockX = coords[blockId].x;
+      int blockY = coords[blockId].y;
+
+      checkBlockForGCD(gcd_res[blockId], blockX, blockY, prevKeysX, prevKeysY, keys);
+   }
+}
+
+void writeGCDResults(long numBlocks, uint32_t * keys, int xNumKeys,
+      int yNumKeys, uint16_t * gcd_res, int prevKeysX, int prevKeysY) {
+   int xBlocks = xNumKeys / BLKDIM + (xNumKeys % BLKDIM ? 1 : 0);
+   int yBlocks = yNumKeys / BLKDIM + (yNumKeys % BLKDIM ? 1 : 0);
+
+   for (int blockX = 0; blockX < xBlocks; ++blockX) {
+      for (int blockY = 0; blockY < yBlocks; ++blockY) {
+         int blockId = blockX + blockY * xBlocks;
+
+         checkBlockForGCD(gcd_res[blockId], blockX, blockY, prevKeysX, prevKeysY, keys);
       }
    }
 }
@@ -489,6 +523,7 @@ int main(int argc, char**argv) {
       exit(-1);
    }
    dprint("getKeys returns %d\n", totalNumKeys);
+
    /*
 #ifdef DEBUG
    for (int i = 0; i < totalNumKeys; ++i) {
@@ -643,17 +678,15 @@ int main(int argc, char**argv) {
             cudaMemcpy(dev_coords, coords, coordSize, cudaMemcpyHostToDevice);
             dprint("cudaMemcpy:%s\n", cudaGetErrorString(cudaGetLastError()));
 
-            doDiagonalKernel(dev_yKeys, (xyCoord * ) dev_coords, dev_gcd, numBlocks);
-
-            xPrevIdx = yPrevIdx = yIdx;
+            doDiagonalKernel(dev_yKeys, (xyCoord * ) dev_coords, dev_gcd, numBlocks, yNumKeys);
 
             // Copy the results from the card to the CPU
             cudaMemcpy(gcd_res, dev_gcd, maxGCDSize, cudaMemcpyDeviceToHost);
             dprint("cudaMemcpy:%s\n", cudaGetErrorString(cudaGetLastError()));
 
             // do useful things with gcd_res
-            dprint("writing: %d\n", numBlocks);
-            writeGCDResults(numBlocks, keys, coords, gcd_res, xIdx, yIdx);
+            writeGCDResults(numBlocks, keys, coords, gcd_res, xPrevIdx, yPrevIdx);
+            xPrevIdx = yIdx;
 
          } else {// call kernel with 2 different key sets (rectangle)
             dprint("Found rectangular |_| key set: %d\n", x);
@@ -706,7 +739,9 @@ int main(int argc, char**argv) {
 
                // do useful things with gcd_res
                dprint("writing: %d\n", numBlocks);
-               writeGCDResults(numBlocks, keys, coords, gcd_res, xIdx, yIdx);
+               DP(xPrevIdx);
+               DP(yPrevIdx);
+               writeGCDResults(numBlocks, keys, xCurrNumKeys, yNumKeys, gcd_res, xPrevIdx, yPrevIdx);
 
                xPrevIdx = xIdx;
             }

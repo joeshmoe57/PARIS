@@ -34,9 +34,10 @@ typedef struct xy {
    uint16_t y;
 } xyCoord;
 
-//__global__ void HighThroughputGCD(unsigned *x_dev, unsigned *gcd_dev);
-__global__ void GCD_Compare_Diagonal(unsigned *x_dev, xyCoord * dev_coord, uint16_t *gcd_dev, int numBlocks);
-__global__ void GCD_Compare_Upper(unsigned *x_dev, unsigned *y_dev, uint16_t *gcd_dev, int numBlocks);
+__global__ void GCD_Compare_Diagonal(unsigned *x_dev, xyCoord * dev_coord,
+      uint16_t *gcd_dev, int numBlocks, int keysInSet);
+__global__ void GCD_Compare_Upper(unsigned *x_dev, unsigned *y_dev,
+      uint16_t *gcd_dev, int numBlocks, int keysInXSet, int keysInYSet);
 __device__ void dev_printNumHex(uint32_t buf[NUM_INTS]);
 __device__ void gcd(volatile unsigned *x, volatile unsigned *y);
 __device__ void shiftR1(volatile unsigned *x);
@@ -52,8 +53,11 @@ void allocateKeysToGPU(uint32_t * dev_keys, uint32_t * keys, size_t keysSize);
 void allocateCoordsToGPU(xyCoord * dev_coords, uint32_t * coords, size_t coordSize);
 uint16_t * calcAllocGCDResult(uint16_t * gcd, long numBlocks);
 void doDiagonalKernel(uint32_t * dev_keys, xyCoord * dev_coords, uint16_t * dev_gcd,
-      long numBlocks);
+      long numBlocks, int numKeys);
 void doUpperKernel(uint32_t * dev_xKeys, uint32_t * dev_yKeys, uint16_t * dev_gcd,
       long numBlocks, int xNumKeys, int yNumKeys);
 
-void writeGCDResults(long numBlocks, uint32_t * keys, xyCoord * coords, uint16_t * gcd_res, int x, int y);
+void writeGCDResults(long numBlocks, uint32_t * keys, xyCoord * coords,
+      uint16_t * gcd_res, int prevKeysX, int prevKeysY);
+void writeGCDResults(long numBlocks, uint32_t * keys, int xNumKeys,
+      int yNumKeys, uint16_t * gcd_res, int xIdx, int yIdx);
