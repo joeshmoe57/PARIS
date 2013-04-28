@@ -59,7 +59,7 @@ void doUpperKernel(uint32_t * dev_xKeys, uint32_t * dev_yKeys, uint16_t * dev_gc
 
 void checkBlockForGCD(uint16_t gcd_res, int blockX, int blockY, int prevKeysX,
       int prevKeysY, uint32_t * keys);
-void writeGCDResults(long numBlocks, uint32_t * keys, xyCoord * coords,
+void parseGCDResults(long numBlocks, uint32_t * keys, xyCoord * coords,
       uint16_t * gcd_res, int prevKeysX, int prevKeysY);
-void writeGCDResults(long numBlocks, uint32_t * keys, int xNumKeys,
+void parseGCDResults(long numBlocks, uint32_t * keys, int xNumKeys,
       int yNumKeys, uint16_t * gcd_res, int xIdx, int yIdx);

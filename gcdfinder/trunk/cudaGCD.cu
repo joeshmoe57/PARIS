@@ -1,4 +1,5 @@
 #include "cudaGCD.h"
+#include <openssl/rsa.h>
 
 #define DEBUG 1
 
@@ -368,8 +369,13 @@ long calculateMaxBlocks(int numKeys) {
    return maxDiagBlocks > maxUpperBlocks ? maxDiagBlocks : maxUpperBlocks;
 }
 
+/* The 2nd CUDA parameters with either be the coordinate lookup table, or the
+ * set of keys along the x-axis. We want to minimize allocations, so this
+ * function finds the size of the larger of those 2 things.
+ * Most often, it will corespond to the coordinate table; however, for small
+ * numbers of keys, the key set can be larger.
+ */
 long calculateMax2ndParamSize(long numKeys, long maxBlocks) {
-
    // calculate max xyCoords size
    long maxXYCoordsSize = sizeof(xyCoord) * maxBlocks;
    DP(maxXYCoordsSize);
@@ -402,12 +408,18 @@ void checkBlockForGCD(uint16_t gcd_res, int blockX, int blockY, int prevKeysX,
                   printNumHex(keys + one);
                   printf("y\n");
                   printNumHex(keys + two);
+                  // TODO
+                  // save keys indexes one and two into a list
+                  // and don't bother passing in keys
+
+                  /*
                   uint32_t gcd[NUM_INTS];
                   memset(gcd, 0, NUM_INTS * sizeof(uint32_t));
 
                   // TODO open a file and write results into it
                   gcd1024(&keys[one], &keys[two], gcd);
                   printNumHex(gcd);
+                  */
                }
             }
          }
@@ -415,7 +427,7 @@ void checkBlockForGCD(uint16_t gcd_res, int blockX, int blockY, int prevKeysX,
    }
 }
 
-void writeGCDResults(long numBlocks, uint32_t * keys, xyCoord * coords,
+void parseGCDResults(long numBlocks, uint32_t * keys, xyCoord * coords,
       uint16_t * gcd_res, int prevKeysX, int prevKeysY) {
    for (int blockId = 0; blockId < numBlocks; ++blockId) {
       int blockX = coords[blockId].x;
@@ -425,7 +437,7 @@ void writeGCDResults(long numBlocks, uint32_t * keys, xyCoord * coords,
    }
 }
 
-void writeGCDResults(long numBlocks, uint32_t * keys, int xNumKeys,
+void parseGCDResults(long numBlocks, uint32_t * keys, int xNumKeys,
       int yNumKeys, uint16_t * gcd_res, int prevKeysX, int prevKeysY) {
    int xBlocks = xNumKeys / BLKDIM + (xNumKeys % BLKDIM ? 1 : 0);
    int yBlocks = yNumKeys / BLKDIM + (yNumKeys % BLKDIM ? 1 : 0);
@@ -449,6 +461,7 @@ void printCoords(xyCoord * coords, long numBlocks) {
 int main(int argc, char**argv) {
    unsigned long totalNumKeys;
    std::vector<RSA*> privKeys;
+   std::vector<> badKeyList;
    uint32_t *keys;
    // This holds the the number of times the key set will be divided so that 
    // results will fit onto the GPU. 
@@ -598,7 +611,7 @@ int main(int argc, char**argv) {
             dprint("cudaMemcpy:%s\n", cudaGetErrorString(cudaGetLastError()));
 
             // do useful things with gcd_res
-            writeGCDResults(numBlocks, keys, coords, gcd_res, xPrevIdx, yPrevIdx);
+            parseGCDResults(numBlocks, keys, coords, gcd_res, xPrevIdx, yPrevIdx);
             xPrevIdx = yIdx;
 
          } else {// call kernel with 2 different key sets (rectangle)
@@ -646,13 +659,12 @@ int main(int argc, char**argv) {
                dprint("writing: %d\n", numBlocks);
                DP(xPrevIdx);
                DP(yPrevIdx);
-               writeGCDResults(numBlocks, keys, xCurrNumKeys, yNumKeys, gcd_res, xPrevIdx, yPrevIdx);
+               parseGCDResults(numBlocks, keys, xCurrNumKeys, yNumKeys, gcd_res, xPrevIdx, yPrevIdx);
 
                xPrevIdx = xIdx;
             }
             yPrevIdx = yIdx;
          }
-
       }
    }
 
@@ -664,6 +676,8 @@ int main(int argc, char**argv) {
    free(keys);
    free(gcd_res);
    free(coords);
+
+//   writeBadKeysToPEMs(badKeyList);
 
    return 0;
 }
