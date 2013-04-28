@@ -48,15 +48,17 @@ __device__ int geq(volatile unsigned *x, volatile unsigned *y);
 void dimConversion(int numBlocks, int width, xyCoord * coords);
 long calculateNumberOfBlocks(long keys);
 long maximizeKeys(int deviceNumber, bool diagonal);
+long calculateMaxBlocks(int numKeys);
 
-void allocateKeysToGPU(uint32_t * dev_keys, uint32_t * keys, size_t keysSize);
-void allocateCoordsToGPU(xyCoord * dev_coords, uint32_t * coords, size_t coordSize);
-uint16_t * calcAllocGCDResult(uint16_t * gcd, long numBlocks);
+void printCoords(xyCoord * coords, long numBlocks);
+
 void doDiagonalKernel(uint32_t * dev_keys, xyCoord * dev_coords, uint16_t * dev_gcd,
       long numBlocks, int numKeys);
 void doUpperKernel(uint32_t * dev_xKeys, uint32_t * dev_yKeys, uint16_t * dev_gcd,
       long numBlocks, int xNumKeys, int yNumKeys);
 
+void checkBlockForGCD(uint16_t gcd_res, int blockX, int blockY, int prevKeysX,
+      int prevKeysY, uint32_t * keys);
 void writeGCDResults(long numBlocks, uint32_t * keys, xyCoord * coords,
       uint16_t * gcd_res, int prevKeysX, int prevKeysY);
 void writeGCDResults(long numBlocks, uint32_t * keys, int xNumKeys,
