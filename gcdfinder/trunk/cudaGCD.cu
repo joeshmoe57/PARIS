@@ -378,6 +378,7 @@ long calculateMax2ndParamSize(long numKeys, long maxBlocks) {
    int maxXKeys = numKeys / 2 + (numKeys % 2 ? 1 : 0);
    long maxXKeySize = maxXKeys * NUM_INTS * sizeof(uint32_t);
    return maxXYCoordsSize > maxXKeySize ? maxXYCoordsSize : maxXKeySize;
+}
 
 void checkBlockForGCD(uint16_t gcd_res, int blockX, int blockY, int prevKeysX,
       int prevKeysY, uint32_t * keys) {
@@ -524,7 +525,7 @@ int main(int argc, char**argv) {
 
    // allocate max xyCoords on host
    xyCoord * coords;
-   if ((coords = (xyCoord *) malloc(maxXYCoordsSize)) == NULL) {
+   if ((coords = (xyCoord *) malloc(max2ndParamSize)) == NULL) {
       perror("Cannot malloc space for xy coords");
       exit(-1);
    }
