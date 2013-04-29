@@ -10,7 +10,7 @@ int main(int argc, char ** argv) {
 
     uint32_t *u;
     uint32_t w[NUM_INTS];
-    uint32_t total_keys;
+    long total_keys;
     std::vector<RSA*> privKeys;
 
     //get number of keys to process
@@ -20,7 +20,7 @@ int main(int argc, char ** argv) {
         exit(1);
     }
 
-    sscanf(argv[1], "%d", &total_keys);
+    sscanf(argv[1], "%ld", &total_keys);
 
     //get keys
     if((u = (uint32_t *) malloc(total_keys * NUM_INTS * sizeof(uint32_t))) == 0)
@@ -38,8 +38,8 @@ int main(int argc, char ** argv) {
         ++shift;
     }
 
-    int numBlocks = (total_keys * total_keys + BLKDIM * total_keys) >> (shift);
-    printf("numBlocks = %d\n", numBlocks);
+    long numBlocks = (total_keys * total_keys + BLKDIM * total_keys) >> (shift);
+    printf("numBlocks = %ld\n", numBlocks);
 
     //Put in a bad pair
     /*

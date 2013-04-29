@@ -461,7 +461,7 @@ void printCoords(xyCoord * coords, long numBlocks) {
 int main(int argc, char**argv) {
    unsigned long totalNumKeys;
    std::vector<RSA*> privKeys;
-   std::vector<> badKeyList;
+   //std::vector<> badKeyList;
    uint32_t *keys;
    // This holds the the number of times the key set will be divided so that 
    // results will fit onto the GPU. 
