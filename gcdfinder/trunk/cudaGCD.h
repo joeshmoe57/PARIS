@@ -1,14 +1,9 @@
-#include <stdio.h>
-#include <stdint.h>
-#include <sys/resource.h>
-#include <errno.h>
+#include "globals.h"
 #include "hrt.h"
 #include <math.h>
 
 #include "getKeys.h"
-#include <vector>
 
-#include "globals.h"
 
 
 static int XMASKS[BLKDIM] = { 0x1111,
@@ -23,11 +18,6 @@ static int YMASKS[BLKDIM] = { 0x000F,
 
 #define THREADS_PER_BLOCK  512 
 #define MAX_BLOCK_DIM      65535
-
-#define dprint(...) do { if(DEBUG) fprintf(stderr, __VA_ARGS__); } while(0);
-
-#define P(varname) fprintf(stderr, "%s = %d\n", #varname, varname);
-#define DP(varname) do { if(DEBUG) fprintf(stderr, "%s = %d\n", #varname, varname); } while(0);
 
 typedef struct xy {
    uint16_t x;
@@ -46,7 +36,7 @@ __device__ void cusubtract(volatile unsigned *x, volatile unsigned *y, volatile 
 __device__ int geq(volatile unsigned *x, volatile unsigned *y);
 
 void dimConversion(int numBlocks, int width, xyCoord * coords);
-long calculateNumberOfBlocks(long keys);
+long calculateNumberOfBlocks(long numKeys);
 long maximizeKeys(int deviceNumber, bool diagonal);
 long calculateMaxBlocks(int numKeys);
 
@@ -58,8 +48,10 @@ void doUpperKernel(uint32_t * dev_xKeys, uint32_t * dev_yKeys, uint16_t * dev_gc
       long numBlocks, int xNumKeys, int yNumKeys);
 
 void checkBlockForGCD(uint16_t gcd_res, int blockX, int blockY, int prevKeysX,
-      int prevKeysY, uint32_t * keys);
-void parseGCDResults(long numBlocks, uint32_t * keys, xyCoord * coords,
+      int prevKeysY, std::vector<std::pair<int, int> > & badKeyPairList);
+void parseGCDResults(long numBlocks,
+      std::vector<std::pair<int, int> > & badKeyPairList, xyCoord * coords,
       uint16_t * gcd_res, int prevKeysX, int prevKeysY);
-void parseGCDResults(long numBlocks, uint32_t * keys, int xNumKeys,
+void parseGCDResults(long numBlocks,
+      std::vector<std::pair<int, int> > & badKeyPairList, int xNumKeys,
       int yNumKeys, uint16_t * gcd_res, int xIdx, int yIdx);

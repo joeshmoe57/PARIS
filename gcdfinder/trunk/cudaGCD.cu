@@ -1,7 +1,4 @@
 #include "cudaGCD.h"
-#include <openssl/rsa.h>
-
-#define DEBUG 1
 
 extern "C" {
 #include "lpem.h"
@@ -241,11 +238,12 @@ void dimConversion(int numBlocks, int width, xyCoord * coords) {
  *    === 1/2 * (keys / BLKDIM) * (keys / BLKDIM + 1)
  *    === 1/2 * ((keys / BLKDIM) ^ 2 + keys / BLKDIM)
  */
-long calculateNumberOfBlocks(long keys) {
-   int rem = keys % BLKDIM > 0 ? 1 : 0;
+long calculateNumberOfBlocks(long numKeys) {
+   int rem = numKeys % BLKDIM > 0 ? 1 : 0;
 
    // the /2 is fine here, since the dividend is guarenteed to be even
-   return ((keys / BLKDIM + rem) * (keys / BLKDIM + rem) +  keys / BLKDIM + rem) / 2; 
+   return ((numKeys / BLKDIM + rem) * (numKeys / BLKDIM + rem) +
+         numKeys / BLKDIM + rem) / 2; 
 }
 
 long calculateNumberOfBlocks(long xKeys, long yKeys) {
@@ -387,7 +385,7 @@ long calculateMax2ndParamSize(long numKeys, long maxBlocks) {
 }
 
 void checkBlockForGCD(uint16_t gcd_res, int blockX, int blockY, int prevKeysX,
-      int prevKeysY, uint32_t * keys) {
+      int prevKeysY, std::vector<std::pair<int, int> > & badKeyPairList) {
    /* check this block for bad keys */
    if (gcd_res > 0) {
       dprint("bad key found in block: (%d, %d)\n", blockX, blockY);
@@ -400,14 +398,15 @@ void checkBlockForGCD(uint16_t gcd_res, int blockX, int blockY, int prevKeysX,
                if (gcd_res & YMASKS[j] & XMASKS[i]) {
                   int one = NUM_INTS * (BLKDIM * blockX + i + prevKeysX);
                   int two = NUM_INTS * (BLKDIM * blockY + j + prevKeysY);
+                  badKeyPairList.push_back(std::make_pair(one, two));
                   dprint("key %d, %d in block (%d, %d)\n", i, j, blockX, blockY);
                   dprint("VULNERABLE KEY PAIR FOUND:\n");
                   dprint("one: %d\n", one);
                   dprint("two: %d\n", two);
-                  printf("x\n");
-                  printNumHex(keys + one);
-                  printf("y\n");
-                  printNumHex(keys + two);
+                  dprint("x\n");
+                  //printNumHex(keys + one);
+                  dprint("y\n");
+                  //printNumHex(keys + two);
                   // TODO
                   // save keys indexes one and two into a list
                   // and don't bother passing in keys
@@ -427,17 +426,20 @@ void checkBlockForGCD(uint16_t gcd_res, int blockX, int blockY, int prevKeysX,
    }
 }
 
-void parseGCDResults(long numBlocks, uint32_t * keys, xyCoord * coords,
+void parseGCDResults(long numBlocks,
+      std::vector<std::pair<int, int> > & badKeyPairList, xyCoord * coords,
       uint16_t * gcd_res, int prevKeysX, int prevKeysY) {
    for (int blockId = 0; blockId < numBlocks; ++blockId) {
       int blockX = coords[blockId].x;
       int blockY = coords[blockId].y;
 
-      checkBlockForGCD(gcd_res[blockId], blockX, blockY, prevKeysX, prevKeysY, keys);
+      checkBlockForGCD(gcd_res[blockId], blockX, blockY, prevKeysX, prevKeysY,
+            badKeyPairList);
    }
 }
 
-void parseGCDResults(long numBlocks, uint32_t * keys, int xNumKeys,
+void parseGCDResults(long numBlocks,
+      std::vector<std::pair<int, int> > & badKeyPairList, int xNumKeys,
       int yNumKeys, uint16_t * gcd_res, int prevKeysX, int prevKeysY) {
    int xBlocks = xNumKeys / BLKDIM + (xNumKeys % BLKDIM ? 1 : 0);
    int yBlocks = yNumKeys / BLKDIM + (yNumKeys % BLKDIM ? 1 : 0);
@@ -446,7 +448,8 @@ void parseGCDResults(long numBlocks, uint32_t * keys, int xNumKeys,
       for (int blockY = 0; blockY < yBlocks; ++blockY) {
          int blockId = blockX + blockY * xBlocks;
 
-         checkBlockForGCD(gcd_res[blockId], blockX, blockY, prevKeysX, prevKeysY, keys);
+         checkBlockForGCD(gcd_res[blockId], blockX, blockY, prevKeysX,
+               prevKeysY, badKeyPairList);
       }
    }
 }
@@ -461,7 +464,7 @@ void printCoords(xyCoord * coords, long numBlocks) {
 int main(int argc, char**argv) {
    unsigned long totalNumKeys;
    std::vector<RSA*> privKeys;
-   //std::vector<> badKeyList;
+   std::vector<std::pair<int, int> > badKeyPairList;
    uint32_t *keys;
    // This holds the the number of times the key set will be divided so that 
    // results will fit onto the GPU. 
@@ -556,8 +559,10 @@ int main(int argc, char**argv) {
    cudaMalloc((void **)&dev_yKeys, maxYKeySize);
    dprint("cudaMalloc:%s\n", cudaGetErrorString(cudaGetLastError()));
 
-   // allocate max xyCoords on card
-   // TODO this can also be xKeys
+   /* This variable is used to hold either the xy coordinate lookup table,
+    * or the key set in the x direction, whichever is appropriate for each
+    * kernel
+    */
    void * dev_coords;
    cudaMalloc((void **)&dev_coords, max2ndParamSize);
    dprint("cudaMalloc:%s\n", cudaGetErrorString(cudaGetLastError()));
@@ -586,7 +591,6 @@ int main(int argc, char**argv) {
       for (int x = y; x < segmentDivisionFactor; ++x) {
          if (x == y) {// call kernel with same single key set (triangle)
             // calculate numBlocks, memories, and pull xIdx from set of keys
-            /* TODO Assumes totalNumberOfKeys is less than sqrt(LONG_MAX) */ 
             numBlocks = calculateNumberOfBlocks(yNumKeys);
             DP(numBlocks);
 
@@ -611,7 +615,8 @@ int main(int argc, char**argv) {
             dprint("cudaMemcpy:%s\n", cudaGetErrorString(cudaGetLastError()));
 
             // do useful things with gcd_res
-            parseGCDResults(numBlocks, keys, coords, gcd_res, xPrevIdx, yPrevIdx);
+            parseGCDResults(numBlocks, badKeyPairList, coords, gcd_res,
+                  xPrevIdx, yPrevIdx);
             xPrevIdx = yIdx;
 
          } else {// call kernel with 2 different key sets (rectangle)
@@ -659,7 +664,8 @@ int main(int argc, char**argv) {
                dprint("writing: %d\n", numBlocks);
                DP(xPrevIdx);
                DP(yPrevIdx);
-               parseGCDResults(numBlocks, keys, xCurrNumKeys, yNumKeys, gcd_res, xPrevIdx, yPrevIdx);
+               parseGCDResults(numBlocks, badKeyPairList, xCurrNumKeys,
+                     yNumKeys, gcd_res, xPrevIdx, yPrevIdx);
 
                xPrevIdx = xIdx;
             }
@@ -673,11 +679,11 @@ int main(int argc, char**argv) {
    cudaFree(dev_gcd);
 
    free(segmentIndices);
-   free(keys);
    free(gcd_res);
    free(coords);
 
-//   writeBadKeysToPEMs(badKeyList);
+   processBadKeys(badKeyPairList, keys, NULL, 1);
+   free(keys);
 
    return 0;
 }
