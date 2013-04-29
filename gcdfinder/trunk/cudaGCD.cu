@@ -495,6 +495,8 @@ int main(int argc, char**argv) {
    }
    DP(totalNumKeys);
 
+   hrt_start();
+
    int device = 0;
    int deviceCount = 0;
    cudaGetDeviceCount(&deviceCount);
@@ -681,6 +683,9 @@ int main(int argc, char**argv) {
    free(segmentIndices);
    free(gcd_res);
    free(coords);
+
+   hrt_stop();
+   printf("CUDA run lasted %s\n", hrt_string());
 
    processBadKeys(badKeyPairList, keys, NULL, 1);
    free(keys);

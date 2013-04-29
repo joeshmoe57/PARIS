@@ -6,6 +6,7 @@
 #include <string.h>
 #include <sys/resource.h>
 #include <stdlib.h>
+#include "hrt.h"
 
 #define KEYS_DB "keys-16-2.db"
 //#define KEYS_DB "../../../keys-2000000-4000.db"

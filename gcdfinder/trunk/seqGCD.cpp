@@ -31,6 +31,8 @@ int main(int argc, char ** argv) {
 
    total_keys = getAllKeys(KEYS_DB, total_keys, &privKeys, u);
 
+   hrt_start();
+
    int sq = BLKDIM * BLKDIM * 2;
    int shift = 0;
    while (!(sq & 1)) {
@@ -89,6 +91,9 @@ int main(int argc, char ** argv) {
       dprint("k = %d %x\n", k, block_res);
       blkX++;
    }
+
+   hrt_stop();
+   printf("Sequential run lasted %s\n", hrt_string());
 
    processBadKeys(badKeyPairList, u, NULL, 0);
 
