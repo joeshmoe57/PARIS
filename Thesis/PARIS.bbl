@@ -1,60 +1,5 @@
 \begin{thebibliography}{10}
 
-\bibitem{rsa2004announces}
-{RSA} security announces new digital rights management solution.
-\newblock \url{http://www.rsa.com/press_release.aspx?id=5159}, 2004.
-\newblock Accessed: 22 February 2013.
-
-\bibitem{rsa2004supports}
-{RSA} security supports open mobile alliance {DRM} 2.0 for delivery of secure
-  content.
-\newblock \url{http://www.rsa.com/press_release.aspx?id=3337}, 2004.
-\newblock Accessed: 27 February 2013.
-
-\bibitem{rsa2007challenge}
-The {RSA} {F}actoring {C}hallenge.
-\newblock \url{http://www.rsa.com/rsalabs/node.asp?id=2093}, 2007.
-
-\bibitem{tlsconcepts}
-Transport security layer ({TLS}) concepts.
-\newblock
-  \url{http://tech.kaazing.com/documentation/xmpp/3.5/security/c_tls.html},
-  2013.
-\newblock Accessed: 3 March 2013.
-
-\bibitem{nvidia2012gpu}
-N.~Corporation.
-\newblock {CUDA} occupancy calculator.
-\newblock
-  \url{http://developer.download.nvidia.com/compute/cuda/CUDA_Occupancy_calculator.xls},
-  2012.
-
-\bibitem{nvidia2012programming}
-N.~Corporation.
-\newblock {NVIDIA} {CUDA} {C} programming guide.
-\newblock
-  \url{http://developer.download.nvidia.com/compute/DevZone/docs/html/C/doc/CUDA_C_Programming_Guide.pdf},
-  2012.
-
-\bibitem{nvidiakepler}
-N.~Corporation.
-\newblock {NVIDIA's} next generation {CUDA} compute architecture: {Kepler
-  GK110}.
-\newblock \url{http://www.nvidia.com/content/PDF/kepler/NVIDIA-Kepler-GK110-
-  Architecture-Whitepaper.pdf}, 2012.
-
-\bibitem{dean2008mapreduce}
-J.~Dean and S.~Ghemawat.
-\newblock Map{R}educe: simplified data processing on large clusters.
-\newblock {\em Communications of the {ACM}}, 51(1):107--113, 2008.
-
-\bibitem{charles2012chunking}
-C.~Fu.
-\newblock Chunking data across multiple {C++ AMP} kernels.
-\newblock
-  \url{http://blogs.msdn.com/b/nativeconcurrency/archive/2012/03/05/chunking-data-across-multiple-c-amp-kernels.aspx},
-  March 2012.
-
 \bibitem{fujimoto2009high}
 N.~Fujimoto.
 \newblock High-throughput multiple-precision {GCD} on the {CUDA} architecture.
@@ -68,6 +13,13 @@ R.~Holz, L.~Braun, N.~Kammenhuber, and G.~Carle.
 \newblock In {\em Proceedings of the 2011 ACM SIGCOMM conference on Internet
   measurement conference}, pages 427--444. ACM, 2011.
 
+\bibitem{tlsconcepts}
+Transport security layer ({TLS}) concepts.
+\newblock
+  \url{http://tech.kaazing.com/documentation/xmpp/3.5/security/c_tls.html},
+  2013.
+\newblock Accessed: 3 March 2013.
+
 \bibitem{labovitz2011internet}
 C.~Labovitz.
 \newblock Internet {T}raffic {E}volution 2007-2011.
@@ -79,6 +31,18 @@ A.~K. Lenstra, J.~P. Hughes, M.~Augier, J.~W. Bos, T.~Kleinjung, and
 \newblock Ron was wrong, whit is right.
 \newblock {\em IACR eprint archive}, 64, 2012.
 
+\bibitem{nvidia2012gpu}
+{CUDA} occupancy calculator.
+\newblock
+  \url{http://developer.download.nvidia.com/compute/cuda/CUDA_Occupancy_calculator.xls},
+  2012.
+
+\bibitem{nvidia2012programming}
+{NVIDIA} {CUDA} {C} programming guide.
+\newblock
+  \url{http://developer.download.nvidia.com/compute/DevZone/docs/html/C/doc/CUDA_C_Programming_Guide.pdf},
+  2012.
+
 \bibitem{peters2011fast}
 H.~Peters, O.~Schulz-Hildebrandt, and N.~Luttenberger.
 \newblock Fast in-place, comparison-based sorting with {CUDA}: a study with
@@ -86,18 +50,33 @@ H.~Peters, O.~Schulz-Hildebrandt, and N.~Luttenberger.
 \newblock {\em Concurrency and Computation: Practice and Experience},
   23(7):681--693, 2011.
 
+\bibitem{rivest1978method}
+R.~L. Rivest, A.~Shamir, and L.~Adleman.
+\newblock A method for obtaining digital signatures and public-key
+  cryptosystems.
+\newblock {\em Communications of the ACM}, 21(2):120--126, 1978.
+
+\bibitem{rsa2007challenge}
+The {RSA} {F}actoring {C}hallenge.
+\newblock \url{http://www.rsa.com/rsalabs/node.asp?id=2093}, 2007.
+
+\bibitem{rsa2004announces}
+{RSA} security announces new digital rights management solution.
+\newblock \url{http://www.rsa.com/press_release.aspx?id=5159}, 2004.
+\newblock Accessed: 22 February 2013.
+
+\bibitem{rsa2004supports}
+{RSA} security supports open mobile alliance {DRM} 2.0 for delivery of secure
+  content.
+\newblock \url{http://www.rsa.com/press_release.aspx?id=3337}, 2004.
+\newblock Accessed: 27 February 2013.
+
 \bibitem{ryoo2008optimization}
 S.~Ryoo, C.~Rodrigues, S.~Baghsorkhi, S.~Stone, D.~Kirk, and W.~Hwu.
 \newblock Optimization principles and application performance evaluation of a
   multithreaded {GPU} using {CUDA}.
 \newblock In {\em Proceedings of the 13th ACM SIGPLAN Symposium on Principles
   and practice of parallel programming}, pages 73--82. ACM, 2008.
-
-\bibitem{schaa2009exploring}
-D.~Schaa and D.~Kaeli.
-\newblock Exploring the multiple-{GPU} design space.
-\newblock In {\em Parallel \& Distributed Processing, 2009. IPDPS 2009. IEEE
-  International Symposium on}, pages 1--12. IEEE, 2009.
 
 \bibitem{scharfglass2012breaking}
 K.~Scharfglass, D.~Weng, J.~White, and C.~Lupo.

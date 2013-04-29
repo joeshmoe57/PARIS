@@ -1,12 +1,21 @@
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {1.1}{\ignorespaces Total percentage of CUDA implementation that is parallel}}{9}{figure.1.1}
-\contentsline {figure}{\numberline {1.2}{\ignorespaces Number of comparisons needed vs. total number of keys in set}}{10}{figure.1.2}
-\contentsline {figure}{\numberline {1.3}{\ignorespaces Speedup of CUDA Implementation to Sequential C++}}{16}{figure.1.3}
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {2.1}{\ignorespaces Explanation of poor-prime vulnerability}}{21}{figure.2.1}
-\contentsline {figure}{\numberline {2.2}{\ignorespaces X.509 Fields\cite {holz2011ssl}}}{24}{figure.2.2}
-\contentsline {figure}{\numberline {2.3}{\ignorespaces TLS Overview\cite {tlsconcepts}}}{24}{figure.2.3}
-\contentsline {figure}{\numberline {2.4}{\ignorespaces Presence of RSA key or other security in Alexa top 1M sites}}{28}{figure.2.4}
-\contentsline {figure}{\numberline {2.5}{\ignorespaces Breakdown of Alexa top 1M sites' RSA keys by bit-length}}{29}{figure.2.5}
+\contentsline {figure}{\numberline {2.1}{\ignorespaces Explanation of poor-prime vulnerability}}{4}{figure.2.1}
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {3.1}{\ignorespaces X.509 Fields \citep {holz2011ssl}}}{8}{figure.3.1}
+\contentsline {figure}{\numberline {3.2}{\ignorespaces TLS Overview \citep {tlsconcepts}}}{9}{figure.3.2}
+\contentsline {figure}{\numberline {3.3}{\ignorespaces Presence of RSA key or other security in Alexa top 1M sites}}{13}{figure.3.3}
+\contentsline {figure}{\numberline {3.4}{\ignorespaces Breakdown of Alexa top 1M sites' RSA keys by bit-length}}{14}{figure.3.4}
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {5.1}{\ignorespaces Total percentage of CUDA implementation that is parallel}}{26}{figure.5.1}
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {7.1}{\ignorespaces A single division of the key matrix}}{38}{figure.7.1}
+\contentsline {figure}{\numberline {7.2}{\ignorespaces Three divisions of the key matrix}}{39}{figure.7.2}
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {9.1}{\ignorespaces Speedup of CUDA Implementation to Sequential C++}}{49}{figure.9.1}
+\addvspace {10\p@ }
 \addvspace {10\p@ }
 \addvspace {10\p@ }
