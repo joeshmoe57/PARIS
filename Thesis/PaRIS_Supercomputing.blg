@@ -6,7 +6,7 @@ Database file #1: references.bib
 Reallocated wiz_functions (elt_size=8) to 6000 items from 3000.
 You've used 18 entries,
             3270 wiz_defined-function locations,
-            765 strings with 8174 characters,
+            765 strings with 8176 characters,
 and the built_in function-call counts, 18211 in all, are:
 = -- 1996
 > -- 335

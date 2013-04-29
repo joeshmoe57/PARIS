@@ -1,40 +1,51 @@
 \BOOKMARK [0][]{chapter*.2}{List of Tables}{}% 1
 \BOOKMARK [0][]{chapter*.3}{List of Figures}{}% 2
 \BOOKMARK [0][]{chapter.1}{Introduction}{}% 3
-\BOOKMARK [1][]{section.1.1}{Overview of CUDA}{chapter.1}% 4
-\BOOKMARK [1][]{section.1.2}{Algorithm Description}{chapter.1}% 5
-\BOOKMARK [2][]{subsection.1.2.1}{Binary GCD}{section.1.2}% 6
-\BOOKMARK [2][]{subsection.1.2.2}{Parallel Functions}{section.1.2}% 7
-\BOOKMARK [2][]{subsection.1.2.3}{Computational Complexity}{section.1.2}% 8
-\BOOKMARK [2][]{subsection.1.2.4}{Theoretical Speedup}{section.1.2}% 9
-\BOOKMARK [1][]{section.1.3}{Problem Description}{chapter.1}% 10
-\BOOKMARK [1][]{section.1.4}{Implementation}{chapter.1}% 11
-\BOOKMARK [2][]{subsection.1.4.1}{Problem Decomposition}{section.1.4}% 12
-\BOOKMARK [2][]{subsection.1.4.2}{Grid Organization}{section.1.4}% 13
-\BOOKMARK [2][]{subsection.1.4.3}{Shared Memory}{section.1.4}% 14
-\BOOKMARK [2][]{subsection.1.4.4}{Occupancy}{section.1.4}% 15
-\BOOKMARK [2][]{subsection.1.4.5}{Bit-vector}{section.1.4}% 16
-\BOOKMARK [1][]{section.1.5}{Experimental Setup}{chapter.1}% 17
-\BOOKMARK [2][]{subsection.1.5.1}{Test Machine}{section.1.5}% 18
-\BOOKMARK [2][]{subsection.1.5.2}{Reference Implementations}{section.1.5}% 19
-\BOOKMARK [2][]{subsection.1.5.3}{Test Sets}{section.1.5}% 20
-\BOOKMARK [1][]{section.1.6}{Results}{chapter.1}% 21
-\BOOKMARK [1][]{section.1.7}{Conclusion}{chapter.1}% 22
-\BOOKMARK [1][]{section.1.8}{Future Work}{chapter.1}% 23
-\BOOKMARK [0][]{chapter.2}{Background}{}% 24
-\BOOKMARK [1][]{section.2.1}{Motivation}{chapter.2}% 25
-\BOOKMARK [2][]{subsection.2.1.1}{Digital Rights Management}{section.2.1}% 26
-\BOOKMARK [2][]{subsection.2.1.2}{Internet Security and Certificates}{section.2.1}% 27
-\BOOKMARK [2][]{subsection.2.1.3}{Data Collection}{section.2.1}% 28
-\BOOKMARK [2][]{subsection.2.1.4}{Data Analysis}{section.2.1}% 29
-\BOOKMARK [2][]{subsection.2.1.5}{Implications}{section.2.1}% 30
-\BOOKMARK [2][]{subsection.2.1.6}{Conclusions}{section.2.1}% 31
-\BOOKMARK [0][]{chapter.3}{Related Works}{}% 32
-\BOOKMARK [1][]{section.3.1}{The Vulnerability}{chapter.3}% 33
-\BOOKMARK [1][]{section.3.2}{The Process}{chapter.3}% 34
-\BOOKMARK [1][]{section.3.3}{Multiple GPUs}{chapter.3}% 35
-\BOOKMARK [1][]{section.3.4}{Large Data}{chapter.3}% 36
-\BOOKMARK [1][]{section.3.5}{Optimization}{chapter.3}% 37
-\BOOKMARK [1][]{section.3.6}{Similar Algorithms}{chapter.3}% 38
-\BOOKMARK [0][]{chapter.4}{Validation}{}% 39
-\BOOKMARK [0][]{chapter*.4}{Bibliography}{}% 40
+\BOOKMARK [0][]{chapter.2}{Background}{}% 4
+\BOOKMARK [1][]{section.2.1}{RSA}{chapter.2}% 5
+\BOOKMARK [1][]{section.2.2}{CUDA}{chapter.2}% 6
+\BOOKMARK [0][]{chapter.3}{Motivation}{}% 7
+\BOOKMARK [1][]{section.3.1}{Digital Rights Management}{chapter.3}% 8
+\BOOKMARK [1][]{section.3.2}{Internet Security and Certificates}{chapter.3}% 9
+\BOOKMARK [1][]{section.3.3}{Data Collection}{chapter.3}% 10
+\BOOKMARK [1][]{section.3.4}{Data Analysis}{chapter.3}% 11
+\BOOKMARK [1][]{section.3.5}{Implications}{chapter.3}% 12
+\BOOKMARK [0][]{chapter.4}{Related Works}{}% 13
+\BOOKMARK [1][]{section.4.1}{The Vulnerability}{chapter.4}% 14
+\BOOKMARK [1][]{section.4.2}{The Process}{chapter.4}% 15
+\BOOKMARK [1][]{section.4.3}{Multiple GPUs}{chapter.4}% 16
+\BOOKMARK [1][]{section.4.4}{Large Data}{chapter.4}% 17
+\BOOKMARK [1][]{section.4.5}{Optimization}{chapter.4}% 18
+\BOOKMARK [1][]{section.4.6}{Similar Algorithms}{chapter.4}% 19
+\BOOKMARK [0][]{chapter.5}{Algorithm}{}% 20
+\BOOKMARK [1][]{section.5.1}{Binary GCD}{chapter.5}% 21
+\BOOKMARK [1][]{section.5.2}{Parallel Functions}{chapter.5}% 22
+\BOOKMARK [1][]{section.5.3}{Computational Complexity}{chapter.5}% 23
+\BOOKMARK [1][]{section.5.4}{Theoretical Speedup}{chapter.5}% 24
+\BOOKMARK [0][]{chapter.6}{Problem Description}{}% 25
+\BOOKMARK [0][]{chapter.7}{Implementation}{}% 26
+\BOOKMARK [1][]{section.7.1}{Problem Decomposition}{chapter.7}% 27
+\BOOKMARK [1][]{section.7.2}{Grid Organization}{chapter.7}% 28
+\BOOKMARK [1][]{section.7.3}{Shared Memory}{chapter.7}% 29
+\BOOKMARK [1][]{section.7.4}{Occupancy}{chapter.7}% 30
+\BOOKMARK [1][]{section.7.5}{Bit-vector}{chapter.7}% 31
+\BOOKMARK [2][]{subsection.7.5.1}{Grid Organization}{section.7.5}% 32
+\BOOKMARK [2][]{subsection.7.5.2}{XY Coordinate mapping}{section.7.5}% 33
+\BOOKMARK [2][]{subsection.7.5.3}{Shared Memory}{section.7.5}% 34
+\BOOKMARK [2][]{subsection.7.5.4}{Occupancy}{section.7.5}% 35
+\BOOKMARK [2][]{subsection.7.5.5}{Bit-vector}{section.7.5}% 36
+\BOOKMARK [2][]{subsection.7.5.6}{Arbitrary Length Key Sets}{section.7.5}% 37
+\BOOKMARK [2][]{subsection.7.5.7}{Generating the Private Key}{section.7.5}% 38
+\BOOKMARK [2][]{subsection.7.5.8}{Multiple GPUs}{section.7.5}% 39
+\BOOKMARK [0][]{chapter.8}{Experimental Setup}{}% 40
+\BOOKMARK [1][]{section.8.1}{Test Machine}{chapter.8}% 41
+\BOOKMARK [2][]{subsection.8.1.1}{Initial Setup}{section.8.1}% 42
+\BOOKMARK [2][]{subsection.8.1.2}{Updated Setup}{section.8.1}% 43
+\BOOKMARK [1][]{section.8.2}{Reference Implementations}{chapter.8}% 44
+\BOOKMARK [1][]{section.8.3}{Test Sets}{chapter.8}% 45
+\BOOKMARK [0][]{chapter.9}{Results}{}% 46
+\BOOKMARK [1][]{section.9.1}{Initial Implementation}{chapter.9}% 47
+\BOOKMARK [1][]{section.9.2}{Scalable Implementation}{chapter.9}% 48
+\BOOKMARK [0][]{chapter.10}{Conclusion}{}% 49
+\BOOKMARK [0][]{chapter.11}{Future Work}{}% 50
+\BOOKMARK [0][]{chapter.12}{Appendix}{}% 51

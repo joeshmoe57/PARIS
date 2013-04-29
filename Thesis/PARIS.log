@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.4-1.40.13 (TeX Live 2012/Arch Linux) (format=pdflatex 2013.3.28)  24 APR 2013 01:18
+This is pdfTeX, Version 3.1415926-2.4-1.40.13 (TeX Live 2012/Arch Linux) (format=pdflatex 2013.4.27)  28 APR 2013 16:27
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -186,20 +186,33 @@ Package uniquecounter Info: New unique counter `rerunfilecheck' on input line 2
 )
 \Hy@SectionHShift=\skip43
 )
+(/usr/share/texmf-dist/tex/latex/tools/verbatim.sty
+Package: verbatim 2003/08/22 v1.5q LaTeX2e package for verbatim enhancements
+\every@verbatim=\toks15
+\verbatim@line=\toks16
+\verbatim@in@stream=\read1
+)
+(/usr/share/texmf-dist/tex/latex/natbib/natbib.sty
+Package: natbib 2010/09/13 8.31b (PWD, AO)
+\bibhang=\skip44
+\bibsep=\skip45
+LaTeX Info: Redefining \cite on input line 694.
+\c@NAT@ctr=\count99
+)
 (/usr/share/texmf-dist/tex/latex/amsfonts/amssymb.sty
-Package: amssymb 2009/06/22 v3.00
+Package: amssymb 2013/01/14 v3.01 AMS font symbols
 
 (/usr/share/texmf-dist/tex/latex/amsfonts/amsfonts.sty
-Package: amsfonts 2009/06/22 v3.00 Basic AMSFonts support
-\@emptytoks=\toks15
+Package: amsfonts 2013/01/14 v3.01 Basic AMSFonts support
+\@emptytoks=\toks17
 \symAMSa=\mathgroup4
 \symAMSb=\mathgroup5
 LaTeX Font Info:    Overwriting math alphabet `\mathfrak' in version `bold'
-(Font)                  U/euf/m/n --> U/euf/b/n on input line 96.
+(Font)                  U/euf/m/n --> U/euf/b/n on input line 106.
 ))
 (/usr/share/texmf-dist/tex/latex/amsmath/amsmath.sty
-Package: amsmath 2000/07/18 v2.13 AMS math features
-\@mathmargin=\skip44
+Package: amsmath 2013/01/14 v2.14 AMS math features
+\@mathmargin=\skip46
 
 For additional information on amsmath, use the `?' option.
 (/usr/share/texmf-dist/tex/latex/amsmath/amstext.sty
@@ -207,7 +220,7 @@ Package: amstext 2000/06/29 v2.01
 
 (/usr/share/texmf-dist/tex/latex/amsmath/amsgen.sty
 File: amsgen.sty 1999/11/30 v2.0
-\@emptytoks=\toks16
+\@emptytoks=\toks18
 \ex@=\dimen109
 ))
 (/usr/share/texmf-dist/tex/latex/amsmath/amsbsy.sty
@@ -217,49 +230,61 @@ Package: amsbsy 1999/11/29 v1.2d
 (/usr/share/texmf-dist/tex/latex/amsmath/amsopn.sty
 Package: amsopn 1999/12/14 v2.01 operator names
 )
-\inf@bad=\count99
-LaTeX Info: Redefining \frac on input line 211.
-\uproot@=\count100
-\leftroot@=\count101
-LaTeX Info: Redefining \overline on input line 307.
-\classnum@=\count102
-\DOTSCASE@=\count103
-LaTeX Info: Redefining \ldots on input line 379.
-LaTeX Info: Redefining \dots on input line 382.
-LaTeX Info: Redefining \cdots on input line 467.
+\inf@bad=\count100
+LaTeX Info: Redefining \frac on input line 210.
+\uproot@=\count101
+\leftroot@=\count102
+LaTeX Info: Redefining \overline on input line 306.
+\classnum@=\count103
+\DOTSCASE@=\count104
+LaTeX Info: Redefining \ldots on input line 378.
+LaTeX Info: Redefining \dots on input line 381.
+LaTeX Info: Redefining \cdots on input line 466.
 \Mathstrutbox@=\box26
 \strutbox@=\box27
 \big@size=\dimen111
-LaTeX Font Info:    Redeclaring font encoding OML on input line 567.
-LaTeX Font Info:    Redeclaring font encoding OMS on input line 568.
-\macc@depth=\count104
-\c@MaxMatrixCols=\count105
+LaTeX Font Info:    Redeclaring font encoding OML on input line 566.
+LaTeX Font Info:    Redeclaring font encoding OMS on input line 567.
+\macc@depth=\count105
+\c@MaxMatrixCols=\count106
 \dotsspace@=\muskip11
-\c@parentequation=\count106
-\dspbrk@lvl=\count107
-\tag@help=\toks17
-\row@=\count108
-\column@=\count109
-\maxfields@=\count110
-\andhelp@=\toks18
+\c@parentequation=\count107
+\dspbrk@lvl=\count108
+\tag@help=\toks19
+\row@=\count109
+\column@=\count110
+\maxfields@=\count111
+\andhelp@=\toks20
 \eqnshift@=\dimen112
 \alignsep@=\dimen113
 \tagshift@=\dimen114
 \tagwidth@=\dimen115
 \totwidth@=\dimen116
 \lineht@=\dimen117
-\@envbody=\toks19
-\multlinegap=\skip45
-\multlinetaggap=\skip46
-\mathdisplay@stack=\toks20
-LaTeX Info: Redefining \[ on input line 2666.
-LaTeX Info: Redefining \] on input line 2667.
+\@envbody=\toks21
+\multlinegap=\skip47
+\multlinetaggap=\skip48
+\mathdisplay@stack=\toks22
+LaTeX Info: Redefining \[ on input line 2665.
+LaTeX Info: Redefining \] on input line 2666.
+)
+(/usr/share/texmf-dist/tex/latex/amscls/amsthm.sty
+Package: amsthm 2004/08/06 v2.20
+\thm@style=\toks23
+\thm@bodyfont=\toks24
+\thm@headfont=\toks25
+\thm@notefont=\toks26
+\thm@headpunct=\toks27
+\thm@preskip=\skip49
+\thm@postskip=\skip50
+\thm@headsep=\skip51
+\dth@everypar=\toks28
 )
 (/usr/share/texmf-dist/tex/latex/geometry/geometry.sty
 Package: geometry 2010/09/12 v5.6 Page Geometry
-\Gm@cnth=\count111
-\Gm@cntv=\count112
-\c@Gm@tempcnt=\count113
+\Gm@cnth=\count112
+\Gm@cntv=\count113
+\c@Gm@tempcnt=\count114
 \Gm@bindingoffset=\dimen118
 \Gm@wd@mp=\dimen119
 \Gm@odd@mp=\dimen120
@@ -268,7 +293,7 @@ Package: geometry 2010/09/12 v5.6 Page Geometry
 \Gm@layoutheight=\dimen123
 \Gm@layouthoffset=\dimen124
 \Gm@layoutvoffset=\dimen125
-\Gm@dimlist=\toks21
+\Gm@dimlist=\toks29
 )
 (/usr/share/texmf-dist/tex/latex/textcase/textcase.sty
 Package: textcase 2004/10/07 v0.07 Text only upper/lower case changing (DPC)
@@ -277,13 +302,13 @@ Package: textcase 2004/10/07 v0.07 Text only upper/lower case changing (DPC)
 Package: array 2008/09/09 v2.4c Tabular extension package (FMi)
 \col@sep=\dimen126
 \extrarowheight=\dimen127
-\NC@list=\toks22
-\extratabsurround=\skip47
-\backup@length=\skip48
+\NC@list=\toks30
+\extratabsurround=\skip52
+\backup@length=\skip53
 )
 (/usr/share/texmf-dist/tex/latex/algorithm2e/algorithm2e.sty
-Package: algorithm2e 2008/00/00 v3.10 algorithms environments
-\c@AlgoLine=\count114
+Package: algorithm2e 2013/01/06 v5.00 algorithms environments
+\c@AlgoLine=\count115
 
 (/usr/share/texmf-dist/tex/latex/base/ifthen.sty
 Package: ifthen 2001/05/26 v1.1c Standard LaTeX ifthen package (DPC)
@@ -310,72 +335,97 @@ Package relsize Warning: Failed to get list of defined font sizes.
 
 )
 ********************************************************
-Package `algorithm2e' Release 4.01 -- december 14 2009 --
+Package `algorithm2e' Release 5.0 -- january 06 2013 --
 - algorithm2e-announce@lirmm.fr mailing list for announcement about releases
 - algorithm2e-discussion@lirmm.fr mailing list for discussion about package
 subscribe by emailing sympa@lirmm.fr with 'subscribe <list> <firstname name>'
-- Author: Christophe Fiorio (fiorio@lirmm.fr)
+- Author: Christophe Fiorio (cfiorio@um2.fr)
 ********************************************************
-\skiptotal=\skip49
-\skiplinenumber=\skip50
-\skiprule=\skip51
-\skiphlne=\skip52
-\skiptext=\skip53
-\skiplength=\skip54
-\algomargin=\skip55
-\skipalgocfslide=\skip56
+\skiptotal=\skip54
+\skiplinenumber=\skip55
+\skiprule=\skip56
+\skiphlne=\skip57
+\skiptext=\skip58
+\skiplength=\skip59
+\algomargin=\skip60
+\skipalgocfslide=\skip61
 \algowidth=\dimen128
 \inoutsize=\dimen129
-\inoutline=\dimen130
+\inoutindent=\dimen130
 \interspacetitleruled=\dimen131
 \interspacealgoruled=\dimen132
 \interspacetitleboxruled=\dimen133
 \algocf@inoutbox=\box28
 \algocf@inputbox=\box29
-\AlCapSkip=\skip57
-\AlCapHSkip=\skip58
+\AlCapSkip=\skip62
+\AlCapHSkip=\skip63
+\algoskipindent=\skip64
 \algocf@nlbox=\box30
 \algocf@hangingbox=\box31
-\algocf@capbox=\box32
-\algoheightruledefault=\skip59
-\algoheightrule=\skip60
-\algotitleheightruledefault=\skip61
-\algotitleheightrule=\skip62
-\c@algocfline=\count115
-\c@algocfproc=\count116
-\c@algocf=\count117
-\algocf@algoframe=\box33
-\algocf@algobox=\box34
-) (./PARIS.aux)
+\algocf@untilbox=\box32
+\algocf@skipuntil=\skip65
+\algocf@capbox=\box33
+\algoheightruledefault=\skip66
+\algoheightrule=\skip67
+\algotitleheightruledefault=\skip68
+\algotitleheightrule=\skip69
+\c@algocfline=\count116
+\c@algocfproc=\count117
+\c@algocf=\count118
+\algocf@algoframe=\box34
+\algocf@algobox=\box35
+) (./PARIS.aux
+
+LaTeX Warning: Label `sec:gridorg' multiply defined.
+
+
+LaTeX Warning: Label `eq:blocks' multiply defined.
+
+
+LaTeX Warning: Label `eq:maxKeys' multiply defined.
+
+
+LaTeX Warning: Label `subsec:shared' multiply defined.
+
+
+LaTeX Warning: Label `sec:occupancy' multiply defined.
+
+
+LaTeX Warning: Label `tab:occupancy' multiply defined.
+
+
+LaTeX Warning: Label `subsec:bitvector' multiply defined.
+
+)
 \openout1 = `PARIS.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 58.
-LaTeX Font Info:    ... okay on input line 58.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 58.
-LaTeX Font Info:    ... okay on input line 58.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 58.
-LaTeX Font Info:    ... okay on input line 58.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 58.
-LaTeX Font Info:    ... okay on input line 58.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 58.
-LaTeX Font Info:    ... okay on input line 58.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 58.
-LaTeX Font Info:    ... okay on input line 58.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 58.
-LaTeX Font Info:    ... okay on input line 58.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 61.
+LaTeX Font Info:    ... okay on input line 61.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 61.
+LaTeX Font Info:    ... okay on input line 61.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 61.
+LaTeX Font Info:    ... okay on input line 61.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 61.
+LaTeX Font Info:    ... okay on input line 61.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 61.
+LaTeX Font Info:    ... okay on input line 61.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 61.
+LaTeX Font Info:    ... okay on input line 61.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 61.
+LaTeX Font Info:    ... okay on input line 61.
  (/usr/share/texmf-dist/tex/context/base/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
-\scratchcounter=\count118
+\scratchcounter=\count119
 \scratchdimen=\dimen134
-\scratchbox=\box35
-\nofMPsegments=\count119
-\nofMParguments=\count120
-\everyMPshowfont=\toks23
-\MPscratchCnt=\count121
+\scratchbox=\box36
+\nofMPsegments=\count120
+\nofMParguments=\count121
+\everyMPshowfont=\toks31
+\MPscratchCnt=\count122
 \MPscratchDim=\dimen135
-\MPnumerator=\count122
-\makeMPintoPDFobject=\count123
-\everyMPtoPDFconversion=\toks24
+\MPnumerator=\count123
+\makeMPintoPDFobject=\count124
+\everyMPtoPDFconversion=\toks32
 ) (/usr/share/texmf-dist/tex/latex/oberdiek/epstopdf-base.sty
 Package: epstopdf-base 2010/02/09 v2.5 Base part for package epstopdf
 
@@ -391,7 +441,7 @@ G,.JBIG2,.JB2,.eps]
 File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Liv
 e
 ))
-\AtBeginShipoutBox=\box36
+\AtBeginShipoutBox=\box37
 
 (/usr/share/texmf-dist/tex/latex/graphics/color.sty
 Package: color 2005/11/14 v1.0j Standard LaTeX Color (DPC)
@@ -401,7 +451,7 @@ File: color.cfg 2007/01/18 v1.5 color configuration of teTeX/TeXLive
 )
 Package color Info: Driver file: pdftex.def on input line 130.
 )
-Package hyperref Info: Link coloring ON on input line 58.
+Package hyperref Info: Link coloring ON on input line 61.
 
 (/usr/share/texmf-dist/tex/latex/hyperref/nameref.sty
 Package: nameref 2012/10/27 v2.43 Cross-referencing by name of section
@@ -409,11 +459,11 @@ Package: nameref 2012/10/27 v2.43 Cross-referencing by name of section
 (/usr/share/texmf-dist/tex/generic/oberdiek/gettitlestring.sty
 Package: gettitlestring 2010/12/03 v1.4 Cleanup title references (HO)
 )
-\c@section@level=\count124
+\c@section@level=\count125
 )
-LaTeX Info: Redefining \ref on input line 58.
-LaTeX Info: Redefining \pageref on input line 58.
-LaTeX Info: Redefining \nameref on input line 58.
+LaTeX Info: Redefining \ref on input line 61.
+LaTeX Info: Redefining \pageref on input line 61.
+LaTeX Info: Redefining \nameref on input line 61.
  (./PARIS.out)
 (./PARIS.out)
 \@outlinefile=\write3
@@ -457,23 +507,23 @@ LaTeX Info: Redefining \nameref on input line 58.
 [1
 
 {/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}]
-LaTeX Font Info:    Try loading font information for OMS+cmr on input line 70.
+LaTeX Font Info:    Try loading font information for OMS+cmr on input line 73.
 
 (/usr/share/texmf-dist/tex/latex/base/omscmr.fd
 File: omscmr.fd 1999/05/25 v2.5h Standard LaTeX font definitions
 )
 LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <12> not available
-(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 70.
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 73.
  [2]
-LaTeX Font Info:    Try loading font information for U+msa on input line 72.
+LaTeX Font Info:    Try loading font information for U+msa on input line 75.
 
 (/usr/share/texmf-dist/tex/latex/amsfonts/umsa.fd
-File: umsa.fd 2009/06/22 v3.00 AMS symbols A
+File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Try loading font information for U+msb on input line 72.
+LaTeX Font Info:    Try loading font information for U+msb on input line 75.
 
 (/usr/share/texmf-dist/tex/latex/amsfonts/umsb.fd
-File: umsb.fd 2009/06/22 v3.00 AMS symbols B
+File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 ) [3] [4] (./PARIS.toc
 [5
 
@@ -495,169 +545,181 @@ File: umsb.fd 2009/06/22 v3.00 AMS symbols B
 
 ]
 Chapter 1.
-
-LaTeX Warning: Citation `rsa' on page 1 undefined on input line 128.
-
 pdfTeX warning (ext4): destination with the same identifier (name{page.1}) has 
 been already used, duplicate ignored
 <to be read again> 
                    \relax 
-l.141 
-       [1
+l.1369 
+        [1
 
-]
-
-LaTeX Warning: Reference `sec:GridOrg' on page 2 undefined on input line 196.
-
-[2] [3] [4] [5] [6] [7] <chart_7.png, id=365, 602.25pt x 372.39125pt>
-File: chart_7.png Graphic file (type png)
-
-<use chart_7.png>
-Package pdftex.def Info: chart_7.png used on input line 356.
-(pdftex.def)             Requested size: 252.94499pt x 156.40324pt.
- [8] <chart_6.png, id=373, 602.25pt x 372.39125pt>
-File: chart_6.png Graphic file (type png)
-
-<use chart_6.png>
-Package pdftex.def Info: chart_6.png used on input line 391.
-(pdftex.def)             Requested size: 252.94499pt x 156.40324pt.
- [9 <./chart_7.png (PNG copy)>]
-
-LaTeX Warning: Reference `sec:Occupancy' on page 10 undefined on input line 409
-.
-
-[10 <./chart_6.png (PNG copy)>] [11] [12] [13]
-
-LaTeX Warning: Reference `sec:testSets' on page 14 undefined on input line 537.
-
-
-
-LaTeX Warning: Citation `lenstra:ron' on page 14 undefined on input line 566.
-
-[14] [15] <chart_1.png, id=415, 602.25pt x 372.39125pt>
-File: chart_1.png Graphic file (type png)
- <use chart_1.png>
-Package pdftex.def Info: chart_1.png used on input line 602.
-(pdftex.def)             Requested size: 252.94499pt x 156.40324pt.
-
-[16 <./chart_1.png (PNG copy)>] [17] [18] [19]
+] [2]
 Chapter 2.
-[20
-
-] <vulnerability.png, id=443, 1498.59875pt x 848.16875pt>
+<vulnerability.png, id=350, 1498.59875pt x 848.16875pt>
 File: vulnerability.png Graphic file (type png)
 
 <use vulnerability.png>
-Package pdftex.def Info: vulnerability.png used on input line 768.
+Package pdftex.def Info: vulnerability.png used on input line 1417.
 (pdftex.def)             Requested size: 411.93878pt x 233.13712pt.
- [21 <./vulnerability.png>] [22]
-<x509.png, id=466, 765.86125pt x 550.055pt>
+ [3
+
+] [4 <./vulnerability.png>] [5]
+Chapter 3.
+[6
+
+]
+
+Package natbib Warning: Author undefined for citation`holz2011ssl' 
+(natbib)                on page 7 on input line 1519.
+
+[7] <x509.png, id=388, 765.86125pt x 550.055pt>
 File: x509.png Graphic file (type png)
  <use x509.png>
-Package pdftex.def Info: x509.png used on input line 845.
-(pdftex.def)             Requested size: 205.96939pt x 147.9293pt.
+Package pdftex.def Info: x509.png used on input line 1523.
+(pdftex.def)             Requested size: 308.95409pt x 221.89816pt.
 
-<tls.jpg, id=468, 702.625pt x 732.7375pt>
+<tls.jpg, id=390, 702.625pt x 732.7375pt>
 File: tls.jpg Graphic file (type jpg)
  <use tls.jpg>
-Package pdftex.def Info: tls.jpg used on input line 852.
-(pdftex.def)             Requested size: 205.96939pt x 214.79164pt.
- [23] [24 <./x509.png> <./tls.jpg>] [25] [26] <cert_security.png, id=503, 602.2
-5pt x 372.39125pt>
+Package pdftex.def Info: tls.jpg used on input line 1529.
+(pdftex.def)             Requested size: 308.95409pt x 322.20424pt.
+ [8 <./x509.png>]
+[9 <./tls.jpg>] [10] [11] <cert_security.png, id=424, 602.25pt x 372.39125pt>
 File: cert_security.png Graphic file (type png)
 
 <use cert_security.png>
-Package pdftex.def Info: cert_security.png used on input line 944.
+Package pdftex.def Info: cert_security.png used on input line 1620.
 (pdftex.def)             Requested size: 308.95409pt x 191.0421pt.
- [27] <bit_length.png, id=510, 602.25pt x 372.39125pt>
+ [12] <bit_length.png, id=433, 602.25pt x 372.39125pt>
 File: bit_length.png Graphic file (type png)
 
 <use bit_length.png>
-Package pdftex.def Info: bit_length.png used on input line 970.
+Package pdftex.def Info: bit_length.png used on input line 1646.
 (pdftex.def)             Requested size: 308.95409pt x 191.0421pt.
- [28 <./cert_security.png (PNG copy)>] [29 <./bit_length.png (PNG copy)>] [30] 
-[31]
-Chapter 3.
-[32
+ [13 <./cert_security.png (PNG copy)>] [14 <./bit_length.png (PNG copy)>] [15]
+Chapter 4.
+[16
 
-] [33]
-Overfull \hbox (0.9246pt too wide) in paragraph at lines 1177--1182
+] [17]
+Overfull \hbox (0.9246pt too wide) in paragraph at lines 1783--1788
 []\OT1/cmr/m/n/12 Significant ad-di-tional speedups were gained, rang-ing up to
  three times speedup
  []
 
-[34] [35] [36] [37] [38]
-Chapter 4.
-[39
+[18] [19] [20]
+Chapter 5.
+[21
 
-] [40] (./PARIS.bbl
-Underfull \hbox (badness 1400) in paragraph at lines 19--24
+] [22] [23] [24] [25] <chart_7.png, id=557, 602.25pt x 372.39125pt>
+File: chart_7.png Graphic file (type png)
+
+<use chart_7.png>
+Package pdftex.def Info: chart_7.png used on input line 2020.
+(pdftex.def)             Requested size: 308.95409pt x 191.0421pt.
+ [26 <./chart_7.png (PNG copy)>]
+Chapter 6.
+[27
+
+]
+Chapter 7.
+[28
+
+] [29] [30] [31] [32]
+
+LaTeX Warning: Reference `subsec:gridorg' on page 33 undefined on input line 22
+52.
+
+[33] [34] [35] [36] <one_division.png, id=627, 852.18375pt x 849.1725pt>
+File: one_division.png Graphic file (type png)
+
+<use one_division.png>
+Package pdftex.def Info: one_division.png used on input line 2363.
+(pdftex.def)             Requested size: 288.35588pt x 287.34135pt.
+ [37] [38 <./one_division.png>]
+<three_divisions.png, id=641, 848.16875pt x 845.1575pt>
+File: three_divisions.png Graphic file (type png)
+
+<use three_divisions.png>
+Package pdftex.def Info: three_divisions.png used on input line 2379.
+(pdftex.def)             Requested size: 288.35588pt x 287.32396pt.
+ [39 <./three_divisions.png>] [40] [41pdfTeX warning (ext4): destination with t
+he same identifier (name{equation.7.5.7}) has been already used, duplicate igno
+red
+
+\AtBegShi@Output ...ipout \box \AtBeginShipoutBox 
+                                                  \fi \fi 
+l.2476 \end{align}
+                  ] [42] [43] [44]
+Chapter 8.
+[45
+
+] [46] [47]
+Chapter 9.
+<chart_1.png, id=710, 602.25pt x 372.39125pt>
+File: chart_1.png Graphic file (type png)
+ <use chart_1.png>
+Package pdftex.def Info: chart_1.png used on input line 2596.
+(pdftex.def)             Requested size: 308.95409pt x 191.0421pt.
+ [48
+
+] [49 <./chart_1.png (PNG copy)>]
+Chapter 10.
+[50
+
+]
+Chapter 11.
+[51
+
+]
+Chapter 12.
+
+Overfull \hbox (40.40111pt too wide) in paragraph at lines 2677--2677
+[] 
+ []
+
+[52
+
+] (./PARIS.bbl
+Underfull \hbox (badness 1400) in paragraph at lines 17--22
 \OT1/cmtt/m/n/12 documentation / xmpp / 3 . 5 / security / c _ tls . html$[][]\
 OT1/cmr/m/n/12 , 2013.  Ac-cessed: 3
  []
 
 
-Underfull \hbox (badness 1286) in paragraph at lines 26--31
-[]\OT1/cmr/m/n/12 N. Cor-po-ra-tion.  CUDA oc-cu-pancy cal-cu-la-tor.  [][]$\OT
-1/cmtt/m/n/12 http : / / developer .
+Underfull \hbox (badness 10000) in paragraph at lines 41--45
+\OT1/cmtt/m/n/12 nvidia . com / compute / DevZone / docs / html / C / doc / CUD
+A _ C _ Programming _
  []
 
-
-Underfull \hbox (badness 10000) in paragraph at lines 26--31
-\OT1/cmtt/m/n/12 download . nvidia . com / compute / cuda / CUDA _ Occupancy _ 
-calculator . xls$[][]\OT1/cmr/m/n/12 ,
- []
+[53
 
 
-Underfull \hbox (badness 2512) in paragraph at lines 33--38
-[]\OT1/cmr/m/n/12 N. Cor-po-ra-tion.  NVIDIA CUDA C pro-gram-ming guide.  [][]$
-\OT1/cmtt/m/n/12 http :
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 33--38
-\OT1/cmtt/m/n/12 / / developer . download . nvidia . com / compute / DevZone / 
-docs / html /
- []
-
-[41
-
-
-]
-Underfull \hbox (badness 10000) in paragraph at lines 52--57
-[]\OT1/cmr/m/n/12 C. Fu.  Chunk-ing data across mul-ti-ple C++ AMP ker-nels.
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 52--57
-[][]$\OT1/cmtt/m/n/12 http : / / blogs . msdn . com / b / nativeconcurrency / a
-rchive / 2012 / 03 /
- []
-
-[42])
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 1345.
- [43]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 1345.
+] [54])
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 2685.
+ [55]
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 2685.
  (./PARIS.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 1345.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 1345.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 2685.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 2685.
 
 Package rerunfilecheck Info: File `PARIS.out' has not changed.
-(rerunfilecheck)             Checksum: C14CE40EA88273E2526A9C8215973D06;2473.
+(rerunfilecheck)             Checksum: CC6C7D40E93E08276A7992BC2A73717C;3007.
 
 
 LaTeX Warning: There were undefined references.
 
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 1345.
+
+LaTeX Warning: There were multiply-defined labels.
+
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 2685.
  ) 
 Here is how much of TeX's memory you used:
- 8040 strings out of 493488
- 112620 string characters out of 3146892
- 225301 words of memory out of 3000000
- 11071 multiletter control sequences out of 15000+200000
+ 8798 strings out of 493488
+ 123852 string characters out of 3146892
+ 241450 words of memory out of 3000000
+ 11784 multiletter control sequences out of 15000+200000
  12933 words of font info for 50 fonts, out of 3000000 for 9000
  957 hyphenation exceptions out of 8191
- 30i,18n,30p,319b,524s stack positions out of 5000i,500n,10000p,200000b,50000s
+ 29i,18n,33p,675b,533s stack positions out of 5000i,500n,10000p,200000b,50000s
 </usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/share/
 texmf-dist/fonts/type1/public/amsfonts/cm/cmbx8.pfb></usr/share/texmf-dist/font
 s/type1/public/amsfonts/cm/cmex10.pfb></usr/share/texmf-dist/fonts/type1/public
@@ -671,10 +733,10 @@ m/cmr7.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr
 ist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/share/texmf-dist/fonts/type1
 /public/amsfonts/cm/cmti12.pfb></usr/share/texmf-dist/fonts/type1/public/amsfon
 ts/cm/cmtt12.pfb>
-Output written on PARIS.pdf (51 pages, 666272 bytes).
+Output written on PARIS.pdf (63 pages, 753679 bytes).
 PDF statistics:
- 725 PDF objects out of 1000 (max. 8388607)
- 640 compressed objects within 7 object streams
- 169 named destinations out of 1000 (max. 500000)
- 361 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 855 PDF objects out of 1000 (max. 8388607)
+ 753 compressed objects within 8 object streams
+ 203 named destinations out of 1000 (max. 500000)
+ 454 words of extra memory for PDF output out of 10000 (max. 10000000)
 
