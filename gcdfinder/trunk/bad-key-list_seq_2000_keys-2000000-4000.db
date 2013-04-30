@@ -1,0 +1,8 @@
+PARIS found 6 vulnerable pairs of keys in the list your provided in keys-2000000-4000.db.
+Their paired indices follow, with one pair per line, separated by a '|'
+500 | 0
+1000 | 0
+1500 | 0
+1000 | 500
+1500 | 500
+1500 | 1000
