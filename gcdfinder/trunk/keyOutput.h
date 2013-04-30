@@ -8,34 +8,31 @@
 #include <stdlib.h>
 #include "hrt.h"
 
-#define KEYS_DB "keys-16-2.db"
+//#define KEYS_DB "keys-16-2.db"
 //#define KEYS_DB "../../../keys-2000000-4000.db"
-//#define KEYS_DB "keys-2000000-4000.db"
+#define KEYS_DB "keys-2000000-4000.db"
 
 #define NUM_INTS 32
 
 #define DEBUG 0
 
-void writeKeyPairToPEMs(std::pair<int, int>, uint32_t * moduli, uint32_t * Es);
-void processBadKeys(std::vector<std::pair<int, int> > badKeyPairList,
-      uint32_t * moduli, uint32_t * Es, int parallel);
+typedef std::pair<unsigned long long, unsigned long long> keyPair;
+typedef std::vector<keyPair> keyPairList;
 
-void processBadKeys(std::vector<std::pair<int, int> > badKeyPairList,
-      uint32_t * moduli, uint32_t * Es, int parallel) {
+void writeKeyPairToPEMs(keyPair badPair, uint32_t * moduli, uint32_t * Es);
+
+void processBadKeys(keyPairList badKeyPairList,
+      uint32_t * moduli, uint32_t * Es, int parallel, unsigned long long numKeys) {
 
    char out[80];
    memset(out, 0, 80);
-   strcat(out, "bad-key-list_");
-   if (parallel == 1) {
-      strcat(out, "CUDA_");
-   } else {
-      strcat(out, "seq_");
-   }
+   sprintf(out, "bad-key-list_%s_%llu_", (parallel == 1 ? "CUDA" : "seq"), numKeys);
 
    strcat(out, KEYS_DB);
 
    FILE * outfp;
    if ((outfp = fopen(out, "w")) == NULL) {
+         fprintf(stderr, "Error with file: %s\n", out);
          perror("Error creating output file.");
          exit(-1);
    }
@@ -46,10 +43,10 @@ void processBadKeys(std::vector<std::pair<int, int> > badKeyPairList,
          badKeyPairList.size(), KEYS_DB);
    }
 
-   for (unsigned int i = 0; i < badKeyPairList.size(); ++i) {
+   for (unsigned long long i = 0; i < badKeyPairList.size(); ++i) {
       //writeKeyPairToPEMs(badKeyPairList[i], moduli, Es)
-      fprintf(outfp, "%d | %d\n", badKeyPairList[i].first / NUM_INTS,
-            badKeyPairList[i].second);
+      fprintf(outfp, "%llu | %llu\n", badKeyPairList[i].first / NUM_INTS,
+            badKeyPairList[i].second / NUM_INTS);
    }
 
 }

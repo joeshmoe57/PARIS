@@ -11,9 +11,9 @@ int main(int argc, char ** argv) {
 
    uint32_t *u;
    uint32_t w[NUM_INTS];
-   long total_keys;
+   unsigned long long total_keys;
    std::vector<RSA*> privKeys;
-   std::vector<std::pair<int, int> > badKeyPairList;
+   keyPairList badKeyPairList;
 
    //get number of keys to process
    if(argc != 2) {
@@ -21,7 +21,7 @@ int main(int argc, char ** argv) {
       exit(1);
    }
 
-   sscanf(argv[1], "%ld", &total_keys);
+   sscanf(argv[1], "%llu", &total_keys);
 
    //get keys
    if((u = (uint32_t *) malloc(total_keys * NUM_INTS * sizeof(uint32_t))) == 0) {
@@ -40,15 +40,24 @@ int main(int argc, char ** argv) {
       ++shift;
    }
 
-   long numBlocks = (total_keys * total_keys + BLKDIM * total_keys) >> (shift);
-   dprint("numBlocks = %ld\n", numBlocks);
+   unsigned long long numBlocks = (total_keys * total_keys + BLKDIM * total_keys) >> (shift);
+   dprint("numBlocks = %llu\n", numBlocks);
 
    //compare
    uint32_t one[NUM_INTS] = {0};
    one[31] = 1;
 
+   double percent = 0;
+   int percentThreshold = 0;
    uint32_t blkX = 0, blkY = 0;
-   for (int k = 0; k < numBlocks; ++k) {
+   for (unsigned long long k = 0; k < numBlocks; ++k) {
+      percent = ((double) k) / numBlocks;
+      if (percent > percentThreshold) {
+         printf("%lf%%\n", percent);
+         fflush(stdout);
+         ++percentThreshold;
+      }
+
       uint16_t block_res = 0;
       if (blkX == total_keys / BLKDIM)
          blkX = ++blkY;
@@ -88,14 +97,14 @@ int main(int argc, char ** argv) {
          }
       }
 
-      dprint("k = %d %x\n", k, block_res);
+      dprint("k = %llu %x\n", k, block_res);
       blkX++;
    }
 
    hrt_stop();
    printf("Sequential run lasted %s\n", hrt_string());
 
-   processBadKeys(badKeyPairList, u, NULL, 0);
+   processBadKeys(badKeyPairList, u, NULL, 0, total_keys);
 
    return 0;
 }

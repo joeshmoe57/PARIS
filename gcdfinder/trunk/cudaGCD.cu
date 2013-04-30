@@ -8,7 +8,8 @@ extern "C" {
 //Kernel Functions
 
 __global__ void GCD_Compare_Upper(unsigned *x_dev, unsigned *y_dev,
-      uint16_t *gcd_dev, int numBlocks, int keysInXSet, int keysInYSet) {
+      uint16_t *gcd_dev, unsigned long long numBlocks,
+      unsigned long long keysInXSet, unsigned long long keysInYSet) {
    __shared__ volatile uint32_t x[BLKDIM][BLKDIM][NUM_INTS];
    __shared__ volatile uint32_t y[BLKDIM][BLKDIM][NUM_INTS];
    uint32_t tidx = threadIdx.x;
@@ -18,7 +19,7 @@ __global__ void GCD_Compare_Upper(unsigned *x_dev, unsigned *y_dev,
    uint32_t blky = blockIdx.y;
    uint32_t blkIdx = blkx + blky * gridDim.x;
 
-   if (blkIdx < numBlocks) {
+   //if (blkIdx < numBlocks) {
       uint32_t whichKeyX = tidy + blkx * BLKDIM;
       uint32_t whichKeyY = tidz + blky * BLKDIM;
 
@@ -44,11 +45,12 @@ __global__ void GCD_Compare_Upper(unsigned *x_dev, unsigned *y_dev,
             gcd_dev[blkIdx] |= 1<<(tidy + BLKDIM * tidz);
          }
       }
-   }
+   //}
 }
 
 __global__ void GCD_Compare_Diagonal(uint32_t * x_dev, xyCoord * dev_coord,
-   uint16_t * gcd_dev, int numBlocks, int keysInSet) {
+   uint16_t * gcd_dev, unsigned long long numBlocks,
+   unsigned long long keysInSet) {
    __shared__ volatile uint32_t x[BLKDIM][BLKDIM][NUM_INTS];
    __shared__ volatile uint32_t y[BLKDIM][BLKDIM][NUM_INTS];
    uint32_t tidx = threadIdx.x;
@@ -217,7 +219,7 @@ __device__ void cusubtract(volatile unsigned *x, volatile unsigned *y, volatile 
  * width is the number of blocks across the top of the matrix
  * coords is the array of xyCoord pairs to be filled.
    */
-void dimConversion(int numBlocks, int width, xyCoord * coords) {
+void dimConversion(unsigned long long numBlocks, int width, xyCoord * coords) {
    int x = 0, y = 0;
    for (int i = 0; i < numBlocks; ++i) {
       if (x == width) {
@@ -238,7 +240,7 @@ void dimConversion(int numBlocks, int width, xyCoord * coords) {
  *    === 1/2 * (keys / BLKDIM) * (keys / BLKDIM + 1)
  *    === 1/2 * ((keys / BLKDIM) ^ 2 + keys / BLKDIM)
  */
-long calculateNumberOfBlocks(long numKeys) {
+unsigned long long calculateNumberOfBlocks(unsigned long long numKeys) {
    int rem = numKeys % BLKDIM > 0 ? 1 : 0;
 
    // the /2 is fine here, since the dividend is guarenteed to be even
@@ -246,7 +248,8 @@ long calculateNumberOfBlocks(long numKeys) {
          numKeys / BLKDIM + rem) / 2; 
 }
 
-long calculateNumberOfBlocks(long xKeys, long yKeys) {
+unsigned long long calculateNumberOfBlocks(unsigned long long xKeys,
+      unsigned long long yKeys) {
    int xRem = xKeys % BLKDIM > 0 ? 1 : 0;
    int yRem = yKeys % BLKDIM > 0 ? 1 : 0;
 
@@ -260,7 +263,7 @@ long calculateNumberOfBlocks(long xKeys, long yKeys) {
  * The value returned corresponds to the maximal number of keys that can be
  * completely processed on the provided device.
  */
-long calculateMaxKeysForDevice(int deviceNumber) {
+unsigned long long calculateMaxKeysForDevice(int deviceNumber) {
    size_t f = 0, t = 0;
    cudaSetDevice(deviceNumber);
    cudaMemGetInfo(&f, &t);
@@ -274,7 +277,7 @@ long calculateMaxKeysForDevice(int deviceNumber) {
    B = BLKDIM * (BLKDIM * BYTES_PER_KEY + A);
    long C = BLKDIM * BLKDIM * t;
 
-   return (long) ((1.0/(2 * A)) * (-B + sqrt(B * B + 4 * A * C)));
+   return (unsigned long long) ((1.0/(2 * A)) * (-B + sqrt(B * B + 4 * A * C)));
 }
 
 /* Calculates the number of total kernel launches necessary for a set of divisions.
@@ -294,13 +297,15 @@ int calculateNumberOfKernelLaunches(int numDivisions) {
  * This function returns a pointer to the list of indices; the caller is
  * responsible for freeing this memory.
  */
-int * calculateKeyListSegments(unsigned long numKeys, int segments) {
+unsigned long long * calculateKeyListSegments(unsigned long long numKeys,
+      int segments) {
    int leftOverKeys = numKeys % segments;
    dprint("%d\n", leftOverKeys);
    int stepBase = numKeys / segments;
    dprint("%d\n", stepBase);
 
-   int * indexList = (int *) malloc(segments * sizeof(int));
+   unsigned long long * indexList =
+      (unsigned long long *) malloc(segments * sizeof(unsigned long long));
 
    int i = 0;
    indexList[i] = stepBase;
@@ -326,7 +331,7 @@ int * calculateKeyListSegments(unsigned long numKeys, int segments) {
 }
 
 void doDiagonalKernel(uint32_t * dev_keys, xyCoord * dev_coords, 
-       uint16_t * dev_gcd, long numBlocks, int numKeys) { 
+       uint16_t * dev_gcd, unsigned long long numBlocks, unsigned long long numKeys) { 
 
    int dimGridx = numBlocks > MAX_BLOCK_DIM ? MAX_BLOCK_DIM : numBlocks;
    int dimy = 1 + numBlocks / MAX_BLOCK_DIM;
@@ -342,7 +347,8 @@ void doDiagonalKernel(uint32_t * dev_keys, xyCoord * dev_coords,
 }
 
 void doUpperKernel(uint32_t * dev_xKeys, uint32_t * dev_yKeys, uint16_t * dev_gcd,
-      long numBlocks, int xNumKeys, int yNumKeys) { 
+      unsigned long long numBlocks, unsigned long long xNumKeys,
+      unsigned long long yNumKeys) { 
 
    int dimGridx = xNumKeys / BLKDIM + (xNumKeys % BLKDIM ? 1 : 0);
    int dimGridy = yNumKeys / BLKDIM + (yNumKeys % BLKDIM ? 1 : 0);
@@ -360,10 +366,10 @@ void doUpperKernel(uint32_t * dev_xKeys, uint32_t * dev_yKeys, uint16_t * dev_gc
 /* Returns the maximum number of blocks in either the diagonal segments or the
  * upper rectangular segments, given a number of keys to be used.
  */
-long calculateMaxBlocks(int numKeys) {
-   long maxDiagBlocks = calculateNumberOfBlocks(numKeys);
+unsigned long long calculateMaxBlocks(unsigned long long numKeys) {
+   unsigned long long maxDiagBlocks = calculateNumberOfBlocks(numKeys);
    int r = numKeys % BLKDIM > 0 ? 1 : 0;
-   long maxUpperBlocks = calculateNumberOfBlocks(numKeys, numKeys / 2 + r);
+   unsigned long long maxUpperBlocks = calculateNumberOfBlocks(numKeys, numKeys / 2 + r);
    return maxDiagBlocks > maxUpperBlocks ? maxDiagBlocks : maxUpperBlocks;
 }
 
@@ -373,19 +379,21 @@ long calculateMaxBlocks(int numKeys) {
  * Most often, it will corespond to the coordinate table; however, for small
  * numbers of keys, the key set can be larger.
  */
-long calculateMax2ndParamSize(long numKeys, long maxBlocks) {
+unsigned long long calculateMax2ndParamSize(unsigned long long numKeys,
+      unsigned long long maxBlocks) {
    // calculate max xyCoords size
-   long maxXYCoordsSize = sizeof(xyCoord) * maxBlocks;
+   unsigned long long maxXYCoordsSize = sizeof(xyCoord) * maxBlocks;
    DP(maxXYCoordsSize);
 
    // calculate the max size of keys in the X direction
-   int maxXKeys = numKeys / 2 + (numKeys % 2 ? 1 : 0);
-   long maxXKeySize = maxXKeys * NUM_INTS * sizeof(uint32_t);
+   unsigned long long maxXKeys = numKeys / 2 + (numKeys % 2 ? 1 : 0);
+   unsigned long long maxXKeySize = maxXKeys * NUM_INTS * sizeof(uint32_t);
    return maxXYCoordsSize > maxXKeySize ? maxXYCoordsSize : maxXKeySize;
 }
 
-void checkBlockForGCD(uint16_t gcd_res, int blockX, int blockY, int prevKeysX,
-      int prevKeysY, std::vector<std::pair<int, int> > & badKeyPairList) {
+void checkBlockForGCD(uint16_t gcd_res, int blockX, int blockY,
+      unsigned long long prevKeysX, unsigned long long prevKeysY,
+      keyPairList & badKeyPairList) {
    /* check this block for bad keys */
    if (gcd_res > 0) {
       dprint("bad key found in block: (%d, %d)\n", blockX, blockY);
@@ -396,26 +404,22 @@ void checkBlockForGCD(uint16_t gcd_res, int blockX, int blockY, int prevKeysX,
             // traverse rows 
             for (int i = 0; i < BLKDIM; ++i) {
                if (gcd_res & YMASKS[j] & XMASKS[i]) {
-                  int one = NUM_INTS * (BLKDIM * blockX + i + prevKeysX);
-                  int two = NUM_INTS * (BLKDIM * blockY + j + prevKeysY);
+                  unsigned long long one = NUM_INTS * (BLKDIM * blockX + i + prevKeysX);
+                  unsigned long long two = NUM_INTS * (BLKDIM * blockY + j + prevKeysY);
                   badKeyPairList.push_back(std::make_pair(one, two));
                   dprint("key %d, %d in block (%d, %d)\n", i, j, blockX, blockY);
                   dprint("VULNERABLE KEY PAIR FOUND:\n");
-                  dprint("one: %d\n", one);
-                  dprint("two: %d\n", two);
+                  dprint("one: %llu\n", one);
+                  dprint("two: %llu\n", two);
                   dprint("x\n");
                   //printNumHex(keys + one);
                   dprint("y\n");
                   //printNumHex(keys + two);
-                  // TODO
-                  // save keys indexes one and two into a list
-                  // and don't bother passing in keys
 
                   /*
                   uint32_t gcd[NUM_INTS];
                   memset(gcd, 0, NUM_INTS * sizeof(uint32_t));
 
-                  // TODO open a file and write results into it
                   gcd1024(&keys[one], &keys[two], gcd);
                   printNumHex(gcd);
                   */
@@ -426,10 +430,11 @@ void checkBlockForGCD(uint16_t gcd_res, int blockX, int blockY, int prevKeysX,
    }
 }
 
-void parseGCDResults(long numBlocks,
-      std::vector<std::pair<int, int> > & badKeyPairList, xyCoord * coords,
-      uint16_t * gcd_res, int prevKeysX, int prevKeysY) {
-   for (int blockId = 0; blockId < numBlocks; ++blockId) {
+void parseGCDResults(unsigned long long numBlocks,
+      keyPairList & badKeyPairList,
+      xyCoord * coords, uint16_t * gcd_res, unsigned long long prevKeysX,
+      unsigned long long prevKeysY) {
+   for (unsigned long long blockId = 0; blockId < numBlocks; ++blockId) {
       int blockX = coords[blockId].x;
       int blockY = coords[blockId].y;
 
@@ -438,9 +443,11 @@ void parseGCDResults(long numBlocks,
    }
 }
 
-void parseGCDResults(long numBlocks,
-      std::vector<std::pair<int, int> > & badKeyPairList, int xNumKeys,
-      int yNumKeys, uint16_t * gcd_res, int prevKeysX, int prevKeysY) {
+void parseGCDResults(unsigned long long numBlocks,
+      keyPairList & badKeyPairList,
+      unsigned long long xNumKeys, unsigned long long yNumKeys,
+      uint16_t * gcd_res, unsigned long long prevKeysX,
+      unsigned long long prevKeysY) {
    int xBlocks = xNumKeys / BLKDIM + (xNumKeys % BLKDIM ? 1 : 0);
    int yBlocks = yNumKeys / BLKDIM + (yNumKeys % BLKDIM ? 1 : 0);
 
@@ -454,17 +461,17 @@ void parseGCDResults(long numBlocks,
    }
 }
 
-void printCoords(xyCoord * coords, long numBlocks) {
+void printCoords(xyCoord * coords, unsigned long long numBlocks) {
    // Print the coordinates of the blocks if they were in a square
-   for (int i = 0; i < numBlocks; ++i) 
+   for (unsigned long long i = 0; i < numBlocks; ++i) 
       printf("(%d, %d)\n", coords[i].x, coords[i].y);
    fflush(stdout);
 }
 
 int main(int argc, char**argv) {
-   unsigned long totalNumKeys;
+   unsigned long long totalNumKeys;
    std::vector<RSA*> privKeys;
-   std::vector<std::pair<int, int> > badKeyPairList;
+   keyPairList badKeyPairList;
    uint32_t *keys;
    // This holds the the number of times the key set will be divided so that 
    // results will fit onto the GPU. 
@@ -478,7 +485,7 @@ int main(int argc, char**argv) {
    
    // TODO use args not scanf
    //get number of keys to process
-   sscanf(argv[1], "%lu", &totalNumKeys);
+   sscanf(argv[1], "%llu", &totalNumKeys);
 
    /* TODO keys must fit into RAM as well as the other allocated variables like
     * gcd_res and xyCoord
@@ -504,8 +511,8 @@ int main(int argc, char**argv) {
       dprint("keys for device %d = %d\n", i, calculateMaxKeysForDevice(i));
    }
 
-   int maxKeys = calculateMaxKeysForDevice(device);
-   //int maxKeys = 8;
+   unsigned long long maxKeys = calculateMaxKeysForDevice(device);
+   //unsigned long long maxKeys = 1000;
    DP(maxKeys);
 
    unsigned long keysSegmentSize = totalNumKeys;
@@ -518,27 +525,27 @@ int main(int argc, char**argv) {
    dprint("total / segment factor: %ld\n", totalNumKeys / segmentDivisionFactor);
    DP(keysSegmentSize);
 
-   int * segmentIndices = calculateKeyListSegments(totalNumKeys, segmentDivisionFactor);
+   unsigned long long * segmentIndices = calculateKeyListSegments(totalNumKeys, segmentDivisionFactor);
    for (int i = 0; i < segmentDivisionFactor; ++i) {
       DP(i);
       DP(segmentIndices[i]);
    }
 
-   long firstNumKeys = segmentIndices[0];
+   unsigned long long firstNumKeys = segmentIndices[0];
    // calculate the max size of keys in the Y direction
-   long maxYKeySize = firstNumKeys * NUM_INTS * sizeof(uint32_t);
+   unsigned long long maxYKeySize = firstNumKeys * NUM_INTS * sizeof(uint32_t);
    DP(maxYKeySize);
 
    // We look at the first segment index since it will also be a count, and if
    // there were remainders, they will have been allocated to this index.
-   long maxBlocks = calculateMaxBlocks(firstNumKeys);
+   unsigned long long maxBlocks = calculateMaxBlocks(firstNumKeys);
    DP(maxBlocks);
 
-   long max2ndParamSize = calculateMax2ndParamSize(firstNumKeys, maxBlocks);
+   unsigned long long max2ndParamSize = calculateMax2ndParamSize(firstNumKeys, maxBlocks);
    DP(max2ndParamSize);
    
    // calculate max gcd size
-   long maxGCDSize = sizeof(uint16_t) * maxBlocks;
+   unsigned long long maxGCDSize = sizeof(uint16_t) * maxBlocks;
    DP(maxGCDSize);
 
    // allocate max xyCoords on host
@@ -574,15 +581,15 @@ int main(int argc, char**argv) {
    cudaMalloc((void **)&dev_gcd, maxGCDSize);
    dprint("cudaMalloc:%s\n", cudaGetErrorString(cudaGetLastError()));
 
-   int xIdx = 0, yIdx = 0;
-   int xPrevIdx = 0, yPrevIdx = 0;
-   long numBlocks;
+   unsigned long long xIdx = 0, yIdx = 0;
+   unsigned long long xPrevIdx = 0, yPrevIdx = 0;
+   unsigned long long numBlocks;
    for (int y = 0; y < segmentDivisionFactor; ++y) {
       yIdx = segmentIndices[y];
       DP(yIdx);
       uint32_t * yKeys = keys + yPrevIdx * NUM_INTS;
       
-      int yNumKeys = yIdx - yPrevIdx;
+      unsigned long long yNumKeys = yIdx - yPrevIdx;
       DP(yNumKeys);
       
       size_t yKeysSize = yNumKeys * NUM_INTS * sizeof(uint32_t);
@@ -622,12 +629,12 @@ int main(int argc, char**argv) {
             xPrevIdx = yIdx;
 
          } else {// call kernel with 2 different key sets (rectangle)
-            int xNumKeys = segmentIndices[x] - xPrevIdx;
+            unsigned long long xNumKeys = segmentIndices[x] - xPrevIdx;
             DP(xNumKeys);
 
-            int halfStep = xNumKeys / 2 + (xNumKeys % 2 ? 1 : 0);
+            unsigned long long halfStep = xNumKeys / 2 + (xNumKeys % 2 ? 1 : 0);
             DP(halfStep);
-            int halfPoint = xPrevIdx + halfStep;
+            unsigned long long halfPoint = xPrevIdx + halfStep;
             DP(halfPoint);
 
             for (int i = 0; i < 2; ++i) {
@@ -671,9 +678,11 @@ int main(int argc, char**argv) {
 
                xPrevIdx = xIdx;
             }
-            yPrevIdx = yIdx;
          }
+         // a square section in the upper area is finished
       }
+      // a row is finished
+      xPrevIdx = yPrevIdx = yIdx;
    }
 
    cudaFree(dev_yKeys);
@@ -687,7 +696,7 @@ int main(int argc, char**argv) {
    hrt_stop();
    printf("CUDA run lasted %s\n", hrt_string());
 
-   processBadKeys(badKeyPairList, keys, NULL, 1);
+   processBadKeys(badKeyPairList, keys, NULL, 1, totalNumKeys);
    free(keys);
 
    return 0;

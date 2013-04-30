@@ -24,33 +24,45 @@ typedef struct xy {
 } xyCoord;
 
 __global__ void GCD_Compare_Diagonal(unsigned *x_dev, xyCoord * dev_coord,
-      uint16_t *gcd_dev, int numBlocks, int keysInSet);
+      uint16_t *gcd_dev, unsigned long long numBlocks,
+      unsigned long long keysInSet);
 __global__ void GCD_Compare_Upper(unsigned *x_dev, unsigned *y_dev,
-      uint16_t *gcd_dev, int numBlocks, int keysInXSet, int keysInYSet);
+      uint16_t *gcd_dev, unsigned long long numBlocks,
+      unsigned long long keysInXSet, unsigned long long keysInYSet);
 __device__ void dev_printNumHex(uint32_t buf[NUM_INTS]);
 __device__ void gcd(volatile unsigned *x, volatile unsigned *y);
 __device__ void shiftR1(volatile unsigned *x);
 __device__ void shiftL1(volatile unsigned *x);
-__device__ void cusubtract(volatile unsigned *x, volatile unsigned *y, volatile unsigned *z);
+__device__ void cusubtract(volatile unsigned *x, volatile unsigned *y,
+      volatile unsigned *z);
 __device__ int geq(volatile unsigned *x, volatile unsigned *y);
 
-void dimConversion(int numBlocks, int width, xyCoord * coords);
-long calculateNumberOfBlocks(long numKeys);
+void dimConversion(unsigned long long numBlocks, int width, xyCoord * coords);
+unsigned long long calculateNumberOfBlocks(unsigned long long numKeys);
+unsigned long long calculateNumberOfBlocks(unsigned long long xNumKeys,
+      unsigned long long yNumKeys);
+unsigned long long calculateMaxBlocks(unsigned long long numKeys);
 long maximizeKeys(int deviceNumber, bool diagonal);
-long calculateMaxBlocks(int numKeys);
 
-void printCoords(xyCoord * coords, long numBlocks);
+unsigned long long * calculateKeyListSegments(unsigned long long numKeys,
+      int segments);
 
-void doDiagonalKernel(uint32_t * dev_keys, xyCoord * dev_coords, uint16_t * dev_gcd,
-      long numBlocks, int numKeys);
-void doUpperKernel(uint32_t * dev_xKeys, uint32_t * dev_yKeys, uint16_t * dev_gcd,
-      long numBlocks, int xNumKeys, int yNumKeys);
+void printCoords(xyCoord * coords, unsigned long long numBlocks);
 
-void checkBlockForGCD(uint16_t gcd_res, int blockX, int blockY, int prevKeysX,
-      int prevKeysY, std::vector<std::pair<int, int> > & badKeyPairList);
-void parseGCDResults(long numBlocks,
-      std::vector<std::pair<int, int> > & badKeyPairList, xyCoord * coords,
-      uint16_t * gcd_res, int prevKeysX, int prevKeysY);
-void parseGCDResults(long numBlocks,
-      std::vector<std::pair<int, int> > & badKeyPairList, int xNumKeys,
-      int yNumKeys, uint16_t * gcd_res, int xIdx, int yIdx);
+void doDiagonalKernel(uint32_t * dev_keys, xyCoord * dev_coords,
+      uint16_t * dev_gcd, unsigned long long numBlocks,
+      unsigned long long numKeys);
+void doUpperKernel(uint32_t * dev_xKeys, uint32_t * dev_yKeys,
+      uint16_t * dev_gcd, unsigned long long numBlocks,
+      unsigned long long xNumKeys, unsigned long long yNumKeys);
+
+void checkBlockForGCD(uint16_t gcd_res, int blockX, int blockY,
+      unsigned long long prevKeysX, unsigned long long prevKeysY,
+      keyPairList & badKeyPairList);
+void parseGCDResults(unsigned long long numBlocks,
+      keyPairList & badKeyPairList, xyCoord * coords, uint16_t * gcd_res,
+      unsigned long long prevKeysX, unsigned long long prevKeysY);
+void parseGCDResults(unsigned long long numBlocks,
+      keyPairList & badKeyPairList, unsigned long long xNumKeys,
+      unsigned long long yNumKeys, uint16_t * gcd_res, unsigned long long xIdx,
+      unsigned long long yIdx);
