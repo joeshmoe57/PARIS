@@ -26,7 +26,7 @@
 % \usepackage{mathptmx}      % use Times fonts if available on your TeX system
 %
 % insert here the call for the packages your document requires
-\usepackage{natbib}
+\usepackage[square,numbers,comma]{natbib}
 \usepackage{amssymb}
 \usepackage{amsmath}
 \usepackage{url}
@@ -91,11 +91,11 @@ tool for validating RSA keys for poor prime numbers: a fundamental problem
 that has led to significant security holes, despite the RSA algorithm's
 mathematical soundness.
 
-Our tool leverages NVIDIA's CUDA framework to perform a complete set of greatest
-common divisor calculations between all keys in a provided set. Our
+Our tool, PARIS, leverages NVIDIA's CUDA framework to perform a complete set of
+greatest common divisor calculations between all keys in a provided set. Our
 implementation offers a 27.5 times speedup over a reference sequential
-implementation for set of less than 200000 keys. This level of speedup brings
-this validation into the realm of practicallity due to decreased runtime.
+implementation for sets of less than 200000 keys. This level of speedup brings
+this validation into the realm of practicality due to decreased runtime.
 
 \keywords{CUDA \and RSA \and greatest common divisor \and parallel computation}
 \end{abstract}
@@ -120,8 +120,8 @@ this, an individual key may be considered secure by itself, but when compared
 to other keys might exhibit a weakness which allows each key's private
 components to be calculated entirely from public information.  
 
-When considering two keys, a weakness exists when the greatest common 
-divisor (GCD) of both moduli, $n_1$ and $n_2$, is greater than 1. If $GCD(n_1, 
+When considering two keys, a weakness exists when the \textit{greatest common 
+divisor} (GCD) of both moduli, $n_1$ and $n_2$, is greater than 1. If $GCD(n_1, 
 n_2) = p$, then $p$ must be a shared prime factor of $n_1$ and $n_2$. Thus, 
 $q_1 = \frac{n_1}{p}$ and $q_2 = \frac{n_2}{p}$. Once $p$ and $q$ are known,
 $d_1$ and $d_2$ (values in the private components) can be directly calculated,
@@ -137,7 +137,35 @@ CUDA platform.
 To aid in accomplishing this goal, the work in \cite{fujimoto2009high} was 
 expanded and adapted to compare all combinations of keys in a given set. In 
 comparison to their work, larger sections of the overall program were able to 
-be executed in parallel, resulting in further speedup.
+be executed in parallel, resulting in further speedup. We implemented this in a
+recent paper and applied it to sets of RSA moduli. While successful, this work
+(\cite{scharfglass2012breaking}) was only capable of validating a single set of
+keys whose size was constrained by the GPU memory. In our new work here, we
+focus on overcoming this limitation, and add the ability to process sets of
+keys of arbitrary length.
+
+\subsection{The Meaning of PARIS}
+\label{subsec:meaning}
+
+The title of our validation tool goes beyond its descriptive acronym with ties
+to Greek Mythology. The Greek hero Achilles was known for his greatness and is
+the central character of many Greek myths including Homer's epic,
+\textit{The Iliad}. He is probably best known for his one fatal weakness: his
+heel. According to myth, his body was invulnerable, making him the great
+warrior that he was; however, his heel was not, and a fatal arrow wound through
+his heel ended his life.
+
+We look to this myth as an analogy for the RSA algorithm. RSA can be viewed as
+Achilles: a character with epic strength (i.e. mathematical soundness) capable
+of feats never before possible (i.e. cryptographic communications).
+However, it has a single, fatal flaw: random prime numbers. This weakness, for
+Achilles, was exposed by an arrow shot by Paris, Prince of Troy. It is here,
+that we derives our tool's name.
+
+We use Paris because he exposed the weakness in a great hero. In the same way,
+we hope to make finding the flaw of poor random number generation in RSA keys
+a more public and more accessible task. 
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -155,7 +183,7 @@ key uses the same $n$, and another value $d$ such that $d \cdot e = 1
 \:\text{mod} \;\phi(n)$ where $\phi(n) = (p - 1) \cdot (q - 1)$
 \citep{rivest1978method}.
 
-Using the same algorithm, information encrypted with the one key, can be
+Using the same algorithm, information encrypted with the one key can be
 decrypted with the other and vice versa. A party must keep the private key
 secret, but the public portion of the key can be seen and used by anyone in the
 world. To generate a public-private key pair, an algorithm is implemented using
@@ -211,11 +239,11 @@ simultaneously on a single \textit{streaming multiprocessor} (SM). The GPU
 consists of several SMs which are each capable of executing a warp. Blocks are
 scheduled to SMs until all allocated threads have been executed. 
 
-There is also a memory hierarchy on the GPU. There are three types of memory 
-that are relevant to this work: global memory is the slowest and 
-largest; shared memory is much faster, but also significantly smaller; and 
-a limited number of registers that each SM has access to. Each thread in a
-block can access the same section of shared memory.
+There is also a memory hierarchy on the GPU. Three of the various types of
+memory are relevant to this work: global memory is the slowest and largest;
+shared memory is much faster, but also significantly smaller; and a limited
+number of registers that each SM has access to. Each thread in a block can
+access the same section of shared memory.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -226,7 +254,7 @@ its impacts and implications to computer security are equally important.
 We look into some of RSA's more popular applications to help motivate why our
 work and PARIS's increase in practicality is important to the world of computer
 security. We aim to discuss what types of data might be vulnerable due to this
-exploit (as well as others effecting RSA), impacts the vulnerability has, and
+exploit (as well as others affecting RSA), impacts the vulnerability has, and
 put a portion of the current state of computer security into a real-world
 context concerning RSA.
 
@@ -293,19 +321,19 @@ infrastructure, see \citet{holz2011ssl}.
 
 \subsection{Data Collection}
 \label{subsec:datacol}
-The proposed DRM protocol given by the RSA actually modeled the certificate
-model used by SSL/TLS. For this reason, the SSL certificate model was the
-primary focus of the data collected. Moreover, the data set of RSA keys in SSL
-certificates is much larger than DRM implementations that use RSA. Thus, the
-data set that was collected and then analyzed consisted entirely of X.509
+The proposed DRM protocol given by the RSA Association closely follows the
+certificate model used by SSL/TLS. For this reason, the SSL certificate model
+was the primary focus of the data collected. Moreover, the data set of RSA keys
+in SSL certificates is much larger than DRM implementations that use RSA. Thus,
+the data set that was collected and then analyzed consisted entirely of X.509
 certificates.
 
 Since a primary motivation of this work is the potential impact that vulnerable
 RSA keys may have, a data set representative of a large portion of traffic was
 desired. A survey was done over 2007-2010 \citep{labovitz2011internet} that
 gathered some useful data on the Internet as a whole. Relevant to web traffic,
-this study showed that together, the major content data networks (CDN) (i.e.
-Google, Facebook, Amazon, etc.) account for nearly 17\% of web traffic.
+this study showed that together, the major \textit{content data networks }(CDN)
+(i.e. Google, Facebook, Amazon, etc.) account for nearly 17\% of web traffic. 
 Specific breakdowns and conversions can be found in Table~\ref{tab:traffic}.
 
 \begin{table}
@@ -316,10 +344,10 @@ Specific breakdowns and conversions can be found in Table~\ref{tab:traffic}.
                 |>{\raggedright\arraybackslash}p{0.2\linewidth}|}\hline
    \textbf{CDN} & \textbf{Percent of all Internet traffic} & \textbf{Approx. percentage of web traffic}\\ \hline
 Google & 7 & 12.72\\ \hline
-Facebook & 0.45& 0.818\\ \hline
+LeaseWeb (Heineken, Starbucks,\dots) & 0.8 & 1.454\\ \hline
 Amazon CDN (NASA/JPL, PBS,\dots) & 0.55 & 1\\ \hline
 EdgeCast (Yahoo!, Break, Imgur,\dots) & 0.5 & 0.909\\ \hline
-LeaseWeb (Heineken, Starbucks,\dots) & 0.8 & 1.454\\
+Facebook & 0.45& 0.818\\
 \hline\end{tabular}
 \label{tab:traffic}
 \end{table}
@@ -339,22 +367,22 @@ that a much larger percentage than 17\% is actually represented by the sites
 in the list, although quantifying precisely how much becomes difficult, and
 lies beyond the scope of this project.
 
-A Python script was used to parse the CSV file provided by Alexa. Each
-extracted URL was visited on port 443 (corresponding to ``https://") using 
-\texttt{openssl}. If a site responded on that port, it provided an X.509
-certificate to be parsed and verified. During a normal web session, this is
-done by a user's web browser which has certificate authorities' private keys
-hidden within. However, since the work here was not concerned with the actual
-web content, the certificate was simply saved. When certificates were found,
-the ``Subject Public Key Algorithm" section was inspected. If this contained
-some form of RSA, \texttt{openssl} was used again to extract the RSA key and
-save it into a PEM file (a standard format for saving public and private key
-information in). Additionally, since part the motivation of data collection is
-PARIS, the keys were also stored into a SQLite3 database so that later
-retrieval using PARIS was trivial.  
+A Python script was used to parse the \textit{comma separated value} (CSV) file
+provided by Alexa. Each extracted URL was visited on port 443 (corresponding to
+``https://") using \texttt{openssl}. If a site responded on that port, it
+provided an X.509 certificate to be parsed and verified. During a normal web
+session, this is done by a user's web browser which has certificate
+authorities' private keys hidden within. However, since the work here was not
+concerned with the actual web content, the certificate was simply saved. When
+certificates were found, the ``Subject Public Key Algorithm" section was
+inspected. If this contained some form of RSA, \texttt{openssl} was used again
+to extract the RSA key and save it into a \textit{Privacy Enhanced Mail} (PEM)
+file (a standard format for saving public and private key information in).
+Additionally, since part the motivation of data collection is PARIS, the keys
+were also stored into a SQLite3 database so that later retrieval using PARIS
+was trivial.  
 
-After writing an initial implementation of the Python script, it was realized
-that the collection process was too slow. Therefore, some of Python's
+Some of Python's
 multi-process capabilities were utilized to speed up the collection of data.
 Eight processes were spawned to perform the work described above. Seven of the
 processes read URLs from a deque (double-ended queue) and attempted to obtain
@@ -363,7 +391,7 @@ to a queue. These data structures not only offered convenient structures for
 organizing the data, but were also thread-safe and could be used with our
 updated implementation. An eighth thread read keys from the queue and entered
 them into the SQLite3 database. This reimplementation offered a 15$\times$
-speedup over the previous, na\"{i}ve approach.
+speedup over a single-threaded approach.
 
 \subsection{Data Analysis}
 \label{subsec:datanalysis}
@@ -373,7 +401,7 @@ security of these one million sites. This analysis included overall security
 breakdowns (i.e. whether a site used any kind of security) and
 bit-length breakdowns of the RSA keys that were found. This data analysis can
 be found in Figures~\ref{fig:certs} and \ref{fig:bits}. Table~\ref{tab:bits}
-offer specific breakdown for bit-lengths, and offers details that cannot be
+shows specific breakdowns for bit-lengths, and offers details that cannot be
 seen in the figure.
 
 \begin{figure}
@@ -383,24 +411,21 @@ seen in the figure.
    \label{fig:certs}
 \end{figure}
 
-Interestingly (and slightly worrisome), is that the majority of web sites in
-this top one million list did not even respond on port 443, implying that
-they do not allow any option for secure traffic to their site. Nearly 60\% of
-websites in the list fell into this category.
+An interesting (and slightly worrisome) observation is that the majority of web
+sites in this top one million list did not even respond on port 443, implying
+that they do not allow any option for secure traffic to their site. Nearly 60\%
+of websites in the list fell into this category.
 
 Also of note are the specifics of bit-lengths found. It is a surprising data
 set for various reasons. First, bit-lengths as small as 384, 512, and 768 were
 not expected since keys of this size were factored years ago
 \citep{rsa2007challenge}, and cannot be expected to offer much
-security\footnote{Interesting note: The author attempted to visit the sites
-384-bit keys. Google Chrome did not find a web page on port 443 for any of
-the sites.}.
+security.
 
-On the other hand, the high number of longer bit-lengths was also surprising,
-but comforting. The fact that the vast majority of keys were 2048-bit was not
-expected, but means that a large number of high-traffic websites have adequate
-(for now) encryption. Moreover, there were quite a number of sites with 4096,
-and, even more surprisingly, 8192-bit.
+The fact that the majority of keys were 2048-bit was not expected, but means
+that a large number of high-traffic websites have adequate (for now)
+encryption. Moreover, there were quite a number of sites with 4096, and, even
+more surprisingly, 8192-bit.
 
 \begin{figure}
    \centering
@@ -429,18 +454,18 @@ other & 44 \\ \hline
 
 Following the surface-level analysis, PARIS was used to perform a complete
 check of all RSA keys in a set in order to check for the previously mentioned
-vulnerability \citep{lenstra2012ron}. At the time this data analyzed, PARIS was
-limited to 1024-bit RSA keys. Due to this limitation, the data set was reduced
-to 46,736 RSA keys. Due to the $O(n^2)$ nature of this problem, this check
-resulted in $1,092,150,216$ comparisons. The run of the tool using this data
-set took 138 minutes, 37 seconds or $131,305$ comparisons per second.  After
-applying the tool to this set of keys, it was found that no keys were
-susceptible to the vulnerability (insofar as none of the keys in the set shared
-primes with any other key in the set). Although no vulnerabilities were
-detected, this does not mean the set is completely secure from the previously
-mentioned vulnerability. Since such a limited data set was used, and the
-security tool relies on large sets to accumulate many primes, the analysis
-presented can only be considered an initial pass.  
+vulnerability \citep{lenstra2012ron}. At the time this data was analyzed, PARIS
+was limited to 1024-bit RSA keys. Due to this limitation, the data set was
+reduced to 46,736 RSA keys. The $O(n^2)$ nature of this problem resulted in
+$1,092,150,216$ comparisons. Running PARIS on this data set took 138 minutes,
+37 seconds or $131,305$ comparisons per second.  After applying PARIS to this
+set of keys, it was found that no keys were susceptible to the vulnerability
+(insofar as none of the keys in the set shared primes with any other key in the
+set). Although no vulnerabilities were detected, this does not mean the set is
+completely secure from the previously mentioned vulnerability. Since such a
+limited data set was used, and the security tool relies on large sets to
+accumulate many primes, the analysis presented can only be considered an
+initial pass.  
 
 \subsection{Implications}
 \label{subsec:implications}
@@ -489,18 +514,18 @@ code, this may not always be the case. When these values are repeated between
 keys, the greatest-common-divisor algorithm can be applied to find the shared
 value between keys. This is significant because the GCD calculation is
 significantly less computationally expensive than the alternative: factoring
-the large values. With this new information about each key, they private
+the large values. With this new information about each key, the private
 components are straight-forward to generate since the RSA key-generation
 process is public and not difficult to implement.  
 
-A large sample set was obtained via the OpenSSL Observatory and by crawling the
-Internet for SSL certificates (which use RSA as an encryption scheme). Since it
-was thought this would provide an adequate sample set, all these keys were
-analyzed. The set contained 1024-bit keys, as well as 2048-bit keys. The
-findings were that 0.2\% of these keys were vulnerable to this exploit, and
-thus offered no security. This included 2048-bit keys as well, despite the
-conception 2048-bit keys are more secure (this would be true if this
-vulnerability were avoided).
+A large sample set was obtained via the OpenSSL Observatory and by
+systematically indexing numerous websites for SSL certificates (which use RSA
+as an encryption scheme). Since it was thought this would provide an adequate
+sample set, all these keys were analyzed. The set contained 1024-bit keys, as
+well as 2048-bit keys. The findings were that 0.2\% of these keys were
+vulnerable to this exploit, and thus offered no security. This included
+2048-bit keys as well, despite the perception that 2048-bit keys are more
+secure (this would be true if this vulnerability were avoided).
 
 \subsection{The Process}
 \label{subsec:process}
@@ -514,11 +539,11 @@ due to time constraints. Since the calculations are independent of one another
 One such system, and the focus of this work, is NVIDIA's CUDA. This will be
 detailed later, however, it relates to work done in \cite{fujimoto2009high}. 
 
-This work optimized a specific version of the GCD (binary GCD). This method
-reduces the algorithm to three repeated operations. This algorithm was then
-implemented in CUDA for 1024-bit numbers (something CUDA does not offer native
-support for). This allows much of each operation to be performed in a parallel
-fashion, further optimizing the process.
+Fujimoto's work optimized a specific version of the GCD (binary GCD). This
+method reduces the algorithm to three repeated operations. This algorithm was
+then implemented in CUDA for 1024-bit numbers (something CUDA does not offer
+native support for). This allows much of each operation to be performed in a
+parallel fashion, further optimizing the process.
 
 \subsection{Multiple GPUs}
 \label{subsec:muliGPU}
@@ -537,7 +562,7 @@ fashion, further optimizing the process.
 %configurations.
 
 The work done in \cite{thibault2009cuda} helps to make a case for the
-additional speedup that making use of multiple GPUs can offer. This work was
+additional speedup that making use of multiple GPUs can offer. Their work was
 done after CUDA had added adequate support for using multiple GPUs
 simultaneously, and configurations with two-GPU and four-GPU systems were used.
 
@@ -561,8 +586,8 @@ system.
 
 \subsection{Large Data}
 \label{subsec:largedata}
-\cite{wu2009clustering} explores a data set, like our own, where the data is
-too large to fit within the extremely-limited memory of the GPU. Thus, the data
+Wu et al. \cite{wu2009clustering} explore a data set, like our own, where the
+data is too large to fit within the limited memory of the GPU. Thus, the data
 must be partitioned. In this work, the data was first prepared by organizing it
 so that it could be effectively partitioned. There was a straightforward way of
 doing so for this application (K-means).  
@@ -574,7 +599,7 @@ processing data it already has. This can increase performance significantly
 when compared to having the GPU move from processing to data transfer (i.e.
 having a single tasked thread). Optimization of threads was looked into in this
 work as well, as the authors attempted to find how many of these threads would
-add the positively impact speedup the most. They found that only 2 threads
+add the positively impact speedup the most. They found that only two threads
 (i.e. one processing, one transferring) were needed to gain the greatest
 performance benefit. Adding additional streams after this point did not offer
 additional benefit.
@@ -609,7 +634,7 @@ such as tiling are used to optimize the performance gains.
 Unfortunately, this work was done before multi-GPU systems were fully available
 and accessible using CUDA. The optimization strategies presented in this work
 will no doubt be useful; however, other strategies also must be employed that
-considered systems with more than a single GPU (such as those mentioned here
+consider systems with more than a single GPU (such as those mentioned here
 from \cite{thibault2009cuda}). Leveraging techniques in both realms will offer
 the greatest amount of performance gain.
 
@@ -629,6 +654,13 @@ significant performance increases over the original.
 %concept in general when optimizing for CUDA; however, the work and challenges
 %from \cite{peters2011fast} are similar to our own, so the implementation
 %overlaps more than arbitrary examples.
+
+%TODO show why PARIS is better than all of these things
+PARIS aims to be a tool that unifies the mentioned techniques and algorithms.
+Currently, no practical solution exists for handling the analysis necessary to
+validate RSA key sets. By combining the power of parallel computing and various
+data decomposition techniques, PARIS allows the performance increases that lead
+to a practical tool.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -668,17 +700,18 @@ Algorithm~\ref{alg:binGCD}.
 \subsection{Parallel Functions}
 \label{subsec:parfunc}
 To accomplish Algorithm~\ref{alg:binGCD} using CUDA, the following three 
-functions had to parallelized: shift, subtract, and greater-than-or-equal. As 
-outlined in \cite{fujimoto2009high}, each 1024-bit number is divided across one 
-warp so that each thread has its own 32-bit integer. 
+functions had to be parallelized: shift, subtract, and greater-than-or-equal.
+As outlined in \cite{fujimoto2009high}, each 1024-bit number is divided across
+one warp so that each thread has its own 32-bit integer. 
 
 The parallel shift function is straightforward: each thread is given an 
 equal-sized piece of the large-precision integer. Then each thread except for 
-Thread 0 grabs a copy of the integer at \texttt{threadID  - 1}.
-The variable \texttt{threadID} refers to a value between 0 and 31 and corresponds 
-to a thread in a warp. Each thread shifts its value once and 
-uses its copy of the adjacent integer to determine if a bit has shifted 
-between threads. This procedure is outlined in Algorithm~\ref{alg:parShift}.
+Thread 0 receives a copy of the integer at \texttt{threadID  - 1}. The variable
+\texttt{threadID} refers to a value between 0 and 31 and corresponds to a
+thread in a warp. Each thread shifts its value once and uses its copy of the
+adjacent integer to determine if a bit has shifted between threads. This
+procedure is outlined in Algorithm~\ref{alg:parShift}.
+
 \begin{algorithm}
    \KwIn{$x[32]$ is a 1024-bit integer represented as an array of 32 \texttt{int}s, $threadID$ is the 0-31 index of the thread in warp.}
    \nl\eIf {$threadID \neq 0$} {
@@ -792,9 +825,9 @@ compared with each other key to determine if a GCD greater than 1 exists for
 any pair. Given a known set of keys, it is not known before processing 
 the keys which will be likely to have a GCD greater than 1; therefore, there 
 is no way to eliminate comparisons between specific pairs. The natural 
-organization to fulfill this requirement is a comparison matrix of the all 
-keys. Each location in the matrix corresponds to a GCD comparison between two 
-keys.
+organization to fulfill this requirement is a diagonally-symmetric comparison
+matrix of the all keys. Each location in the matrix corresponds to a GCD
+comparison between two keys.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -807,10 +840,11 @@ keys.
 Initially, the comparison matrix seems to be an $n^2$ solution. However, the 
 diagonal of the matrix created consists of unproductive GCD calculations since 
 these entries would compare each key with itself. Furthermore, the matrix is 
-symmetrical over the diagonal. Thus, only the comparisons comprising one of 
-the triangles needs to be performed. Specifically, 
+symmetrical over the diagonal. Thus, only the comparisons comprising the upper
+or lower triangle of the matrix needs to be performed. Specifically, 
+
 \begin{equation}
-   \mbox{Total number of GCD compares} = \sum_{i=1}^k i
+   \mbox{Total number of GCD compares} = \sum_{i=1}^{k-1} i
    \label{eq:gcd}
 \end{equation}
 
@@ -829,44 +863,50 @@ the triangles needs to be performed. Specifically,
 One of the most important aspects of any CUDA implementation is the 
 organization of the thread and block array to ensure that the architecture is 
 appropriately used to its full potential. The threads array in this 
-implementation was organized using 3 dimensions. The $x$ dimension represented 
-the sectioning of a 1024-bit value into individual 32-bit integers, of which 
-there are 32. 
+implementation was organized using three dimensions. The $x$ dimension
+represented the sectioning of a 1024-bit value into individual 32-bit integers,
+of which there are 32. 
+
 \begin{displaymath}
    \frac{1024 \:\mbox{bits per key}}{32 \:\mbox{bits per integer}} = 
    32 \;\mbox{integers per key}
 \end{displaymath}
+
 The remaining dimensions, $y$ and $z$, were set to 4, resulting in a block of 
 512 threads. This design decision was experimentally determined. See 
 $\S$\ref{sec:occupancy} for details about Occupancy optimizations.
-\begin{displaymath}
-   32 \cdot 4 \times 4 = 512
-\end{displaymath}
-This ensured that each block remained square for algorithmic 
-symmetry and simplicity. The $y$ and $z$ dimensions corresponded to how many 
-specific keys within the list of all keys were being compared per block. 
-Thus, two 1024-bit keys were loaded into each 32-thread warp, which was 
-then processed simultaneously as a single comparison. The $x$ dimension was 
-chosen for two reasons: 1) so one thread in this dimension would represent 
-each of the 32-bit integers inside the key and 2) because there are 32 threads 
-in a single warp. Therefore, this thread-array organization ensured that 
-compares were done using two entire keys (separated into 32 pieces) that were 
-scheduled to the same warp. This eliminated warp divergence since every warp 
-was filled and executed with non-overlapping data.
 
-Blocks were arranged in row-major order based on the key comparisons that they 
-held. The formula for the number of blocks, $B$, needed for a vector of keys of 
+\begin{displaymath}
+   32 \times 4 \times 4 = 512
+\end{displaymath}
+
+The $4\cdot4$ dimensions of the block ensured that each block remained square
+for algorithmic symmetry and simplicity. These dimensions, $y$ and $z$,
+correspond to how many specific keys within the list of all keys are being
+compared per block. Thus, two 1024-bit keys are loaded into each 32-thread
+warp, which is then processed simultaneously as a single comparison. The $x$
+dimension is chosen for two reasons: 1) so one thread in this dimension would
+represent each of the 32-bit integers inside the key and 2) because there are
+32 threads in a single warp. Therefore, this thread-array organization ensures
+that compares are done using two entire keys (separated into 32 pieces) that
+are scheduled to the same warp. This eliminates warp divergence since every
+warp is filled and executed with non-overlapping data.
+
+Blocks are arranged in row-major order based on the key comparisons that they 
+hold. The formula for the number of blocks, $B$, needed for a vector of keys of 
 size $k$ can be seen in Equation~\ref{eq:blocks}.
+
 \begin{equation}
    \sum_{i=1}^{\left\lceil \frac{k}{4} \right\rceil}i = B
    \label{eq:blocks}
 \end{equation}
 
-The limit for a grid in a single dimension is $2^{16} - 1 = 65535$ 
+The block limit for a grid in a single dimension is $2^{16} - 1 = 65535$ 
 and limits the amount of keys that can be processed to $1444$. To increase 
 the number of blocks available for computation, a second grid dimension was 
-added. This increased the theoretical maximum number of keys per kernel 
+added. This increases the theoretical maximum number of keys per kernel 
 launch as seen in Equation~\ref{eq:maxKeys}.
+
 \begin{equation}
    \begin{split}
    \sum_{i = 1}^{\left\lceil\frac{k}{4}\right\rceil} i & \leq {\left(2^{16} - 
@@ -880,39 +920,39 @@ launch as seen in Equation~\ref{eq:maxKeys}.
 \label{subsubsec:xymap}
 
 Due to the work-reduction step taken in Section~\ref{subsec:probdecomp}, a
-traditional CUDA 2D block arrangement was not appropriate. The block indexes
+traditional CUDA 2D block arrangement was not appropriate. The block indices
 that would have been advantageous, would have wasted significant resources on
 the GPU since we only aim to do half of the work that a full 2D block grid would
 provide. Therefore, the block array that was used was essentially one
 dimensional. Two dimensions are used (as described in
-Section~\ref{subsec:gridorg}) when there are many keys that cannot be allocated
+Section~\ref{sec:gridorg}) when there are many keys that cannot be allocated
 to the GPU with a single CUDA block dimension. However, this second dimension
 only adds quantity to the one dimensional list, but the indexes advantages
 normally realized by the CUDA block grid could not be used.
 
-To overcome this, an XY coordinate mapping was precomputed and copied to the
-GPU. This mapping was a lookup table that took sequential block numberings from
-the upper triangular comparison matrix, and converted them to x-y coordinate
-pairs that would have been accurate in the full comparison matrix. This was a
-necessary step due to indexing into the key sets during each comparison and to
-look up vulnerable keys once the process is complete.
+To overcome this, an XY coordinate mapping iss precomputed and copied to the
+GPU. This mapping is a lookup table that converts sequential block numberings
+from the upper triangular comparison matrix to x-y coordinate pairs that would
+have been accurate in the full comparison matrix. This is a necessary step due
+to the process of indexing into the key sets during each comparison and looking
+up vulnerable keys once the process is complete.
 
 \subsection{Shared Memory}
 \label{subsec:shared}
-Shared memory was used to load the necessary keys from global memory. Two 
-arrays were created in shared memory, representing the thread-array; both 
-3-dimensional, $32\times4\times4$ and had an integer loaded into each 
-available space. Each array represented which integers would be compared at 
-each location in the matrix. A side effect of this organization was that each key would be 
-repeated 4 times within its integer array. However, this greatly simplified 
-the GCD algorithm so that only a look-up into each array was needed. Since 
-shared memory was not the limiting factor for occupancy, it was not a priority 
-to optimize this aspect of the design and implementation. 
+Shared memory is used to load the necessary keys from global memory. Two 
+arrays are created in shared memory, representing the thread-array; both 
+three-dimensional, $32\times4\times4$, and have an integer loaded into each 
+available space. Each array represents which integers are compared at each
+location in the matrix. A side effect of this organization is that each key
+will be repeated 4 times within its integer array. However, this greatly
+simplifies the GCD algorithm so that only a look-up into each array is needed.
+Since shared memory is not the limiting factor for occupancy, it is not a
+priority to optimize this aspect of the design and implementation. 
 
-Shared memory was also used within the GCD algorithm, specifically in the 
+Shared memory is also used within the GCD algorithm, specifically in the 
 greater-than-or-equal-to function, and the subtract function. In the 
-greater-than-or-equal-to function, a single integer was allocated for each 
-comparison within a block. Within the subtract function, shared memory was 
+greater-than-or-equal-to function, a single integer is allocated for each 
+comparison within a block. Within the subtract function, shared memory is 
 utilized to represent the borrow value for each integer. 
 
 \subsection{Occupancy}
@@ -923,10 +963,10 @@ to the maximum number of warps supported by a SM is called \emph{occupancy}.
 On the Fermi architecture, the maximum occupancy is achieved when there are 48 
 active warps running on a SM at one time. Greater occupancy gives a SM more
 opportunities to schedule warps in a fashion to hide memory accesses, thus,
-saturating a SM with many warps decreases performance impact. CUDA Fermi cards
-have a total of 32768 registers and 49152 bytes of shared memory per SM. The
-implementation here uses 17 registers and 4762 bytes of shared memory per
-block and therefore results in a maximum occupancy of 100\%.
+saturating a SM with many warps is favorable for increasing performance. CUDA
+Fermi cards have a total of 32768 registers and 49152 bytes of shared memory
+per SM. The implementation here uses 17 registers and 4762 bytes of shared
+memory per block and therefore results in a maximum occupancy of 100\%.
 
 By using the CUDA occupancy calculator provided by NVIDIA (cf. 
 \cite{nvidia2012gpu}), a plot can be formed comparing the threads per block 
@@ -947,6 +987,8 @@ because it results in the greatest occupancy and thus the best performance.
    \label{tab:occupancy}
 \end{table}
 
+%TODO
+
 \subsection{Bit-vector}
 \label{subsec:bitvector}
 The initial approach was to allocate a large, multi-dimensional array of 
@@ -957,18 +999,18 @@ approach was quickly apparent. Additionally, performance decreased due to the
 large array that was being sent over the PCIe bus. Memory transfers to 
 the GPU are slow, and must be minimized.
 
-After more careful consideration, a new approach was implemented. There would 
-only be a single bit allocated per key-compare to mark whether or not the pair 
+After more careful consideration, a new approach was implemented. This approach
+has only a single bit allocated per key-compare to mark whether or not the pair 
 had a GCD greater than 1. In this way, only 2 bytes (16 bits = 1 bit per 
-compare) were necessary per block ($4\times4 = 16$ compares per block), as 
-opposed to the previous $16 \cdot 32 \cdot 4 = 2048$ bytes. Despite not having access 
-to the answer immediately after returning from the kernel calculation, this 
-approach would be more efficient since there would be a theoretically small 
-number of keys that actually returned with GCDs greater than 1 (i.e. the flag 
-was set). This small set could then be re-processed (GCDs calculated) using a 
-different kernel or using a CPU algorithm. Efficiency would also be increased 
-due to the time saved in memory transfers since there was significantly less 
-memory to transfer before calling the kernel.
+compare) are necessary per block ($4\times4 = 16$ compares per block), as 
+opposed to the previous $16 \cdot 32 \cdot 4 = 2048$ bytes. Despite not having
+access to the answer immediately after returning from the kernel calculation,
+this approach is more efficient since there is a theoretically small number of
+keys that are returned with GCDs greater than 1 (i.e. the flag was set). This
+small set is then be re-processed (GCDs calculated) using a different kernel or
+using a CPU algorithm. Efficiency is also increased due to the time saved in
+memory transfers since there is significantly less memory to transfer after
+calling the kernel.
 
 \subsection{Arbitrary Length Key Sets}
 \label{subsec:arblength}
@@ -982,17 +1024,18 @@ Decomposing the set of comparisons for an arbitrary number of keys is difficult
 due to the $n^2$ nature of the problem. The above-outlined method cannot simply
 be repeated for various segments of a key set since this would cause gaps in
 the results because comparisons between the segments will be missing. Thus, the
-entire comparison matrix was segmented, rather than the key sets, into
-manageable sections that were run sequentially.
+entire comparison matrix is segmented, rather than the key sets, into
+manageable sections that are run sequentially.
 
-The full comparison matrix still exists as described above: the upper triangle
-of a square matrix where each entry is a GCD comparison of two unique keys from
-a provided set. This upper triangle is divided into smaller sections of two
-types: smaller upper triangles that lie on the diagonal, and rectangles that
-reside in the upper portion of the original matrix (see
-Figure~\ref{fig:divkeys1}). This partitioning mechanism was chosen for several
-reasons, the primary of which is that each of these divisions results in nearly
-identical memory requirements and workloads that are passed to the GPU. 
+The full comparison matrix still exists as described above: the upper
+triangular elements of a square matrix where each entry is a GCD comparison of
+two unique keys from a provided set. This upper triangle is divided into
+smaller sections of two types: smaller upper triangles that lie on the
+diagonal, and rectangles that reside in the upper portion of the original
+matrix (see Figure~\ref{fig:divkeys1}). This partitioning mechanism was chosen
+for several reasons, the primary of which is that each of these divisions
+result in nearly identical memory requirements and workloads that are passed
+to the GPU. 
 
 \begin{figure}
    \centering
@@ -1018,8 +1061,8 @@ GPU memory.
 \end{figure}
 
 To determine when to end the division process, an upper bound for the maximal
-number of keys that can fit onto the GPU must be determined. First, we evaluate
-what the memory requirements of each segment so we can maximize. We'll use the
+number of keys that can fit onto the GPU must be determined. In order to
+maximize, we evaluate the memory requirements of each segment. We will use the
 following values in our memory calculations:
 
 \begin{displaymath}
@@ -1031,21 +1074,21 @@ following values in our memory calculations:
    y = & \mbox{ number of keys on the y axis being compared}\\
    x = & \mbox{ number of keys on the x axis being compared}\\
    B = & \mbox{ number of CUDA blocks necessary for this key set}\\
-   KEY\_SIZE = & \mbox{ the size (in bytes) of a key modulus (128)}\\
-   XY\_SIZE = & \mbox{ the size (in bytes) of the x-y coordinate (4)}\\
-   GCD\_SIZE = & \mbox{ the size (in bytes) necessary to hold GCD result}\\
+   \textrm{KEY\_SIZE} = & \mbox{ the size (in bytes) of a key modulus (128)}\\
+   \textrm{XY\_SIZE} = & \mbox{ the size (in bytes) of the x-y coordinate (4)}\\
+   \textrm{GCD\_SIZE} = & \mbox{ the size (in bytes) necessary to hold GCD result}\\
                & \mbox{ bits for a single block (2)}
    \end{split}
 \end{displaymath}
 
-The triangular portions along the diagonal require 3 allocations: the set of
+The triangular portions along the diagonal require three allocations: the set of
 keys to compare, the bit-vector to hold the GCD result, and an x-y coordinate
 mapping to aid the look-up of keys within the provided set. The x-y coordinate
 pair consists of two 16-bit integers (one for $x$, one for $y$), thus the 4
 bytes total. The memory calculation is shown in Equation~\ref{eq:trimem}.  
 
 \begin{equation}
-   T = y \cdot KEY\_SIZE + B \cdot XY\_SIZE + B \cdot GCD\_SIZE
+   T = y \cdot \textrm{KEY\_SIZE} + B \cdot \textrm{XY\_SIZE} + B \cdot \textrm{GCD\_SIZE}
    \label{eq:trimem}
 \end{equation}
 
@@ -1079,7 +1122,7 @@ substitution in Equation~\ref{eq:blocksub}.
 
 \noindent Continuing Equation~\ref{eq:trimem},
 \begin{align}
-   T & = y \cdot KEY\_SIZE + B \cdot (XY\_SIZE + GCD\_SIZE)\notag\\
+   T & = y \cdot \textrm{KEY\_SIZE} + B \cdot (\textrm{XY\_SIZE} + \textrm{GCD\_SIZE})\notag\\
    T & = y \cdot 128 + B \cdot (4 + 2)\notag\\
    T & = y \cdot 128 + \left(\frac{1}{2}\left(\frac{y}{4}\right)\left(\frac{y}{4}+1\right)\right) \cdot 6\notag\\
    T & = 128 y + 3 \cdot \frac{y^2}{16} + 3 \cdot \frac{y}{4}\notag\\
@@ -1087,11 +1130,11 @@ substitution in Equation~\ref{eq:blocksub}.
    \label{eq:trimemcomplete}
 \end{align}
 
-The rectangular portions also require 3 allocations: the set of keys in the $y$
-direction, the set of keys in the $x$ direction, and the bit-vector to hold the
-GCD result. Equation~\ref{eq:rectmem} outlines the calculation of $R$. Due to
-the difference in shape of these GCD results, the number of blocks will not use
-the same formula. Instead, the number of blocks is just the area of the
+The rectangular portions also require three allocations: the set of keys in the
+$y$ direction, the set of keys in the $x$ direction, and the bit-vector to hold
+the GCD result. Equation~\ref{eq:rectmem} outlines the calculation of $R$. Due
+to the difference in shape of these GCD results, the number of blocks will not
+use the same formula. Instead, the number of blocks is just the area of the
 rectangle, shown in Equation~\ref{eq:rectblocks}. Recall, the number of keys is
 divided by the dimension of the blocks described in $\S$\ref{sec:gridorg}.
 
@@ -1101,8 +1144,8 @@ divided by the dimension of the blocks described in $\S$\ref{sec:gridorg}.
 \end{equation}
 
 \begin{align}
-   R & = y \cdot KEY\_SIZE + x \cdot KEY\_SIZE + B' \cdot GCD\_SIZE\\
-   R & = (y + x) \cdot KEY\_SIZE + B' \cdot GCD\_SIZE\notag\\
+   R & = y \cdot \textrm{KEY\_SIZE} + x \cdot \textrm{KEY\_SIZE} + B' \cdot \textrm{GCD\_SIZE}\\
+   R & = (y + x) \cdot \textrm{KEY\_SIZE} + B' \cdot \textrm{GCD\_SIZE}\notag\\
    R & = (y + x) \cdot 128 + \left(\frac{y}{4} \cdot \frac{x}{4}\right) \cdot 2\notag\\
    \intertext{As mentioned (and as can be seen in Figure~\ref{fig:divkeys1}), $x$ will be half of $y$. Thus,}
    R & = (y + \frac{y}{2}) \cdot 128 + \left(\frac{y}{4} \cdot \frac{\frac{y}{2}}{4}\right) \cdot 2\notag\\
@@ -1111,9 +1154,17 @@ divided by the dimension of the blocks described in $\S$\ref{sec:gridorg}.
    \label{eq:rectmem}
 \end{align}
 
-Comparing $T$ and $R$, we can see that for key sets larger than 506 keys, $T$ is larger. The difference between the functions is increasing, so $T$ will remain the larger value. Therefore, we can use $T$ as the upper bound for memory requirements. 
+Comparing $T$ and $R$, we can see that for key sets larger than 506 keys, $T$
+is larger. The difference between the functions is increasing, so $T$ will
+remain the larger value. Therefore, we can use $T$ as the upper bound for
+memory requirements. 
 
-With an equation for evaluating the maximum amount of memory required for a specified number of keys (Equation~\ref{eq:trimemcomplete}), if a limit on memory exists, we can determine the maximal number of keys that can fit within that memory. CUDA offers a function to query the total amount of memory a device has available (we'll call this $F$). With this value, Equation~\ref{eq:keycalc} can be used to find the number of keys, $y$.
+With an equation for evaluating the maximum amount of memory required for a
+specified number of keys (Equation~\ref{eq:trimemcomplete}), if a limit on
+memory exists, we can determine the maximal number of keys that can fit within
+that memory. CUDA offers a function to query the total amount of memory a
+device has available (we'll call this $F$). With this value,
+Equation~\ref{eq:keycalc} can be used to find the number of keys, $y$.
 
 \begin{align*}
    T & \leq F\\
@@ -1123,22 +1174,28 @@ With an equation for evaluating the maximum amount of memory required for a spec
    y & = \frac{-b \pm \sqrt{b^2 - 4 \cdot a \cdot c}}{2a}\\
    \text{ with } & a = 3, b = 2060, c = -16F
 \end{align*}
-\noindent we disregard the `-' since we can't a negative number of keys
+\noindent we disregard the `-' since we can't have a negative number of keys
 \begin{equation}
    y = \frac{1}{6}\left(-2060 + \sqrt{2060^2 - 192 \cdot F}\right)
    \label{eq:keycalc}
 \end{equation}
 
-Equation~\ref{eq:keycalc} is used to find a maximum number of keys for a GPU. The complete comparison matrix is then segmented as described above until the size of a segment is smaller than this maximal $y$. The matrix is then iterated over until all results are computed.
+Equation~\ref{eq:keycalc} is used to find a maximum number of keys for a GPU.
+The complete comparison matrix is then segmented as described above until the
+size of a segment is smaller than this maximal $y$. The matrix is then iterated
+over until all results are computed.
 
 \subsection{Generating the Private Key}
 \label{subsec:private}
-% TODO
-Once the entire set has been processed and the GPU work is complete, the bit-vector is inspected for ``1"s signifying a vulnerable key was found. When a ``1" is found, the GCD needs to be calculated to generate the private key. As was shown in Figure~\ref{fig:vuln}, the result of the GCD will be one of the original prime values. Each of the two moduli that was used in the GCD calculation is then divided by this value to calculate the other corresponding primes. The totient ($\phi$) is calculated using the primes. Finally $d$ is the result of finding the modular multiplicative inverse of $\phi$ and $e$ (also contained in the public key).
-
-\subsection{Multiple GPUs}
-\label{subsec:multiGPU}
-%TODO
+Once all key comparisons have been processed and the GPU work is complete, the
+bit-vector is inspected for ``1"s signifying a vulnerable key was found. When a
+``1" is found, the GCD needs to be calculated to generate the private key. As
+was shown in Figure~\ref{fig:vuln}, the result of the GCD will be one of the
+original prime values. Each of the two moduli that was used in the GCD
+calculation is then divided by this value to calculate the other corresponding
+primes. The totient ($\phi$) is calculated using the primes. Finally $d$ is the
+result of finding the modular multiplicative inverse of $\phi$ and $e$ (also
+contained in the public key).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -1159,8 +1216,12 @@ block is 1024, with each warp having 32 threads.
 
 \subsubsection{Updated Setup}
 \label{subsubsec:updatedsetup}
-% TODO
-Kepler!
+An updated hardware configuration was used to generate more current results.
+The CPU in the new configuration is an Intel Xeon E5-2650 8-core CPU. It runs at
+2.00 GHz with 64 GB of RAM. The NVIDIA Tesla K20Xm GPU was used for testing. It
+has 2688 CUDA cores and 6GB of memory. It has compute capability 3.5 and we use
+the NVIDIA driver version 304.88. The maximum threads and warp statistics are
+the same.
 
 \subsection{Reference Implementations}
 \label{subsec:refimpl}
@@ -1205,8 +1266,8 @@ known number of keys exhibiting the weakness. When these databases
 were processed using any of the reference implementations, the 
 discovered number of weak keys could be directly compared with the 
 number of keys expected to be found. This allowed both repeatable testing to 
-measure run time, and a method to validate the parallel algorithm was indeed 
-finding GCDs as expected. 
+measure run time, and a method to validate PARIS was indeed finding GCDs as
+expected. 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -1218,14 +1279,13 @@ finding GCDs as expected.
 The accuracy of the parallel implementation was verified against the 
 sequential implementation by using identical test data sets with known 
 weak keys. Since both implementations found the same set of compromised keys,
-it was validated that these two implementations 
-were internally consistent. Furthermore, both matched the results of the 
-separate Python reference implementation: supporting the assertion of accurate 
-functionality. The speedup of the CUDA implementation (seen in
-Figure~\ref{fig:speedup}) was calculated by comparing its run time with that
-of the sequential implementation. Compare this with Figure~\ref{fig:parPercent}:
-this similarity is evidence of the implementation presented here matching
-with theoretical expectations.
+it was validated that these two implementations were internally consistent.
+Furthermore, both matched the results of the separate Python reference
+implementation: supporting the assertion of accurate functionality. The speedup
+of the CUDA implementation (seen in Figure~\ref{fig:speedup}) was calculated by
+comparing its run time with that of the sequential implementation. Compare this
+with Figure~\ref{fig:parPercent}: this similarity is evidence of the
+implementation presented here matching with theoretical expectations.
 
 \begin{figure}
    \centering
@@ -1253,8 +1313,17 @@ number of keys due to the very long run time of the sequential implementation.
 \end{table*}
 
 \subsection{Scalable Implementation}
-\label{scaleimpl}
-% TODO
+\label{subsec:scaleimpl}
+With the new hardware, PARIS was able to achieve increased speedup as seen in
+Figure~\ref{fig:newspeedup}. The set of 20000 keys required just over 200
+million GCD calculations, which translates to 4675 comparisons per second.
+
+\begin{figure}
+   \centering
+   \includegraphics[width=0.75\textwidth]{chart_8}
+   \caption{Speedup of CUDA Implementation to Sequential C++ using Tesla K20Xm}
+   \label{fig:newspeedup}
+\end{figure}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -1308,27 +1377,27 @@ threads, each running their own CUDA kernel, could greatly increase throughput.
 
 \begin{acknowledgements}
 We'd like to thank Kerry Scharfglass and Darrin Weng for their contributions
-to the original work \citep{scharfglass2012breaking} and fundamental
+to the original work \cite{scharfglass2012breaking} and fundamental
 implementation that formed the basis for the tool.
 \end{acknowledgements}
 
-\appendix
-\section{Appendix}
-\label{app:proofs}
-
-\begin{proof}[Arithmetic Sum Identity]
-\label{proof:asi}
-   \begin{align*}
-     \text{Let } S & = \sum_{i=1}^{n}i\\
-      & = 1 + 2 + \dots + (n - 1) + n\\
-      & = n + (n - 1) + \dots + 2 + 1 && \text{Commutative Property}\\
-      S + S & = (1 + n) + (2 + (n - 1)) + \dots + ((n - 1) + 2) + (n + 1)\\
-      2S & = (n + 1) + (n + 1) + \dots + (n + 1) + (n + 1)\\
-      2S & = n \cdot (n + 1) && \text{$n$ terms in the sum}\\
-      S & = \frac{1}{2} n (n + 1)\\
-      \sum_{i=1}^{n}i & = \frac{1}{2} n (n + 1)\qed
-   \end{align*}
-\end{proof}
+%\appendix
+%\section{Appendix}
+%\label{app:proofs}
+%
+%\begin{proof}[Arithmetic Sum Identity]
+%\label{proof:asi}
+   %\begin{align*}
+     %\text{Let } S & = \sum_{i=1}^{n}i\\
+      %& = 1 + 2 + \dots + (n - 1) + n\\
+      %& = n + (n - 1) + \dots + 2 + 1 && \text{Commutative Property}\\
+      %S + S & = (1 + n) + (2 + (n - 1)) + \dots + ((n - 1) + 2) + (n + 1)\\
+      %2S & = (n + 1) + (n + 1) + \dots + (n + 1) + (n + 1)\\
+      %2S & = n \cdot (n + 1) && \text{$n$ terms in the sum}\\
+      %S & = \frac{1}{2} n (n + 1)\\
+      %\sum_{i=1}^{n}i & = \frac{1}{2} n (n + 1)\qed
+   %\end{align*}
+%\end{proof}
 
 
 % BibTeX users please use one of

@@ -1,4 +1,4 @@
-\begin{thebibliography}{18}
+\begin{thebibliography}{21}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{{#1}}
 \providecommand{\urlprefix}{URL }
@@ -8,16 +8,29 @@
   \urlstyle{rm}\Url}\fi
 \providecommand{\eprint}[2][]{\url{#2}}
 
+\bibitem[{Cohen et~al(2011)Cohen, Lee, and Sklar}]{cohen2011precalculus}
+Cohen D, Lee TB, Sklar D (2011) Precalculus. Brooks/Cole
+
 \bibitem[{Fujimoto(2009)}]{fujimoto2009high}
 Fujimoto N (2009) High-throughput multiple-precision {GCD} on the {CUDA}
   architecture. In: Signal Processing and Information Technology (ISSPIT), 2009
   IEEE International Symposium on, IEEE, pp 507--512
+
+\bibitem[{Heninger et~al(2012)Heninger, Durumeric, Wustrow, and
+  Halderman}]{heninger2012mining}
+Heninger N, Durumeric Z, Wustrow E, Halderman JA (2012) Mining your {P}s and
+  {Q}s: detection of widespread weak keys in network devices. In: Proceedings
+  of the 21st USENIX conference on Security symposium, USENIX Association, pp
+  205--220
 
 \bibitem[{Holz et~al(2011)Holz, Braun, Kammenhuber, and Carle}]{holz2011ssl}
 Holz R, Braun L, Kammenhuber N, Carle G (2011) The {SSL} landscape: a thorough
   analysis of the x.509 {PKI} using active and passive measurements. In:
   Proceedings of the 2011 ACM SIGCOMM conference on Internet measurement
   conference, ACM, pp 427--444
+
+\bibitem[{Homer(2009)}]{homer2009iliad}
+Homer (2009) The Iliad of Homer, vol~2. General Books
 
 \bibitem[{Kaazing WebSocket Gateway(2013)}]{tlsconcepts}
 Kaazing WebSocket Gateway (2013) Transport security layer ({TLS}) concepts.

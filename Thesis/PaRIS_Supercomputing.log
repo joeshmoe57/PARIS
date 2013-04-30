@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.4-1.40.13 (TeX Live 2012/Arch Linux) (format=latex 2013.4.27)  28 APR 2013 20:32
+This is pdfTeX, Version 3.1415926-2.4-1.40.13 (TeX Live 2012/Arch Linux) (format=latex 2013.4.27)  30 APR 2013 05:05
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -305,73 +305,82 @@ File: omscmr.fd 1999/05/25 v2.5h Standard LaTeX font definitions
 )
 LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <8> not available
 (Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 71.
-
-Underfull \vbox (badness 1577) has occurred while \output is active []
-
- [1]
-[2]
+ [1] [2]
 File: vulnerability.eps Graphic file (type eps)
- <vulnerability.eps> [3] [4]
+ <vulnerability.eps>
+[3] [4]
 File: tls.eps Graphic file (type eps)
  <tls.eps>
 File: x509.eps Graphic file (type eps)
- <x509.eps>
-Underfull \vbox (badness 10000) has occurred while \output is active []
-
- [5]
-Underfull \vbox (badness 10000) has occurred while \output is active []
-
- [6]
+ <x509.eps> [5] [6] [7]
 File: cert_security.eps Graphic file (type eps)
-
-<cert_security.eps> [7]
+ <cert_security.eps> [8]
 File: bit_length.eps Graphic file (type eps)
- <bit_length.eps> [8] [9] [10] [11] [12] [13]
-Underfull \vbox (badness 6526) has occurred while \output is active []
+
+<bit_length.eps> [9] [10] [11] [12]
+Underfull \hbox (badness 10000) in paragraph at lines 654--661
+
+ []
+
+[13]
+Underfull \vbox (badness 1960) has occurred while \output is active []
 
  [14]
 File: chart_7.eps Graphic file (type eps)
 
-<chart_7.eps> [15] [16] [17]
-Overfull \hbox (3.49838pt too wide) in paragraph at lines 938--945
-[]\OT1/cmr/m/n/10 By us-ing the CUDA oc-cu-pancy cal-cu-la-tor pro-vided by NVI
-DIA (cf. NVIDIA
- []
-
-[18]
+<chart_7.eps> [15] [16] [17] [18] [19]
 File: one_division.eps Graphic file (type eps)
  <one_division.eps>
 File: three_divisions.eps Graphic file (type eps)
- <three_divisions.eps> [19] [20] [21] [22] [23] [24]
-File: chart_1.eps Graphic file (type eps)
 
-<chart_1.eps>
+<three_divisions.eps>
 Underfull \vbox (badness 10000) has occurred while \output is active []
 
- [25]
+ [20]
+[21] [22] [23] [24] [25]
+File: chart_1.eps Graphic file (type eps)
+ <chart_1.eps>
+File: chart_8.eps Graphic file (type eps)
+ <chart_8.eps>
 Underfull \vbox (badness 10000) has occurred while \output is active []
 
  [26]
-(./PaRIS_Supercomputing.bbl
-Underfull \hbox (badness 10000) in paragraph at lines 41--44
-[]\OT1/cmr/m/n/8 NVIDIA Cor-po-ra-tion (2012b) NVIDIA CUDA C pro-gram-ming guid
-e. $\OT1/cmtt/m/n/8 http :
+[27] (./PaRIS_Supercomputing.bbl [28]
+Underfull \hbox (badness 10000) in paragraph at lines 36--39
+\OT1/cmr/m/n/10 con-cepts. $\OT1/cmtt/m/n/10 http : / / tech . kaazing . com / 
+documentation / xmpp / 3 . 5 /
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 41--44
-\OT1/cmtt/m/n/8 / / developer . download . nvidia . com / compute / DevZone / d
-ocs / html / C / doc / CUDA _ C _
+Underfull \hbox (badness 4279) in paragraph at lines 50--52
+[]\OT1/cmr/m/n/10 NVIDIA Cor-po-ra-tion (2012) CUDA oc-cu-pancy cal-cu-la-tor. 
+$\OT1/cmtt/m/n/10 http :
  []
 
-[27]) [28] (./PaRIS_Supercomputing.aux) ) 
+
+Underfull \hbox (badness 10000) in paragraph at lines 50--52
+\OT1/cmtt/m/n/10 / / developer . download . nvidia . com / compute / cuda / CUD
+A _ Occupancy _
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 54--57
+\OT1/cmtt/m/n/10 http : / / developer . download . nvidia . com / compute / Dev
+Zone / docs /
+ []
+
+
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+ [29])
+[30] (./PaRIS_Supercomputing.aux) ) 
 Here is how much of TeX's memory you used:
- 4150 strings out of 493489
- 55512 string characters out of 3146915
- 133619 words of memory out of 3000000
- 7420 multiletter control sequences out of 15000+200000
+ 4159 strings out of 493489
+ 55749 string characters out of 3146915
+ 132781 words of memory out of 3000000
+ 7428 multiletter control sequences out of 15000+200000
  13453 words of font info for 51 fonts, out of 3000000 for 9000
  957 hyphenation exceptions out of 8191
- 27i,18n,29p,682b,471s stack positions out of 5000i,500n,10000p,200000b,50000s
+ 27i,18n,29p,255b,471s stack positions out of 5000i,500n,10000p,200000b,50000s
 
-Output written on PaRIS_Supercomputing.dvi (28 pages, 84968 bytes).
+Output written on PaRIS_Supercomputing.dvi (30 pages, 91496 bytes).

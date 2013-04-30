@@ -91,7 +91,7 @@ J.~Stein.
 
 \bibitem{thibault2009cuda}
 J.~Thibault and I.~Senocak.
-\newblock Cuda implementation of a {N}avier-{S}tokes solver on multi-{GPU}
+\newblock {CUDA} implementation of a {N}avier-{S}tokes solver on multi-{GPU}
   desktop platforms for incompressible flows.
 \newblock {\em Mechanical and Biomedical Engineering Faculty Publications and
   Presentations}, page~4, 2009.
