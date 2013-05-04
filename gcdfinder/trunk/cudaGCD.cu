@@ -525,28 +525,45 @@ int main(int argc, char**argv) {
    dprint("total / segment factor: %ld\n", totalNumKeys / segmentDivisionFactor);
    DP(keysSegmentSize);
 
-   unsigned long long * segmentIndices = calculateKeyListSegments(totalNumKeys, segmentDivisionFactor);
+   unsigned long long * segmentIndices =
+      calculateKeyListSegments(totalNumKeys, segmentDivisionFactor);
    for (int i = 0; i < segmentDivisionFactor; ++i) {
       DP(i);
       DP(segmentIndices[i]);
    }
 
-   unsigned long long firstNumKeys = segmentIndices[0];
-   // calculate the max size of keys in the Y direction
-   unsigned long long maxYKeySize = firstNumKeys * NUM_INTS * sizeof(uint32_t);
-   DP(maxYKeySize);
+   plan[NUM_GPU];
 
    // We look at the first segment index since it will also be a count, and if
    // there were remainders, they will have been allocated to this index.
+   unsigned long long firstNumKeys = segmentIndices[0];
+   // calculate the max size of keys in the Y direction
+   unsigned long long maxYKeySize = firstNumKeys * NUM_INTS * sizeof(uint32_t);
    unsigned long long maxBlocks = calculateMaxBlocks(firstNumKeys);
-   DP(maxBlocks);
-
    unsigned long long max2ndParamSize = calculateMax2ndParamSize(firstNumKeys, maxBlocks);
-   DP(max2ndParamSize);
-   
    // calculate max gcd size
    unsigned long long maxGCDSize = sizeof(uint16_t) * maxBlocks;
-   DP(maxGCDSize);
+
+   // malloc and create streams
+   for (int i = 0; i < NUM_GPUS; ++i) {
+      cudaSetDevice(i);
+      cudaStreamCreate(&plan[i].stream);
+      cudaMalloc((void **) &plan[i].d_yKeys, maxYKeySize);
+      cudaMalloc((void **) &plan[i].d_keysOrCoords, max2ndParamSize);
+      cudaMalloc((void **) &plan[i].d_gcd, maxGCDSize);
+      cudaMallocHost((void **) &plan[i].h_yKeys, maxYKeySize);
+      cudaMallocHost((void **) &plan[i].h_keysOrCoords, max2ndParamSize);
+      cudaMallocHost((void **) &plan[i].h_gcd, maxGCDSize);
+   }
+
+   for (int i = 0; i < NUM_GPUS; ++i) {
+
+   for (int y = 0; y < segmentDivisionFactor; ++y) {
+
+      for (int x = y; x < segmentDivisionFactor; ++x) {
+
+      }
+   }
 
    // allocate max xyCoords on host
    xyCoord * coords;

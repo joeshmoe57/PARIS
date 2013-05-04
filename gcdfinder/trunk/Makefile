@@ -64,7 +64,7 @@ sqlite3.o: sqlite3.c
 cfmemopen.o: cfmemopen.c
 	$(GPP) $(PFLAGS) -o $@ -c $^ $(LFLAGS)
 
-cudaGCD: cudaGCD.cu keyMath.o globals.h getKeys.o keyOutput.o sqlite3.o libcrypto.a libssl.a cfmemopen.o hrt.c
+cudaGCD: cudaGCD.cu cudaGCD.h keyMath.o globals.h getKeys.o keyOutput.o sqlite3.o libcrypto.a libssl.a cfmemopen.o hrt.c
 	$(NVCC) $(ARCHFLAGS) -o $@ cudaGCD.cu keyMath.o getKeys.o sqlite3.o libcrypto.a libssl.a cfmemopen.o hrt.c $(LFLAGS)
 
 seqGCD: seqGCD.cpp keyMath.o globals.h getKeys.o keyOutput.o sqlite3.o libcrypto.a libssl.a cfmemopen.o hrt.c
