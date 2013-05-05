@@ -8,13 +8,13 @@
 #include <stdlib.h>
 #include "hrt.h"
 
-//#define KEYS_DB "keys-16-2.db"
+#define KEYS_DB "keys-16-2.db"
 //#define KEYS_DB "../../../keys-2000000-4000.db"
-#define KEYS_DB "keys-2000000-4000.db"
+//#define KEYS_DB "keys-2000000-4000.db"
 
 #define NUM_INTS 32
 
-#define DEBUG 0
+#define DEBUG 1
 
 typedef std::pair<unsigned long long, unsigned long long> keyPair;
 typedef std::vector<keyPair> keyPairList;

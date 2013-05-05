@@ -33,37 +33,19 @@ typedef struct {
    unsigned long long numBlocks;
 
    uint32_t * h_yKeys;
-   uint32_t * h_xKeys;
 
-   uint16_t * h_gcd;
+   uint32_t * h_keysOrCoords;
+
+   uint16_t ** h_gcd;
 
    uint32_t * d_yKeys;
-   uint32_t * d_xKeys;
+
+   uint32_t * d_keysOrCoords;
 
    uint16_t * d_gcd;
 
    cudaStream_t stream;
-} sqGPUplan;
-
-typedef struct { 
-   unsigned long long yNumKeys;
-
-   unsigned long long numBlocks;
-
-   uint32_t * h_yKeys;
-
-   xyCoord * h_coords;
-
-   uint16_t * h_gcd;
-
-   uint32_t * d_yKeys;
-
-   xyCoord * d_coords;
-
-   uint16_t * d_gcd;
-
-   cudaStream_t stream;
-} triGPUplan;
+} GPUplan;
 
 __global__ void GCD_Compare_Diagonal(unsigned *x_dev, xyCoord * dev_coord,
       uint16_t *gcd_dev, unsigned long long numBlocks,
