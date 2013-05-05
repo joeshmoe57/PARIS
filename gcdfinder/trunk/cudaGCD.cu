@@ -300,39 +300,43 @@ int calculateNumberOfKernelLaunches(int numDivisions) {
 unsigned long long * calculateKeyListSegments(unsigned long long numKeys,
       int segments) {
    int leftOverKeys = numKeys % segments;
-   dprint("%d\n", leftOverKeys);
+   DP(leftOverKeys);
    int stepBase = numKeys / segments;
-   dprint("%d\n", stepBase);
+   DP(stepBase);
+   DP(segments);
 
-   unsigned long long * indexList =
-      (unsigned long long *) malloc(segments * sizeof(unsigned long long));
+   unsigned long long * indexList;
+   if ((indexList = (unsigned long long *) malloc(segments * sizeof(unsigned long long))) == NULL) {
+      perror("Cannot malloc space for segment index list");
+      exit(-1);
+   }
 
    int i = 0;
+   DP(i);
    indexList[i] = stepBase;
-   do {
-      // TODO break into 2 loops
+   if (leftOverKeys > 0) {
+      indexList[i] += 1;
+      --leftOverKeys;
+   }
+
+   while (++i < segments) {
+      indexList[i] = stepBase + indexList[i - 1];
       // This is the remainder of keys, and gets distributed to the segments
       // as soon as possible. 
       // Notice the final index of the list is not checked for this:
       // if it was the case that leftOvers > 0 on the last index, it wouldn't
       // be a remainder since this implies leftOverKeys == segments
       if (leftOverKeys > 0) {
-         indexList[i] = indexList[i] + 1;
+         indexList[i] += 1;
          --leftOverKeys;
       }
-      ++i;
-      indexList[i] = stepBase + indexList[i - 1];
-   } while (i < segments - 1);
-
-   if (leftOverKeys > 0)
-      fprintf(stderr, "ERROR: Left over keys remain after assigning indices.\n");
+   }
 
    return indexList;
 }
 
 void doDiagonalKernel(uint32_t * dev_keys, xyCoord * dev_coords, 
        uint16_t * dev_gcd, unsigned long long numBlocks, unsigned long long numKeys) { 
-
    int dimGridx = numBlocks > MAX_BLOCK_DIM ? MAX_BLOCK_DIM : numBlocks;
    int dimy = 1 + numBlocks / MAX_BLOCK_DIM;
    int dimGridy = 1 < dimy ? dimy : 1;
@@ -511,8 +515,8 @@ int main(int argc, char**argv) {
       dprint("keys for device %d = %d\n", i, calculateMaxKeysForDevice(i));
    }
 
-   //unsigned long long maxKeys = calculateMaxKeysForDevice(device);
-   unsigned long long maxKeys = 8;
+   unsigned long long maxKeys = calculateMaxKeysForDevice(device);
+   //unsigned long long maxKeys = 1000;
 
    unsigned long keysSegmentSize = totalNumKeys;
    int divs = 1;
@@ -522,6 +526,13 @@ int main(int argc, char**argv) {
       ++divs;
    }
 
+   if (segmentDivisionFactor == 1)
+      segmentDivisionFactor <<= 1;
+   if (keysSegmentSize == totalNumKeys)
+      keysSegmentSize >>= 1;
+   if (divs == 1)
+      ++divs;
+
    DP(segmentDivisionFactor);
    dprint("total / segment factor: %ld\n", totalNumKeys / segmentDivisionFactor);
 
@@ -530,6 +541,9 @@ int main(int argc, char**argv) {
 
    int numKernels = calculateNumberOfKernelLaunches(divs);
    DP(numKernels);
+   int runs = numKernels / 2;
+   if (runs == 0)
+      runs = 1;
 
    // We look at the first segment index since it will also be a count, and if
    // there were remainders, they will have been allocated to this index.
@@ -538,12 +552,16 @@ int main(int argc, char**argv) {
    unsigned long long maxBlocks = calculateMaxBlocks(firstNumKeys);
    unsigned long long max2ndParamSize = calculateMax2ndParamSize(firstNumKeys, maxBlocks);
    unsigned long long maxGCDSize = sizeof(uint16_t) * maxBlocks;
+   DP(maxYKeySize);
+   DP(maxBlocks);
+   DP(max2ndParamSize);
+   DP(maxGCDSize);
 
    GPUplan plan[NUM_GPUS];
 
    // malloc and create streams on GPU
    for (int gpu = 0; gpu < NUM_GPUS; ++gpu) {
-      cudaSetDevice(gpu);
+      cudaSetDevice(GPUS_TO_USE[gpu]);
       cudaStreamCreate(&plan[gpu].stream);
       cudaMalloc((void **) &plan[gpu].d_yKeys, maxYKeySize);
       cudaMalloc((void **) &plan[gpu].d_keysOrCoords, max2ndParamSize);
@@ -554,9 +572,10 @@ int main(int argc, char**argv) {
          exit(-1);
       }
       */
-      plan[gpu].h_gcd = (uint16_t **) malloc((numKernels / 2) * sizeof(uint16_t *));
-      for (int i = 0; i < numKernels / 2; ++i)
-         plan[gpu].h_gcd[i] = (uint16_t *) malloc(maxGCDSize * sizeof(uint16_t));
+      plan[gpu].h_gcd = (uint16_t **) malloc(runs * sizeof(uint16_t *));
+      for (int i = 0; i < runs; ++i)
+         cudaMallocHost((void **) &plan[gpu].h_gcd[i], maxGCDSize * sizeof(uint16_t));
+         //plan[gpu].h_gcd[i] = (uint16_t *) malloc(maxGCDSize * sizeof(uint16_t));
    }
 
    // Perform work on GPU
@@ -576,7 +595,7 @@ int main(int argc, char**argv) {
             DP(index);
             DP(gpu);
 
-            cudaSetDevice(gpu);
+            cudaSetDevice(GPUS_TO_USE[gpu]);
 
             yIdx = segmentIndices[y];
             plan[gpu].h_yKeys = keys + yPrevIdx * NUM_INTS;
@@ -609,6 +628,7 @@ int main(int argc, char**argv) {
             cudaMemcpyAsync(plan[gpu].h_gcd[index], plan[gpu].d_gcd,
                   plan[gpu].numBlocks * sizeof(uint16_t), cudaMemcpyDeviceToHost,
                   plan[gpu].stream);
+
             xPrevIdx = yIdx;
          } else {
             unsigned long long totalXKeys = segmentIndices[x] - xPrevIdx;
@@ -625,7 +645,7 @@ int main(int argc, char**argv) {
                DP(index);
                DP(gpu);
 
-               cudaSetDevice(gpu);
+               cudaSetDevice(GPUS_TO_USE[gpu]);
 
                yIdx = segmentIndices[y];
                plan[gpu].h_yKeys = keys + yPrevIdx * NUM_INTS;
@@ -673,7 +693,7 @@ int main(int argc, char**argv) {
 
    // Process GPU results
    for (int gpu = 0; gpu < NUM_GPUS; ++gpu) {
-      cudaSetDevice(gpu);
+      cudaSetDevice(GPUS_TO_USE[gpu]);
       cudaStreamSynchronize(plan[gpu].stream);
       cudaFree(plan[gpu].d_yKeys);
       cudaFree(plan[gpu].d_keysOrCoords);
@@ -692,6 +712,11 @@ int main(int argc, char**argv) {
          if (x == y) {
             index = workNum / NUM_GPUS;
             gpu = workNum % NUM_GPUS;
+               DP(x);
+               DP(y);
+               DP(workNum);
+               DP(index);
+               DP(gpu);
 
             numBlocks = calculateNumberOfBlocks(plan[gpu].yNumKeys);
 
@@ -700,6 +725,7 @@ int main(int argc, char**argv) {
 
             parseGCDResults(numBlocks, badKeyPairList, coords, plan[gpu].h_gcd[index],
                   xPrevIdx, yPrevIdx);
+            cudaFreeHost(plan[gpu].h_gcd[index]);
 
             xPrevIdx = yIdx;
          } else {
@@ -707,9 +733,14 @@ int main(int argc, char**argv) {
             unsigned long long halfStep = totalXKeys / 2 +
                (totalXKeys % 2 ? 1 : 0);
             unsigned long long halfPoint = xPrevIdx + halfStep;
-            for (int i = 0; i < 2; ++i) {
+            for (int i = 0; i < 2; ++i, ++workNum) {
                index = workNum / NUM_GPUS;
                gpu = workNum % NUM_GPUS;
+               DP(x);
+               DP(y);
+               DP(workNum);
+               DP(index);
+               DP(gpu);
 
                yIdx = segmentIndices[y];
                xIdx = i == 0 ? halfPoint : segmentIndices[x];
@@ -718,7 +749,7 @@ int main(int argc, char**argv) {
 
                parseGCDResults(numBlocks, badKeyPairList, xCurrNumKeys,
                      yNumKeys, plan[gpu].h_gcd[index], xPrevIdx, yPrevIdx);
-               free(plan[gpu].h_gcd[index]);
+               cudaFreeHost(plan[gpu].h_gcd[index]);
 
                xPrevIdx = xIdx;
             }
