@@ -5,11 +5,9 @@ extern "C" {
 #include "keyMath.h"
 }
 
-//Kernel Functions
-
 __global__ void GCD_Compare_Upper(unsigned *x_dev, unsigned *y_dev,
-      uint16_t *gcd_dev, unsigned long long numBlocks,
-      unsigned long long keysInXSet, unsigned long long keysInYSet) {
+      uint16_t *gcd_dev, unsigned long long keysInXSet,
+      unsigned long long keysInYSet) {
    __shared__ volatile uint32_t x[BLKDIM][BLKDIM][NUM_INTS];
    __shared__ volatile uint32_t y[BLKDIM][BLKDIM][NUM_INTS];
    uint32_t tidx = threadIdx.x;
@@ -19,43 +17,40 @@ __global__ void GCD_Compare_Upper(unsigned *x_dev, unsigned *y_dev,
    uint32_t blky = blockIdx.y;
    uint32_t blkIdx = blkx + blky * gridDim.x;
 
-   //if (blkIdx < numBlocks) {
-      uint32_t whichKeyX = tidy + blkx * BLKDIM;
-      uint32_t whichKeyY = tidz + blky * BLKDIM;
+   uint32_t whichKeyX = tidy + blkx * BLKDIM;
+   uint32_t whichKeyY = tidz + blky * BLKDIM;
 
-      if (whichKeyX < keysInXSet && whichKeyY < keysInYSet) {
-         uint32_t whichIntX = tidx + NUM_INTS * whichKeyX;
-         uint32_t whichIntY = tidx + NUM_INTS * whichKeyY;
+   if (whichKeyX < keysInXSet && whichKeyY < keysInYSet) {
+      uint32_t whichIntX = tidx + NUM_INTS * whichKeyX;
+      uint32_t whichIntY = tidx + NUM_INTS * whichKeyY;
 
-         x[tidy][tidz][tidx] = x_dev[whichIntX];
-         y[tidy][tidz][tidx] = y_dev[whichIntY];
+      x[tidy][tidz][tidx] = x_dev[whichIntX];
+      y[tidy][tidz][tidx] = y_dev[whichIntY];
 
-         gcd(x[tidy][tidz], y[tidy][tidz]);
+      gcd(x[tidy][tidz], y[tidy][tidz]);
 
-         /* If we're on the least significant thread, subtract 1 so that
-          * results that equal 1, now equal zero, and will fail the following
-          * "any".
-          * This is okay to do since we're just storing bit-vectors, and don't
-          * need to preserve the actual values, but instead, just whether the
-          * answer was greater than 1
-          */
-         if (tidx == 31)
-            y[tidy][tidz][tidx] -= 1;
-         if (__any(y[tidy][tidz][tidx])) {
-            gcd_dev[blkIdx] |= 1<<(tidy + BLKDIM * tidz);
-         }
+      /* If we're on the least significant thread, subtract 1 so that
+       * results that equal 1, now equal zero, and will fail the following
+       * "any".
+       * This is okay to do since we're just storing bit-vectors, and don't
+       * need to preserve the actual values, but instead, just whether the
+       * answer was greater than 1
+       */
+      if (tidx == 31)
+         y[tidy][tidz][tidx] -= 1;
+      if (__any(y[tidy][tidz][tidx])) {
+         gcd_dev[blkIdx] |= 1<<(tidy + BLKDIM * tidz);
       }
-   //}
+   }
 }
 
 __global__ void GCD_Compare_Diagonal(uint32_t * x_dev, xyCoord * dev_coord,
-   uint16_t * gcd_dev, unsigned long long numBlocks,
-   unsigned long long keysInSet) {
+      uint16_t * gcd_dev, unsigned long long numBlocks,
+      unsigned long long keysInSet) {
    __shared__ volatile uint32_t x[BLKDIM][BLKDIM][NUM_INTS];
    __shared__ volatile uint32_t y[BLKDIM][BLKDIM][NUM_INTS];
    uint32_t tidx = threadIdx.x;
    uint32_t tidy = threadIdx.y;
-   // remove and see if reg count decreases
    uint32_t tidz = threadIdx.z;
    uint32_t blkIdx = blockIdx.x + blockIdx.y * gridDim.x;
 
@@ -68,19 +63,11 @@ __global__ void GCD_Compare_Diagonal(uint32_t * x_dev, xyCoord * dev_coord,
          uint32_t whichIntX = tidx + NUM_INTS * whichKeyX;
          uint32_t whichIntY = tidx + NUM_INTS * whichKeyY;
 
-         // if (coord.x == coord.y)
-         //    we're on a diagonal, and should only use tidy > tidz
-         // else // coord.x > coord.y)
-         //    we must do an entire 4x4 block
          if (coord.x != coord.y || tidy > tidz) {
-            //Check this!! - FIX THIS
-            //if(/*tidy == 0 && tidz == 0 && */tidx < NUM_INTS && tidy < BLKDIM && tidz < BLKDIM) {
-            //    printf("tidx = %d; tidy = %d; idx = %d\n", tidx, tidy, idx);
             x[tidy][tidz][tidx] = x_dev[whichIntX];
             y[tidy][tidz][tidx] = x_dev[whichIntY];
 
             gcd(x[tidy][tidz], y[tidy][tidz]);
-            //gcd_dev[keyX * BLKDIM + keyY * BLKDIM * NUM_INTS] = y[tidy][tidz][tidx];
 
             /* If we're on the least significant thread, subtract 1 so that
              * results that equal 1, now equal zero, and will fail the following
@@ -91,21 +78,14 @@ __global__ void GCD_Compare_Diagonal(uint32_t * x_dev, xyCoord * dev_coord,
              */
             if (tidx == 31)
                y[tidy][tidz][tidx] -= 1;
-            //         __syncthreads();
+
             if (__any(y[tidy][tidz][tidx])) {
                gcd_dev[blkIdx] |= 1<<(tidy + BLKDIM * tidz);
             }
 
-            //gcd_dev[tidx + NUM_INTS * (tidy + tidz * BLKDIM) + THREADS_PER_BLOCK * blkIdx] 
-            //   = y[tidy][tidz][tidx];
-
-            /*      } else {
-                    gcd_dev[tidx + NUM_INTS * (tidy + tidz * BLKDIM) + THREADS_PER_BLOCK * blkIdx] = 0;
-            //y[tidy][tidz][tidx] = 0;
-             */
-             }
          }
       }
+   }
 }
 
 __device__ void dev_printNumHex(uint32_t buf[NUM_INTS]){
@@ -218,7 +198,7 @@ __device__ void cusubtract(volatile unsigned *x, volatile unsigned *y, volatile 
  * numBlocks is the total number of blocks in the matrix
  * width is the number of blocks across the top of the matrix
  * coords is the array of xyCoord pairs to be filled.
-   */
+ */
 void dimConversion(unsigned long long numBlocks, int width, xyCoord * coords) {
    int x = 0, y = 0;
    for (int i = 0; i < numBlocks; ++i) {
@@ -336,7 +316,7 @@ unsigned long long * calculateKeyListSegments(unsigned long long numKeys,
 }
 
 void doDiagonalKernel(uint32_t * dev_keys, xyCoord * dev_coords, 
-       uint16_t * dev_gcd, unsigned long long numBlocks, unsigned long long numKeys) { 
+      uint16_t * dev_gcd, unsigned long long numBlocks, unsigned long long numKeys) { 
    int dimGridx = numBlocks > MAX_BLOCK_DIM ? MAX_BLOCK_DIM : numBlocks;
    int dimy = 1 + numBlocks / MAX_BLOCK_DIM;
    int dimGridy = 1 < dimy ? dimy : 1;
@@ -364,7 +344,7 @@ void doUpperKernel(uint32_t * dev_yKeys, uint32_t * dev_xKeys, uint16_t * dev_gc
    DP(numBlocks);
 
    GCD_Compare_Upper<<<dimGrid, dimBlock>>>(dev_xKeys, dev_yKeys, dev_gcd,
-         numBlocks, xNumKeys, yNumKeys);
+         xNumKeys, yNumKeys);
 }
 
 /* Returns the maximum number of blocks in either the diagonal segments or the
@@ -416,17 +396,7 @@ void checkBlockForGCD(uint16_t gcd_res, int blockX, int blockY,
                   dprint("one: %llu\n", one);
                   dprint("two: %llu\n", two);
                   dprint("x\n");
-                  //printNumHex(keys + one);
                   dprint("y\n");
-                  //printNumHex(keys + two);
-
-                  /*
-                  uint32_t gcd[NUM_INTS];
-                  memset(gcd, 0, NUM_INTS * sizeof(uint32_t));
-
-                  gcd1024(&keys[one], &keys[two], gcd);
-                  printNumHex(gcd);
-                  */
                }
             }
          }
@@ -483,10 +453,10 @@ int main(int argc, char**argv) {
    int segmentDivisionFactor = 1;
 
    if(argc != 2) {
-       printf("Wrong number of args (Only number of keys)");
-       exit(1);
+      printf("Wrong number of args (Only number of keys)");
+      exit(1);
    }
-   
+
    // TODO use args not scanf
    //get number of keys to process
    sscanf(argv[1], "%llu", &totalNumKeys);
@@ -495,7 +465,7 @@ int main(int argc, char**argv) {
     * gcd_res and xyCoord
     */
    if((keys = (uint32_t *) malloc(totalNumKeys * NUM_INTS * sizeof(uint32_t)))
-       == NULL) {
+         == NULL) {
       perror("Cannot malloc Key Vector");
       exit(-1);
    }
@@ -510,13 +480,12 @@ int main(int argc, char**argv) {
 
    int device = 0;
    int deviceCount = 0;
-   cudaGetDeviceCount(&deviceCount);
+   checkCudaErrors(cudaGetDeviceCount(&deviceCount));
    for (int i = 0; i < deviceCount; ++i) {
       dprint("keys for device %d = %d\n", i, calculateMaxKeysForDevice(i));
    }
 
    unsigned long long maxKeys = calculateMaxKeysForDevice(device);
-   //unsigned long long maxKeys = 1000;
 
    unsigned long keysSegmentSize = totalNumKeys;
    int divs = 1;
@@ -526,15 +495,14 @@ int main(int argc, char**argv) {
       ++divs;
    }
 
-   if (segmentDivisionFactor == 1)
-      segmentDivisionFactor <<= 1;
-   if (keysSegmentSize == totalNumKeys)
-      keysSegmentSize >>= 1;
-   if (divs == 1)
-      ++divs;
-
-   DP(segmentDivisionFactor);
-   dprint("total / segment factor: %ld\n", totalNumKeys / segmentDivisionFactor);
+   if (NUM_GPUS == 2) {
+      if (segmentDivisionFactor == 1)
+         segmentDivisionFactor <<= 1;
+      if (keysSegmentSize == totalNumKeys)
+         keysSegmentSize >>= 1;
+      if (divs == 1)
+         ++divs;
+   }
 
    unsigned long long * segmentIndices =
       calculateKeyListSegments(totalNumKeys, segmentDivisionFactor);
@@ -552,20 +520,16 @@ int main(int argc, char**argv) {
    unsigned long long maxBlocks = calculateMaxBlocks(firstNumKeys);
    unsigned long long max2ndParamSize = calculateMax2ndParamSize(firstNumKeys, maxBlocks);
    unsigned long long maxGCDSize = sizeof(uint16_t) * maxBlocks;
-   DP(maxYKeySize);
-   DP(maxBlocks);
-   DP(max2ndParamSize);
-   DP(maxGCDSize);
 
    GPUplan plan[NUM_GPUS];
 
    // malloc and create streams on GPU
    for (int gpu = 0; gpu < NUM_GPUS; ++gpu) {
-      cudaSetDevice(GPUS_TO_USE[gpu]);
-      cudaStreamCreate(&plan[gpu].stream);
-      cudaMalloc((void **) &plan[gpu].d_yKeys, maxYKeySize);
-      cudaMalloc((void **) &plan[gpu].d_keysOrCoords, max2ndParamSize);
-      cudaMalloc((void **) &plan[gpu].d_gcd, maxGCDSize);
+      checkCudaErrors(cudaSetDevice(GPUS_TO_USE[gpu]));
+      checkCudaErrors(cudaStreamCreate(&plan[gpu].stream));
+      checkCudaErrors(cudaMalloc((void **) &plan[gpu].d_yKeys, maxYKeySize));
+      checkCudaErrors(cudaMalloc((void **) &plan[gpu].d_keysOrCoords, max2ndParamSize));
+      checkCudaErrors(cudaMalloc((void **) &plan[gpu].d_gcd, maxGCDSize));
       /*
       if ((plan[gpu].h_keysOrCoords = (uint32_t *) malloc(max2ndParamSize)) == NULL) {
          perror("Cannot malloc space for xy coords");
@@ -574,7 +538,7 @@ int main(int argc, char**argv) {
       */
       plan[gpu].h_gcd = (uint16_t **) malloc(runs * sizeof(uint16_t *));
       for (int i = 0; i < runs; ++i)
-         cudaMallocHost((void **) &plan[gpu].h_gcd[i], maxGCDSize * sizeof(uint16_t));
+         checkCudaErrors(cudaMallocHost((void **) &plan[gpu].h_gcd[i], maxGCDSize * sizeof(uint16_t)));
          //plan[gpu].h_gcd[i] = (uint16_t *) malloc(maxGCDSize * sizeof(uint16_t));
    }
 
@@ -589,45 +553,40 @@ int main(int argc, char**argv) {
          if (x == y) {
             index = workNum / NUM_GPUS;
             gpu = workNum % NUM_GPUS;
-            DP(x);
-            DP(y);
-            DP(workNum);
-            DP(index);
-            DP(gpu);
 
-            cudaSetDevice(GPUS_TO_USE[gpu]);
+            checkCudaErrors(cudaSetDevice(GPUS_TO_USE[gpu]));
 
             yIdx = segmentIndices[y];
             plan[gpu].h_yKeys = keys + yPrevIdx * NUM_INTS;
             plan[gpu].yNumKeys = yIdx - yPrevIdx;
 
-            cudaMemcpyAsync(plan[gpu].d_yKeys, plan[gpu].h_yKeys,
+            checkCudaErrors(cudaMemcpyAsync(plan[gpu].d_yKeys, plan[gpu].h_yKeys,
                   plan[gpu].yNumKeys * BYTES_PER_KEY, cudaMemcpyHostToDevice,
-                  plan[gpu].stream);
+                  plan[gpu].stream));
 
             plan[gpu].numBlocks = calculateNumberOfBlocks(plan[gpu].yNumKeys);
 
             memset(plan[gpu].h_gcd[index], 0, maxGCDSize);
-            cudaMemcpyAsync(plan[gpu].d_gcd, plan[gpu].h_gcd[index],
+            checkCudaErrors(cudaMemcpyAsync(plan[gpu].d_gcd, plan[gpu].h_gcd[index],
                   plan[gpu].numBlocks * sizeof(uint16_t), cudaMemcpyHostToDevice,
-                  plan[gpu].stream);
+                  plan[gpu].stream));
 
             int rem = plan[gpu].yNumKeys % BLKDIM > 0 ? 1 : 0;
             dimConversion(plan[gpu].numBlocks, plan[gpu].yNumKeys / BLKDIM + rem,
                   coords);
             plan[gpu].h_keysOrCoords = (uint32_t *) coords;
 
-            cudaMemcpyAsync(plan[gpu].d_keysOrCoords, plan[gpu].h_keysOrCoords,
+            checkCudaErrors(cudaMemcpyAsync(plan[gpu].d_keysOrCoords, plan[gpu].h_keysOrCoords,
                   plan[gpu].numBlocks * sizeof(xyCoord), cudaMemcpyHostToDevice,
-                  plan[gpu].stream);
+                  plan[gpu].stream));
 
             doDiagonalKernel(plan[gpu].d_yKeys,
                   (xyCoord * ) plan[gpu].d_keysOrCoords, plan[gpu].d_gcd,
                   plan[gpu].numBlocks, plan[gpu].yNumKeys);
 
-            cudaMemcpyAsync(plan[gpu].h_gcd[index], plan[gpu].d_gcd,
+            checkCudaErrors(cudaMemcpyAsync(plan[gpu].h_gcd[index], plan[gpu].d_gcd,
                   plan[gpu].numBlocks * sizeof(uint16_t), cudaMemcpyDeviceToHost,
-                  plan[gpu].stream);
+                  plan[gpu].stream));
 
             xPrevIdx = yIdx;
          } else {
@@ -639,21 +598,16 @@ int main(int argc, char**argv) {
             for (int i = 0; i < 2; ++i, ++workNum) {
                index = workNum / NUM_GPUS;
                gpu = workNum % NUM_GPUS;
-               DP(x);
-               DP(y);
-               DP(workNum);
-               DP(index);
-               DP(gpu);
 
-               cudaSetDevice(GPUS_TO_USE[gpu]);
+               checkCudaErrors(cudaSetDevice(GPUS_TO_USE[gpu]));
 
                yIdx = segmentIndices[y];
                plan[gpu].h_yKeys = keys + yPrevIdx * NUM_INTS;
                plan[gpu].yNumKeys = yIdx - yPrevIdx;
 
-               cudaMemcpyAsync(plan[gpu].d_yKeys, plan[gpu].h_yKeys,
+               checkCudaErrors(cudaMemcpyAsync(plan[gpu].d_yKeys, plan[gpu].h_yKeys,
                      plan[gpu].yNumKeys * BYTES_PER_KEY, cudaMemcpyHostToDevice,
-                     plan[gpu].stream);
+                     plan[gpu].stream));
 
                xIdx = i == 0 ? halfPoint : segmentIndices[x];
 
@@ -678,9 +632,9 @@ int main(int argc, char**argv) {
                      plan[gpu].numBlocks, plan[gpu].yNumKeys,
                      plan[gpu].xNumKeys);
 
-               cudaMemcpyAsync(plan[gpu].h_gcd[index], plan[gpu].d_gcd,
+               checkCudaErrors(cudaMemcpyAsync(plan[gpu].h_gcd[index], plan[gpu].d_gcd,
                      plan[gpu].numBlocks * sizeof(uint16_t), cudaMemcpyDeviceToHost,
-                     plan[gpu].stream);
+                     plan[gpu].stream));
 
                xPrevIdx = xIdx;
             }
@@ -691,16 +645,17 @@ int main(int argc, char**argv) {
       xPrevIdx = yPrevIdx = yIdx;
    }
 
-   // Process GPU results
+   // Wait for all GPU work to finish, and clean up each GPU
    for (int gpu = 0; gpu < NUM_GPUS; ++gpu) {
-      cudaSetDevice(GPUS_TO_USE[gpu]);
-      cudaStreamSynchronize(plan[gpu].stream);
-      cudaFree(plan[gpu].d_yKeys);
-      cudaFree(plan[gpu].d_keysOrCoords);
-      cudaFree(plan[gpu].d_gcd);
-      cudaStreamDestroy(plan[gpu].stream);
+      checkCudaErrors(cudaSetDevice(GPUS_TO_USE[gpu]));
+      checkCudaErrors(cudaStreamSynchronize(plan[gpu].stream));
+      checkCudaErrors(cudaFree(plan[gpu].d_yKeys));
+      checkCudaErrors(cudaFree(plan[gpu].d_keysOrCoords));
+      checkCudaErrors(cudaFree(plan[gpu].d_gcd));
+      checkCudaErrors(cudaStreamDestroy(plan[gpu].stream));
    }
 
+   // Process GPU results
    xIdx = 0, yIdx = 0;
    xPrevIdx = 0, yPrevIdx = 0;
    int numBlocks;
@@ -712,11 +667,6 @@ int main(int argc, char**argv) {
          if (x == y) {
             index = workNum / NUM_GPUS;
             gpu = workNum % NUM_GPUS;
-               DP(x);
-               DP(y);
-               DP(workNum);
-               DP(index);
-               DP(gpu);
 
             numBlocks = calculateNumberOfBlocks(plan[gpu].yNumKeys);
 
@@ -725,7 +675,7 @@ int main(int argc, char**argv) {
 
             parseGCDResults(numBlocks, badKeyPairList, coords, plan[gpu].h_gcd[index],
                   xPrevIdx, yPrevIdx);
-            cudaFreeHost(plan[gpu].h_gcd[index]);
+            checkCudaErrors(cudaFreeHost(plan[gpu].h_gcd[index]));
 
             xPrevIdx = yIdx;
          } else {
@@ -736,11 +686,6 @@ int main(int argc, char**argv) {
             for (int i = 0; i < 2; ++i, ++workNum) {
                index = workNum / NUM_GPUS;
                gpu = workNum % NUM_GPUS;
-               DP(x);
-               DP(y);
-               DP(workNum);
-               DP(index);
-               DP(gpu);
 
                yIdx = segmentIndices[y];
                xIdx = i == 0 ? halfPoint : segmentIndices[x];
@@ -749,7 +694,7 @@ int main(int argc, char**argv) {
 
                parseGCDResults(numBlocks, badKeyPairList, xCurrNumKeys,
                      yNumKeys, plan[gpu].h_gcd[index], xPrevIdx, yPrevIdx);
-               cudaFreeHost(plan[gpu].h_gcd[index]);
+               checkCudaErrors(cudaFreeHost(plan[gpu].h_gcd[index]));
 
                xPrevIdx = xIdx;
             }
@@ -762,153 +707,6 @@ int main(int argc, char**argv) {
    free(plan[gpu].h_gcd);
    free(coords);
    
-
-   /*
-   // allocate max xyCoords on host
-   xyCoord * coords;
-   if ((coords = (xyCoord *) malloc(max2ndParamSize)) == NULL) {
-      perror("Cannot malloc space for xy coords");
-      exit(-1);
-   }
-
-   // allocate max gcd on host
-   uint16_t * gcd_res;
-   if ((gcd_res = (uint16_t *) malloc(maxGCDSize)) == NULL) {
-      perror("Cannot malloc space for gcd results");
-      exit(-1);
-   }
-   memset(gcd_res, 0, maxGCDSize);
-
-   // allocate max yKeys on card
-   uint32_t * dev_yKeys;
-   cudaMalloc((void **)&dev_yKeys, maxYKeySize);
-   dprint("cudaMalloc:%s\n", cudaGetErrorString(cudaGetLastError()));
-
-   * This variable is used to hold either the xy coordinate lookup table,
-    * or the key set in the x direction, whichever is appropriate for each
-    * kernel
-    *
-   void * dev_coords;
-   cudaMalloc((void **)&dev_coords, max2ndParamSize);
-   dprint("cudaMalloc:%s\n", cudaGetErrorString(cudaGetLastError()));
-
-   // allocate max gcd on card
-   uint16_t * dev_gcd;
-   cudaMalloc((void **)&dev_gcd, maxGCDSize);
-   dprint("cudaMalloc:%s\n", cudaGetErrorString(cudaGetLastError()));
-
-   unsigned long long xIdx = 0, yIdx = 0;
-   unsigned long long xPrevIdx = 0, yPrevIdx = 0;
-   unsigned long long numBlocks;
-   for (int y = 0; y < segmentDivisionFactor; ++y) {
-      yIdx = segmentIndices[y];
-      DP(yIdx);
-      uint32_t * yKeys = keys + yPrevIdx * NUM_INTS;
-      
-      unsigned long long yNumKeys = yIdx - yPrevIdx;
-      DP(yNumKeys);
-      
-      size_t yKeysSize = yNumKeys * NUM_INTS * sizeof(uint32_t);
-      DP(yKeysSize);
-      cudaMemcpy(dev_yKeys, yKeys, yKeysSize, cudaMemcpyHostToDevice);
-      dprint("cudaMemcpy:%s\n", cudaGetErrorString(cudaGetLastError()));
-
-      for (int x = y; x < segmentDivisionFactor; ++x) {
-         if (x == y) {// call kernel with same single key set (triangle)
-            // calculate numBlocks, memories, and pull xIdx from set of keys
-            numBlocks = calculateNumberOfBlocks(yNumKeys);
-            DP(numBlocks);
-
-            memset(gcd_res, 0, maxGCDSize);
-            size_t gcdSize = numBlocks * sizeof(uint16_t);
-            DP(gcdSize);
-            cudaMemcpy(dev_gcd, gcd_res, gcdSize, cudaMemcpyHostToDevice);
-            dprint("\\|cudaMemcpy:%s\n", cudaGetErrorString(cudaGetLastError()));
-
-            int rem = yNumKeys % BLKDIM > 0 ? 1 : 0;
-            dimConversion(numBlocks, yNumKeys / BLKDIM + rem, coords);
-
-            size_t coordSize = numBlocks * sizeof(xyCoord);
-            DP(coordSize);
-            cudaMemcpy(dev_coords, coords, coordSize, cudaMemcpyHostToDevice);
-            dprint("cudaMemcpy:%s\n", cudaGetErrorString(cudaGetLastError()));
-
-            doDiagonalKernel(dev_yKeys, (xyCoord * ) dev_coords, dev_gcd, numBlocks, yNumKeys);
-
-            // Copy the results from the card to the CPU
-            cudaMemcpy(gcd_res, dev_gcd, maxGCDSize, cudaMemcpyDeviceToHost);
-            dprint("cudaMemcpy:%s\n", cudaGetErrorString(cudaGetLastError()));
-
-            // do useful things with gcd_res
-            parseGCDResults(numBlocks, badKeyPairList, coords, gcd_res,
-                  xPrevIdx, yPrevIdx);
-            xPrevIdx = yIdx;
-
-         } else {// call kernel with 2 different key sets (rectangle)
-            unsigned long long xNumKeys = segmentIndices[x] - xPrevIdx;
-            DP(xNumKeys);
-
-            unsigned long long halfStep = xNumKeys / 2 + (xNumKeys % 2 ? 1 : 0);
-            DP(halfStep);
-            unsigned long long halfPoint = xPrevIdx + halfStep;
-            DP(halfPoint);
-
-            for (int i = 0; i < 2; ++i) {
-               DP(i);
-               DP(xPrevIdx);
-               xIdx = i == 0 ? halfPoint : segmentIndices[x];
-               DP(xIdx);
-
-               uint32_t * xKeys = keys + xPrevIdx * NUM_INTS;
-
-               size_t xCurrNumKeys = xIdx - xPrevIdx;
-               DP(xCurrNumKeys);
-
-               size_t xKeysSize = xCurrNumKeys * NUM_INTS * sizeof(uint32_t);
-               DP(xKeysSize);
-               uint32_t * dev_xKeys = (uint32_t *) dev_coords;
-               cudaMemcpy(dev_xKeys, xKeys, xKeysSize, cudaMemcpyHostToDevice);
-               dprint("|_|cudaMemcpy:%s\n", cudaGetErrorString(cudaGetLastError()));
-
-               numBlocks = calculateNumberOfBlocks(xCurrNumKeys, yNumKeys);
-               DP(numBlocks);
-
-               memset(gcd_res, 0, maxGCDSize);
-               size_t gcdSize = numBlocks * sizeof(uint16_t);
-               DP(gcdSize);
-               cudaMemcpy(dev_gcd, gcd_res, gcdSize, cudaMemcpyHostToDevice);
-               dprint("|_|cudaMemcpy:%s\n", cudaGetErrorString(cudaGetLastError()));
-
-               doUpperKernel(dev_xKeys, dev_yKeys, dev_gcd, numBlocks, xCurrNumKeys, yNumKeys);
-
-               // Copy the results from the card to the CPU
-               cudaMemcpy(gcd_res, dev_gcd, maxGCDSize, cudaMemcpyDeviceToHost);
-               dprint("cudaMemcpy:%s\n", cudaGetErrorString(cudaGetLastError()));
-
-               // do useful things with gcd_res
-               dprint("writing: %d\n", numBlocks);
-               DP(xPrevIdx);
-               DP(yPrevIdx);
-               parseGCDResults(numBlocks, badKeyPairList, xCurrNumKeys,
-                     yNumKeys, gcd_res, xPrevIdx, yPrevIdx);
-
-               xPrevIdx = xIdx;
-            }
-         }
-         // a square section in the upper area is finished
-      }
-      // a row is finished
-      xPrevIdx = yPrevIdx = yIdx;
-   }
-
-   cudaFree(dev_yKeys);
-   cudaFree(dev_coords);
-   cudaFree(dev_gcd);
-
-   free(segmentIndices);
-   free(gcd_res);
-   free(coords);
-   */
 
    free(segmentIndices);
    hrt_stop();

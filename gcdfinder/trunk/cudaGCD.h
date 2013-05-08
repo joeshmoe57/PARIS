@@ -3,6 +3,9 @@
 
 #include "getKeys.h"
 
+#include "helper_functions.h"
+#include "helper_cuda.h"
+
 #define THREADS_PER_BLOCK  512 
 #define MAX_BLOCK_DIM      65535
 #define NUM_GPUS           2
@@ -51,8 +54,8 @@ __global__ void GCD_Compare_Diagonal(unsigned *x_dev, xyCoord * dev_coord,
       uint16_t *gcd_dev, unsigned long long numBlocks,
       unsigned long long keysInSet);
 __global__ void GCD_Compare_Upper(unsigned *x_dev, unsigned *y_dev,
-      uint16_t *gcd_dev, unsigned long long numBlocks,
-      unsigned long long keysInXSet, unsigned long long keysInYSet);
+      uint16_t *gcd_dev, unsigned long long keysInXSet,
+      unsigned long long keysInYSet);
 __device__ void dev_printNumHex(uint32_t buf[NUM_INTS]);
 __device__ void gcd(volatile unsigned *x, volatile unsigned *y);
 __device__ void shiftR1(volatile unsigned *x);
