@@ -380,7 +380,6 @@ void checkBlockForGCD(uint16_t gcd_res, int blockX, int blockY,
       keyPairList & badKeyPairList) {
    /* check this block for bad keys */
    if (gcd_res > 0) {
-      dprint("bad key found in block: (%d, %d)\n", blockX, blockY);
       // traverse columns
       for (int j = 0; j < BLKDIM; ++j) {
          // check if any bits in a column are found
@@ -388,15 +387,14 @@ void checkBlockForGCD(uint16_t gcd_res, int blockX, int blockY,
             // traverse rows 
             for (int i = 0; i < BLKDIM; ++i) {
                if (gcd_res & YMASKS[j] & XMASKS[i]) {
-                  unsigned long long one = NUM_INTS * (BLKDIM * blockX + i + prevKeysX);
-                  unsigned long long two = NUM_INTS * (BLKDIM * blockY + j + prevKeysY);
+                  //unsigned long long one = NUM_INTS * (BLKDIM * blockX + i + prevKeysX);
+                  //unsigned long long two = NUM_INTS * (BLKDIM * blockY + j + prevKeysY);
+                  unsigned long long one = BLKDIM * blockX + i + prevKeysX;
+                  unsigned long long two = BLKDIM * blockY + j + prevKeysY;
                   badKeyPairList.push_back(std::make_pair(one, two));
-                  dprint("key %d, %d in block (%d, %d)\n", i, j, blockX, blockY);
-                  dprint("VULNERABLE KEY PAIR FOUND:\n");
+                  dprint("bad key %d, %d in block (%d, %d)\n", i, j, blockX, blockY);
                   dprint("one: %llu\n", one);
                   dprint("two: %llu\n", two);
-                  dprint("x\n");
-                  dprint("y\n");
                }
             }
          }
@@ -405,9 +403,8 @@ void checkBlockForGCD(uint16_t gcd_res, int blockX, int blockY,
 }
 
 void parseGCDResults(unsigned long long numBlocks,
-      keyPairList & badKeyPairList,
-      xyCoord * coords, uint16_t * gcd_res, unsigned long long prevKeysX,
-      unsigned long long prevKeysY) {
+      keyPairList & badKeyPairList, xyCoord * coords, uint16_t * gcd_res,
+      unsigned long long prevKeysX, unsigned long long prevKeysY) {
    for (unsigned long long blockId = 0; blockId < numBlocks; ++blockId) {
       int blockX = coords[blockId].x;
       int blockY = coords[blockId].y;
@@ -418,10 +415,9 @@ void parseGCDResults(unsigned long long numBlocks,
 }
 
 void parseGCDResults(unsigned long long numBlocks,
-      keyPairList & badKeyPairList,
-      unsigned long long xNumKeys, unsigned long long yNumKeys,
-      uint16_t * gcd_res, unsigned long long prevKeysX,
-      unsigned long long prevKeysY) {
+      keyPairList & badKeyPairList, unsigned long long xNumKeys,
+      unsigned long long yNumKeys, uint16_t * gcd_res,
+      unsigned long long prevKeysX, unsigned long long prevKeysY) {
    int xBlocks = xNumKeys / BLKDIM + (xNumKeys % BLKDIM ? 1 : 0);
    int yBlocks = yNumKeys / BLKDIM + (yNumKeys % BLKDIM ? 1 : 0);
 
@@ -530,16 +526,9 @@ int main(int argc, char**argv) {
       checkCudaErrors(cudaMalloc((void **) &plan[gpu].d_yKeys, maxYKeySize));
       checkCudaErrors(cudaMalloc((void **) &plan[gpu].d_keysOrCoords, max2ndParamSize));
       checkCudaErrors(cudaMalloc((void **) &plan[gpu].d_gcd, maxGCDSize));
-      /*
-      if ((plan[gpu].h_keysOrCoords = (uint32_t *) malloc(max2ndParamSize)) == NULL) {
-         perror("Cannot malloc space for xy coords");
-         exit(-1);
-      }
-      */
       plan[gpu].h_gcd = (uint16_t **) malloc(runs * sizeof(uint16_t *));
       for (int i = 0; i < runs; ++i)
          checkCudaErrors(cudaMallocHost((void **) &plan[gpu].h_gcd[i], maxGCDSize * sizeof(uint16_t)));
-         //plan[gpu].h_gcd[i] = (uint16_t *) malloc(maxGCDSize * sizeof(uint16_t));
    }
 
    // Perform work on GPU
@@ -673,8 +662,8 @@ int main(int argc, char**argv) {
             int rem = yNumKeys % BLKDIM > 0 ? 1 : 0;
             dimConversion(numBlocks, yNumKeys / BLKDIM + rem, coords);
 
-            parseGCDResults(numBlocks, badKeyPairList, coords, plan[gpu].h_gcd[index],
-                  xPrevIdx, yPrevIdx);
+            parseGCDResults(numBlocks, badKeyPairList, coords,
+                  plan[gpu].h_gcd[index], xPrevIdx, yPrevIdx);
             checkCudaErrors(cudaFreeHost(plan[gpu].h_gcd[index]));
 
             xPrevIdx = yIdx;

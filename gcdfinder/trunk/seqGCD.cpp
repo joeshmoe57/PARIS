@@ -14,6 +14,7 @@ int main(int argc, char ** argv) {
    unsigned long long total_keys;
    std::vector<RSA*> privKeys;
    keyPairList badKeyPairList;
+   keySet badKeySet;
 
    //get number of keys to process
    if(argc != 2) {
@@ -84,7 +85,9 @@ int main(int argc, char ** argv) {
                gcd1024(tmpX, tmpY, w);
                //printf("k = %d i = %d j = %d\n", k, x, y);
                if(equalTo(w, one) == 0) {
-                  badKeyPairList.push_back(std::make_pair(x * NUM_INTS, y * NUM_INTS));
+                  badKeyPairList.push_back(std::make_pair(x, y));
+                  badKeySet.insert(x);
+                  badKeySet.insert(y);
                   dprint("x\n");
                   //printNumHex(tempx);
                   dprint("y\n");
@@ -104,7 +107,7 @@ int main(int argc, char ** argv) {
    hrt_stop();
    printf("Sequential run lasted %s\n", hrt_string());
 
-   processBadKeys(badKeyPairList, u, NULL, 0, total_keys);
+   processBadKeys(badKeyPairList, badKeySet, u, 0, total_keys);
 
    return 0;
 }

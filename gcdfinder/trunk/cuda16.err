@@ -1,27 +1,91 @@
 getKeys returns 16
-Free: 5952954368 Total: 6039339008
-maxKeys = 179127
-segment factor: 1
-total / segment factor: 16
-keysSegmentSize: 16
-number of kernel launches: 1
+Free: 1608871936 Total: 2147155968
+keys for device 0 = 106668
+maxKeys = 8
+segment factor: 2
+total / segment factor: 8
+keysSegmentSize: 8
+number of kernel launches: 4
 0
-16
-i = 0 | 16
-maxYKeySize: 2048
-maxXYCoordsSize: 40
-maxGCDSize: 20
+8
+i = 0
+segmentIndices[i] = 8
+i = 1
+segmentIndices[i] = 16
+maxYKeySize = 1024
+maxDiagBlocks = 3
+maxUpperBlocks = 2
+maxXYCoordsSize = 12
+maxXKeySize = 512
+max2ndParamSize = 512
+maxGCDSize = 6
 cudaMalloc:no error
 cudaMalloc:no error
 cudaMalloc:no error
-yIdx: 16
-yNumKeys: 16
-yKeysSize: 2048
+yIdx = 8
+yNumKeys = 8
+yKeysSize = 1024
 cudaMemcpy:no error
-Found diagonal key set: 0
-numBlocks = 10
-coordSize: 40
+Found diagonal \| key set: 0
+\|numBlocks = 3
+gcdSize = 6
+\|cudaMemcpy:no error
+\|cudaMemcpy(0x700240600, 0xc9fe10, 6, ...)
+coordSize = 12
 cudaMemcpy:no error
-dimGrid = 10 1 1; dimBlock = 32 4 4
+dimGrid = 3 1 1; dimBlock = 32 4 4
+\| numBlocks: 3
 cudaMemcpy:no error
-writing: 10
+Found rectangular |_| key set: 1
+xNumKeys = 8
+halfStep = 4
+halfPoint = 12
+i = 0
+xPrevIdx = 8
+xIdx = 12
+xCurrNumKeys = 4
+xKeysSize = 512
+|_|cudaMemcpy:no error
+numBlocks = 2
+|_|gcdSize: 4
+|_|cudaMemcpy:no error
+dimGrid = 1 2 1; dimBlock = 32 4 4
+|_| numBlocks: 2
+cudaMemcpy:no error
+writing: 2
+xPrevIdx = 8
+yPrevIdx = 0
+bad key found in block: (0, 0)
+key 0, 0 in block (0, 0)
+VULNERABLE KEY PAIR FOUND:
+one: 256
+two: 0
+i = 1
+xPrevIdx = 12
+xIdx = 16
+xCurrNumKeys = 4
+xKeysSize = 512
+|_|cudaMemcpy:no error
+numBlocks = 2
+|_|gcdSize: 4
+|_|cudaMemcpy:no error
+dimGrid = 1 2 1; dimBlock = 32 4 4
+|_| numBlocks: 2
+cudaMemcpy:no error
+writing: 2
+xPrevIdx = 12
+yPrevIdx = 0
+yIdx = 16
+yNumKeys = 8
+yKeysSize = 1024
+cudaMemcpy:no error
+Found diagonal \| key set: 1
+\|numBlocks = 3
+gcdSize = 6
+\|cudaMemcpy:no error
+\|cudaMemcpy(0x700240600, 0xc9fe10, 6, ...)
+coordSize = 12
+cudaMemcpy:no error
+dimGrid = 3 1 1; dimBlock = 32 4 4
+\| numBlocks: 3
+cudaMemcpy:no error

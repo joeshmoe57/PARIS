@@ -85,11 +85,12 @@ void doUpperKernel(uint32_t * dev_xKeys, uint32_t * dev_yKeys,
 
 void checkBlockForGCD(uint16_t gcd_res, int blockX, int blockY,
       unsigned long long prevKeysX, unsigned long long prevKeysY,
-      keyPairList & badKeyPairList);
+      keyPairList & badKeyPairList, keySet & badKeySet);
 void parseGCDResults(unsigned long long numBlocks,
-      keyPairList & badKeyPairList, xyCoord * coords, uint16_t * gcd_res,
-      unsigned long long prevKeysX, unsigned long long prevKeysY);
+      keyPairList & badKeyPairList, keySet & badKeySet, xyCoord * coords,
+      uint16_t * gcd_res, unsigned long long prevKeysX,
+      unsigned long long prevKeysY);
 void parseGCDResults(unsigned long long numBlocks,
-      keyPairList & badKeyPairList, unsigned long long xNumKeys,
-      unsigned long long yNumKeys, uint16_t * gcd_res, unsigned long long xIdx,
-      unsigned long long yIdx);
+      keyPairList & badKeyPairList, keySet & badKeySet,
+      unsigned long long xNumKeys, unsigned long long yNumKeys,
+      uint16_t * gcd_res, unsigned long long xIdx, unsigned long long yIdx);
