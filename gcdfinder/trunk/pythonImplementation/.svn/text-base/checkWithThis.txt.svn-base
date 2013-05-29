@@ -1,1 +1,0 @@
-openssl rsa -in 97.S.pem -check

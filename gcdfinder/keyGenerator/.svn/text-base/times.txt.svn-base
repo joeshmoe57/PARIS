@@ -1,6 +1,0 @@
-with no commit until the very end, and no xrange ~22701 keys inserted in ~20 minutes. I am worried that sticking commit in there (inside the if statement) will couple it to filesystem speed to tightly and slow it down even more. If this happens, the perhaps hide it behind its own if statement with a much lower firing frequency.
-   -with this first rev, it was at ~450MB RAM when i killed it. With mods, it is at 80MB RAM at key 33k
-   -after 3 hours, made 185501 keys. DB is 182MBytes
-   -killed it at 2,519,201 keys. 2240 min real. 2121 min user. 36.24 min sys
-
-What if we make it multi threaded (with generator threads and a thread that takes a write to db q?
